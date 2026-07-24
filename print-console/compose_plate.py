@@ -121,9 +121,89 @@ def canonical_config(machine: str, process: str, filament: str) -> dict:
             raise RuntimeError(f"CLI ignored the {label} preset: merged "
                                f"config has {got!r}, wanted {want!r}")
 
+    # The CLI merge resolves neither `inherits` chains nor the machine
+    # preset's `include` directives; overlay both ourselves. Filament only:
+    # blanket-overlaying machine/process trips the CLI's compatibility
+    # check, and the print-critical gap is the filament chain (bed temps —
+    # the CLI defaulted textured_plate_temp to 45 instead of PLA's 55).
+    n = _overlay_flattened(cfg, "filament", filament)
+    print(f"  (filament inheritance overlay corrected {n} keys)")
+    _merge_included_gcode(cfg, machine)
+    if "M620" not in cfg.get("machine_start_gcode", ""):
+        raise RuntimeError("machine_start_gcode still lacks the AMS load "
+                           "block (M620) after include resolution")
+
     CACHE_DIR.mkdir(exist_ok=True)
     cached.write_text(json.dumps(cfg, indent=2, sort_keys=True))
     return cfg
+
+
+_META_KEYS = {"name", "inherits", "from", "instantiation", "setting_id",
+              "type", "include", "info", "description",
+              "compatible_printers", "compatible_printers_condition",
+              "compatible_prints", "compatible_prints_condition",
+              "upward_compatible_machine"}
+
+
+def _flatten_chain(kind: str, name: str) -> dict:
+    """Resolve a preset's `inherits` chain ourselves (child wins). The CLI's
+    --load-settings/--load-filaments does NOT do this — it backfills generic
+    defaults (e.g. textured_plate_temp 45 instead of PLA's 55)."""
+    chain, cur, seen = [], name, set()
+    while cur and cur not in seen:
+        seen.add(cur)
+        p = PROFILES / kind / f"{cur}.json"
+        if not p.is_file():
+            break
+        d = json.loads(p.read_text())
+        chain.append(d)
+        cur = d.get("inherits")
+    flat = {}
+    for d in reversed(chain):
+        flat.update(d)
+    return {k: v for k, v in flat.items() if k not in _META_KEYS}
+
+
+def _overlay_flattened(cfg: dict, kind: str, name: str) -> int:
+    """Overlay true preset values onto the canonical config, coerced to the
+    canonical shape per key. Returns count of changed keys."""
+    changed = 0
+    for k, v in _flatten_chain(kind, name).items():
+        if k not in cfg:
+            continue
+        cur = cfg[k]
+        if isinstance(cur, list):
+            vv = v if isinstance(v, list) else [v]
+            vv = (vv + vv * len(cur))[:len(cur)]      # broadcast/truncate
+        else:
+            vv = v[0] if isinstance(v, list) and v else v
+        if vv != cur:
+            cfg[k] = vv
+            changed += 1
+    return changed
+
+
+def _merge_included_gcode(cfg: dict, machine: str) -> None:
+    """Resolve `include` template files along the machine preset's
+    inheritance chain (parent first, child wins) and overlay their keys
+    (machine_start_gcode, machine_end_gcode, change_filament_gcode, …)."""
+    chain, current, seen = [], machine, set()
+    while current and current not in seen:
+        seen.add(current)
+        p = PROFILES / "machine" / f"{current}.json"
+        if not p.is_file():
+            break
+        d = json.loads(p.read_text())
+        chain.append(d)
+        current = d.get("inherits")
+    for d in reversed(chain):
+        for inc in d.get("include", []):
+            t = PROFILES / "machine" / f"{inc}.json"
+            if not t.is_file():
+                continue
+            for k, v in json.loads(t.read_text()).items():
+                if k not in ("name", "instantiation"):
+                    cfg[k] = v
 
 
 def build_project_settings(spec: dict) -> dict:
@@ -316,6 +396,30 @@ def compose(spec_path: Path, out_path: Path) -> Path:
     return out_path
 
 
+def finalize_sliced(sliced: Path, spec: dict) -> None:
+    """Re-stamp filament identity into the sliced 3mf. The slicer blanks
+    filament_settings_id/filament_ids/tray_info_idx because our corrected
+    config no longer matches its (broken) merge of the preset — restoring
+    them re-enables the printer's own AMS RFID cross-check."""
+    fil_id = spec.get("filament_id") or _flatten_chain(
+        "filament", spec["filament"]).get("filament_id", "")
+    with zipfile.ZipFile(sliced) as z:
+        members = {n: z.read(n) for n in z.namelist()}
+    cfg = json.loads(members["Metadata/project_settings.config"])
+    cfg["filament_settings_id"] = [spec["filament"]]
+    cfg["filament_ids"] = [fil_id]
+    members["Metadata/project_settings.config"] = json.dumps(
+        cfg, indent=4, sort_keys=True).encode()
+    si = members["Metadata/slice_info.config"].decode()
+    si = si.replace('tray_info_idx=""', f'tray_info_idx="{fil_id}"')
+    members["Metadata/slice_info.config"] = si.encode()
+    tmp = sliced.with_suffix(".tmp")
+    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
+        for n, data in members.items():
+            z.writestr(n, data)
+    tmp.replace(sliced)
+
+
 # -------------------------------------------------------------------- audit
 
 def audit_sliced(sliced: Path, spec: dict) -> list:
@@ -323,8 +427,48 @@ def audit_sliced(sliced: Path, spec: dict) -> list:
     Returns a list of mismatch strings (empty = pass)."""
     with zipfile.ZipFile(sliced) as z:
         cfg = json.loads(z.read("Metadata/project_settings.config"))
+        gcode = z.read("Metadata/plate_1.gcode").decode(errors="replace")
 
     problems = []
+
+    # the print must actually load filament: AMS load block + tool select
+    if "M620" not in gcode:
+        problems.append("gcode has no AMS load sequence (M620) — the "
+                        "machine start gcode was not applied; the print "
+                        "would run dry")
+    import re as _re
+    if not _re.search(r"^M620 S\d+A", gcode, _re.M):
+        problems.append("gcode never issues an AMS filament switch "
+                        "(M620 S<n>A) — no filament would be loaded")
+
+    # brim: Bambu's slicer silently emits no brim when supports are on
+    # (support bases take its place); only gate when supports are off
+    ov = spec.get("overrides", {})
+    if (ov.get("brim_type", "no_brim") != "no_brim"
+            and ov.get("enable_support") != "1"
+            and "; FEATURE: Brim" not in gcode):
+        problems.append("brim requested but gcode contains no Brim feature")
+    if (ov.get("enable_support") == "1"
+            and "; FEATURE: Support interface" not in gcode):
+        problems.append("supports requested but gcode contains no support "
+                        "features")
+
+    # bed temperature in the gcode must match the plate-temp key for the
+    # spec'd bed type (the 45-vs-55 class of failure)
+    bed_key = {"Cool Plate": "cool_plate_temp",
+               "Engineering Plate": "eng_plate_temp",
+               "High Temp Plate": "hot_plate_temp",
+               "Textured PEI Plate": "textured_plate_temp"}.get(
+                   spec["bed_type"])
+    want_bed = spec.get("bed_temp")
+    if want_bed is None and bed_key:
+        v = cfg.get(bed_key)
+        want_bed = int((v[0] if isinstance(v, list) else v) or 0)
+    m = _re.search(r"^M140 S(\d+)", gcode, _re.M)
+    got_bed = int(m.group(1)) if m else None
+    if want_bed and got_bed != want_bed:
+        problems.append(f"bed temperature: gcode sets {got_bed}°C, expected "
+                        f"{want_bed}°C for {spec['bed_type']}")
 
     def expect(label, got, want):
         if got != want:
@@ -336,6 +480,14 @@ def audit_sliced(sliced: Path, spec: dict) -> list:
     expect("plate type", cfg.get("curr_bed_type"), spec["bed_type"])
     fils = cfg.get("filament_settings_id", [])
     expect("filament preset", fils[0] if fils else None, spec["filament"])
+    types = cfg.get("filament_type", [])
+    expect("filament type", types[0] if types else None,
+           spec.get("ams_tray_type", "PLA"))
+    want_id = spec.get("filament_id") or _flatten_chain(
+        "filament", spec["filament"]).get("filament_id", "")
+    ids = cfg.get("filament_ids", [])
+    if want_id:
+        expect("filament id", ids[0] if ids else None, want_id)
     cols = cfg.get("filament_colour", [])
     want_col = spec.get("filament_colour", "#000000").upper()
     got_col = (cols[0] if cols else "").upper()
@@ -343,7 +495,10 @@ def audit_sliced(sliced: Path, spec: dict) -> list:
         problems.append(f"filament colour: sliced file has {got_col!r}, "
                         f"spec requires {want_col!r}")
     for k, want in spec.get("overrides", {}).items():
-        expect(f"override {k}", cfg.get(k),
+        got = cfg.get(k)
+        if isinstance(got, list):
+            got = got[0] if got else None
+        expect(f"override {k}", got,
                want if isinstance(want, str) else str(want))
     return problems
 

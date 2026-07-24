@@ -368,6 +368,34 @@ def cmd_watch(_args):
         link.close()
 
 
+# --------------------------------------------------------------------- snap
+
+SNAP_DIR = PROJECT_DIR / "snapshots"
+
+
+def take_snapshot(tag: str = "") -> Path:
+    import bambulabs_api as bl
+    ip, code, serial = load_credentials()
+    p = bl.Printer(ip, code, serial)
+    p.camera_start()
+    time.sleep(4)
+    img = p.get_camera_image()
+    p.camera_stop()
+    SNAP_DIR.mkdir(exist_ok=True)
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    name = f"snap-{stamp}{'-' + tag if tag else ''}.png"
+    out = SNAP_DIR / name
+    img.save(out)
+    return out
+
+
+def cmd_snap(args):
+    out = take_snapshot(args.tag)
+    print(f"Saved {out}")
+    if args.open_it:
+        subprocess.run(["open", str(out)])
+
+
 # ------------------------------------------------------------------ reslice
 
 def patch_xy_compensation(src: Path, xy: float) -> Path:
@@ -493,6 +521,7 @@ def cmd_compose(args):
     print(f"Composed project → {composed}")
 
     sliced = slice_project(composed, f"{name}.gcode.3mf", 1, label=name)
+    compose_plate.finalize_sliced(sliced, spec)
     print(f"Sliced → {sliced}")
 
     print("Pre-flight audit…")
@@ -562,6 +591,12 @@ def main():
     p.set_defaults(fn=cmd_start)
 
     sub.add_parser("watch", help="follow the active job").set_defaults(fn=cmd_watch)
+
+    p = sub.add_parser("snap", help="save a chamber-camera frame")
+    p.add_argument("--tag", default="", help="label for the filename")
+    p.add_argument("--open", dest="open_it", action="store_true",
+                   help="open the frame in Preview")
+    p.set_defaults(fn=cmd_snap)
 
     p = sub.add_parser("compose",
                        help="compose plate from STLs + spec, slice, audit, stage")

@@ -1,0 +1,34 @@
+{
+  "name": "plate-01b-sliders",
+  "version_tag": "31_sliders · v16b (solo, rev3: supports + brim + slow finish)",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "brim_type": "outer_only",
+    "brim_width": "3",
+    "brim_object_gap": "0",
+    "outer_wall_speed": "100",
+    "top_surface_speed": "80",
+    "small_perimeter_speed": "30",
+    "enable_support": "1",
+    "support_type": "normal(auto)",
+    "support_on_build_plate_only": "1",
+    "support_top_z_distance": "0.2"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/31_sliders_v16.stl",
+      "rotate_x": 180,
+      "z_offset": -0.45,
+      "position": "center"
+    }
+  ]
+}

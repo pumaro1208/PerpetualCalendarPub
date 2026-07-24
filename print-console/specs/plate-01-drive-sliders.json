@@ -8,6 +8,7 @@
   "ams_tray_type": "PLA",
   "ams_sub_brand": "Matte",
   "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
   "overrides": {
     "wall_loops": "3",
     "sparse_infill_density": "25%"

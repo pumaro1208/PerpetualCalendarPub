@@ -5,3 +5,5 @@ sliced/
 result.json
 cache/
 composed/
+snapshots/
+camera-frame.png
