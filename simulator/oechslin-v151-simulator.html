@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oechslin program wheel — v1.5.1 · sim b50</title>
+<style>
+  :root{
+    --bg:#101312; --panel:#1A1F1D; --ink:#E8E6DC; --muted:#8E948E;
+    --line:#333A36; --brass:#C9A252; --steel:#7D8C9A;
+    --mon:#8B84E8; --feb:#F0997B; --leap:#E8A93A; --mid:#3FB48E;
+  }
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 "Avenir Next","Segoe UI",system-ui,sans-serif}
+  header{padding:22px 26px 8px}
+  h1{font:600 21px/1.2 Georgia,"Times New Roman",serif;letter-spacing:.02em;margin:0}
+  h1 em{font-style:normal;color:var(--brass)}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  .hud{display:flex;gap:10px;flex-wrap:wrap;padding:12px 26px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:8px 14px;min-width:84px}
+  .card .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .card .v{font-size:21px;font-weight:600;font-variant-numeric:tabular-nums}
+  .card .v small{font-size:13px;font-weight:400;color:var(--muted)}
+  #queue{display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    padding:0 26px 8px;font-size:13px;color:var(--muted)}
+  .chip{border:1.5px solid;border-radius:12px;padding:2px 10px;font-variant-numeric:tabular-nums}
+  canvas{display:block;width:100%;max-width:1360px;margin:0 auto}
+  .bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 26px}
+  button{background:var(--panel);color:var(--ink);border:1px solid var(--line);
+    border-radius:8px;padding:7px 14px;font:500 14px inherit;cursor:pointer}
+  button:hover{border-color:var(--brass)}
+  button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  input[type=range]{flex:1;min-width:110px;accent-color:var(--brass)}
+  label{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .foot{padding:4px 26px 26px;font-size:12.5px;color:var(--muted);max-width:900px}
+  @media (prefers-reduced-motion: reduce){ .pulse{animation:none} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Oechslin program wheel — <em>v1.5.1 engine · v1.6 skip train (arch A’) LIVE IN SIM</em>, live</h1>
+  <div class="sub">EP1351104 Fig.2/3 architecture: board 204 + fixed sun 203 (7t) + satellites 210/211/212 on the stud chain; strike teeth 241–243 ride the 24h wheel 13 ahead of the daily long tooth 208. Skip train v1.6 (arch A’) NOW LIVE IN THE SIMULATOR: the 21/22/23h strikers are cam-gated sliders — extended only on their own strike evening (cam law: lobe D∈[−0.60,+0.80]h, 0.10h ramps, 1.6mm stroke), retracted through the S7 adjacency pass (1.0mm drawn / 1.23mm harness clearance). Physical v1.6 part set GENERATED and gated (six watertight parts; see README-v16); all three trains harness-proven bidirectional. <b>sim build b50</b> · changelog = audit report addenda.</div>
+</header>
+<div class="hud">
+  <div class="card"><div class="k">Date</div><div class="v" id="hud-date">Feb 26</div></div>
+  <div class="card"><div class="k">Year</div><div class="v" id="hud-year">2027</div></div>
+  <div class="card"><div class="k">Time</div><div class="v" id="hud-time">12:00</div></div>
+  <div class="card" style="min-width:190px"><div class="k">Leap programmer</div><div class="v" id="hud-prog" style="font-size:14px">—</div></div>
+  <div class="card" style="flex:1;min-width:200px"><div class="k">Contact chain</div><div class="v" id="hud-event" style="font-size:13.5px;font-weight:500;color:var(--muted)">—</div></div>
+</div>
+<div id="queue"><span>Coming up:</span></div>
+<canvas id="cv" width="1360" height="1170"></canvas>
+<div class="bar">
+  <button id="bplay">Pause</button>
+  <button id="brev" title="play backwards">◀ Reverse</button>
+  <button id="bhrm">−1 h</button>
+  <button id="bdaym">−1 day</button>
+  <button id="bhr">+1 hour</button>
+  <button id="bday">+1 day</button>
+  <button id="bend">To month end</button>
+  <button id="bfeb">To next February</button>
+  <label><input type="checkbox" id="slomo" checked style="width:auto;accent-color:var(--brass)">Slow-mo at month end</label>
+  <label><input type="checkbox" id="axes" checked style="width:auto;accent-color:var(--brass)">Axes</label>
+  <label>Speed</label><input type="range" id="spd" min="0" max="100" value="42" step="1">
+  <span id="spdout" style="font-size:13px;min-width:66px;color:var(--muted)">3 h/s</span>
+</div>
+<div id="jamlog" style="display:none;max-width:1360px;margin:6px auto;padding:8px 14px;background:#3a1414;border:1px solid #a33;border-radius:8px;font:400 13px system-ui;color:#f5c9c9"></div>
+<canvas id="cv2" width="1360" height="440"></canvas>
+<div class="foot">The amber leap satellite (third pivot on the carrier chain) carries the retractable tooth — solid when armed, hollow when retracted for a leap year. Jump to a February and watch the cascade — Keyboard: space = play/pause, ←/→ = ±1 h (shift = days), R = reverse direction. Or GRAB THE GREEN DRIVE WHEEL AND DRAG: clockwise cranks time forward, counter-clockwise rolls the calendar backwards (the mechanism's famous bidirectionality). Satellites now show their two laminae: pale mesh gear below, bold crowned strike teeth above; the three small dots near the sun are the permanent sun-mesh contacts.</div>
+<script>
+const cv=document.getElementById('cv');let ctx=cv.getContext('2d');
+const cv2=document.getElementById('cv2'),c2=cv2.getContext('2d');
+const C={ink:'#E8E6DC',muted:'#8E948E',line:'#4A524D',board:'#5A625C',
+ mon:'#8B84E8',feb:'#F0997B',leap:'#E8A93A',mid:'#3FB48E',brass:'#C9A252'};
+const S=5.4,CX=420,CY=430,DDR=73.5;
+const PITCH=360/31,RTIP=41.86,RROOT=37.05,DTIP=32.76,DBODY=29.2;
+const SUNORB=23.75,STIP=15.8,SROOT=13.4,LTIP=18.11,LEAP_OFF=18.39;
+const STN_M=360-29*PITCH,STN_F=360-28*PITCH,STN_L=360-27*PITCH;
+const leapG=y=>y%4===0&&(y%100!==0||y%400===0);
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MLEN=y=>[31,(leapG(y)?29:28),31,30,31,30,31,31,30,31,30,31];
+let st={h:12,day:0,pos:26,mon:1,yr:2027,steps:25,lastStep:-9,dir:1,evt:'—',
+        face:0,shortq:0,armed:true};
+let strike=null;
+const leapY=y=>leapG(y);
+function doStep(){const t=st.h+st.day*24,q=phiDeg()/PITCH;
+ st.steps++;
+ st.dir=1;st.lastStep=t-0.5*Math.max(0,Math.min(1,q-(st.steps-1)));
+ st.pos=st.pos%31+1;
+ if(st.pos==1){st.mon++;if(st.mon>11){st.mon=0;st.yr++}}}
+function evalHour(hh,pos,mon,yr,armed){
+ if(hh==21&&mon==1&&pos==28&&armed)return{lv:3,c:C.leap,n:'21:00 rim tooth \u2192 LEAP satellite tooth \u2192 program +1',short:'21h leap',tags:['f21','leap','feb','sun','prog']};
+ if(hh==21&&mon==1&&pos==28&&!armed)return{lv:3,c:C.leap,miss:1,n:'21:00 tooth passes \u2014 leap tooth retracted (leap year)',short:'21h (pass)',tags:['f21','leap']};
+ if(hh==22&&mon==1&&pos==29)return{lv:2,c:C.feb,n:'22:00 rim tooth \u2192 feb fixed tooth \u2192 program +1',short:'22h feb',tags:['f22','feb','sun','prog']};
+ if(hh==23&&pos==30&&[1,3,5,8,10].includes(mon))return{lv:1,c:C.mon,n:'23:00 rim tooth \u2192 month long tooth \u2192 program +1',short:'23h month',tags:['f23','mon','sun','prog']};
+ if(hh==24)return{lv:0,c:C.mid,n:'midnight tooth \u2192 program teeth (+1 day)',short:'24h daily',tags:['drv','prog']};
+ return null}
+function hourCross(hh){const e=evalHour(hh,st.pos,st.mon,st.yr,st.armed);
+ if(!e)return;
+ strike={...e,t:st.h+st.day*24,w:performance.now()};
+ if(!e.miss)doStep();
+ st.evt=e.n}
+function progTouch(){
+ const gov=st.yr+1;                       // the February this read governs
+ const lobe=(gov%100===0&&gov%400!==0);   // century ring: down-lobe masks the short face
+ st.armed = (st.face!=st.shortq) || lobe;
+ st.face=(st.face+1)%4;
+ st.evt='programmer: leap tooth '+(st.armed?(lobe&&st.face-1===st.shortq?'ARMED (century lobe masks '+gov+')':'ARMED (common year ahead)'):'RETRACTED (leap year ahead)')}
+function upcoming(){const out=[];let pos=st.pos,mon=st.mon,yr=st.yr,armed=st.armed;
+ for(let ah=Math.floor(st.h)+1;ah<=Math.floor(st.h)+6&&out.length<4;ah++){
+  let h2=ah>24?ah-24:ah;
+  const e=evalHour(h2,pos,mon,yr,armed);
+  if(e){out.push({...e,dt:ah-st.h});
+   if(!e.miss){pos=pos%31+1;if(pos==1){mon++;if(mon>11){mon=0;yr++}}}}}
+ return out}
+let OFF_M=0,OFF_F=0,OFF_L=0;
+(function(){let steps=25,pos=26,mon=1,yr=2027,gm=null,gf=null,gl=null;
+ for(let d=0;d<1000&&(gm===null||gf===null||gl===null);d++){for(const hh of[21,22,23,24]){
+  let f=0,tag='';
+  if(hh==21&&mon==1&&pos==28&&!leapG(yr)){f=1;tag='l'}
+  else if(hh==22&&mon==1&&pos==29){f=1;tag='f'}
+  else if(hh==23&&pos==30&&[1,3,5,8,10].includes(mon)){f=1;tag='m'}
+  else if(hh==24)f=1;
+  if(f){const spin=(19/12)*(steps*PITCH+(-3.1402));
+   if(tag=='m'&&gm===null)gm=((-spin)%360+360)%360;
+   if(tag=='f'&&gf===null)gf=((-spin)%360+360)%360;
+   if(tag=='l'&&gl===null)gl=((-spin)%360+360)%360;
+   steps++;pos=pos%31+1;if(pos==1){mon++;if(mon>11){mon=0;yr++}}}}}
+ OFF_M=gm||0;OFF_F=gf||0;OFF_L=gl||0;})();
+const smooth=u=>{u=Math.max(0,Math.min(1,u));return u*u*(3-2*u)};
+function easeFrac(){const t=st.h+st.day*24;
+ const fr=st.dir>0?(t-st.lastStep)/0.5:(st.lastStep-t)/0.5;
+ return Math.max(0,Math.min(1,fr))}
+let renderDir=1;   // honest hysteresis needs the direction of motion
+let dirSmooth=1;   // eased direction: approaches dirState (below), so a
+                   // GENUINE flip slides the contact side over ~0.15h
+let dirState=1;    // HYSTERETIC committed direction (b41, #37): a dragging
+                   // hand dithers (micro sign flips); the old moving-average
+                   // ease hovered mid-way and drew the tooth on the WRONG
+                   // side. dirState flips only after 0.05h of net opposite
+                   // motion -- dither-immune; dirSmooth eases toward it.
+let _oppAcc=0;
+function _dirTick(sign,dh){
+ if(sign===dirState){_oppAcc=Math.max(0,_oppAcc-Math.abs(dh));}
+ else{_oppAcc+=Math.abs(dh);
+  if(_oppAcc>=0.05){dirState=sign;_oppAcc=0;}}
+ dirSmooth+=(dirState-dirSmooth)*Math.min(1,Math.abs(dh)/0.15);}
+function phiDeg(){
+ // Board angle with FLANK-PUSH transitions and BACKLASH HYSTERESIS.
+ // Forward: the finger's UPPER edge picks up the leading flank; reverse: the
+ // finger first traverses the free gap width, then its LOWER edge drives the
+ // trailing flank back. Contributions are additive with clamped push
+ // fractions, so overlapping cascade windows superpose correctly.
+ // boundary-dust handling: a step can land ON an hour boundary with float
+ // dust putting the time a hair to either side while the engine's state is
+ // definite. Normalize the dust, and in the on-boundary sliver resolve by
+ // STATE: if the post-side reconstruction doesn't fire, the current-state
+ // form does (see nearB fallback below).
+ const t=st.h+st.day*24; let fr=t-Math.floor(t);
+ const nearB=(fr<1e-6)||(fr>1-1e-6);
+ if(fr>1-1e-6)fr=0;
+ const beta=D=>{const a=(180-15*D)*Math.PI/180;
+  return Math.atan2(DTIP*Math.sin(a),DDR+DTIP*Math.cos(a))*180/Math.PI};
+ const W_F=1.7189, FL=-2.8316, LL=-9.3348;
+ const frac=D=>{const b=beta(D);
+  const fF=Math.max(0,Math.min(1,(b+W_F-FL)/PITCH));
+  const fR=Math.max(0,Math.min(1,(b-W_F-LL)/PITCH));
+  const w=(dirSmooth+1)/2;               // 1=forward flank, 0=reverse flank
+  return fR+(fF-fR)*w};
+ // SATELLITE strikes (21/22/23h): the receiving tooth's tip sweeps at
+ // 1.2524x the board rate (orbit + 19/12 spin lever over the reach), so
+ // the board must advance at 1/1.2524 of the finger's azimuth for the
+ // drawn tooth to RIDE the finger through contact. Window spans the full
+ // ratio-scaled pitch, centered on the hour.
+ // window re-timed for FLANK contact (addendum 6): the tooth sits 1.6 mm
+ // to the flank side, so the finger's edge reaches it later -- contact runs
+ // from beta -5.06 to tip-circle exit +8.78.
+ const fracS=D=>{const b=beta(D);
+  const fF=Math.max(0,Math.min(1,(b+5.0628)/12.6628));   // fwd: rising finger
+  const fR=Math.max(0,Math.min(1,(b+7.6000)/12.6628));   // rev: falling finger, mirrored window
+  const w=(dirSmooth+1)/2;
+  return fR+(fF-fR)*w};
+ // per-pair phase-correction curves (b31): the measured touch-fix of the
+ // drawn pair vs window phase (calibrated per-direction after the finger
+ // slimming invalidated the original anchors). Added to each satellite
+ // hour's own term -- per-pair, unlike the runtime solver's global scalar --
+ // so one pair's contact demand can no longer displace the next pair's
+ // engagement. Ramped to 0 at the branch activation edges (+-0.76 h).
+ // release ramps complete by D=0.58 -- BEFORE the midnight pickup at 0.62,
+ // so the correction never shifts the board under the daily contact
+ // mean error (-1.7) lives in the ANCHOR now, so PARKED teeth sit right
+ // between strikes; the curves carry only the residual in-window slope
+ const _CF=[[-0.76,0],[-0.40,1.037],[-0.28,0.366],[-0.16,0.110],[-0.04,-0.075],
+            [0.08,-0.299],[0.20,-0.431],[0.32,-0.723],[0.46,0.600],[0.58,0]];
+ // _CR recalibrated AGAIN (b39, #36): the b38 scan locked onto the NEAREST
+ // overlap boundary = the WRONG (forward) flank -- drawn as the striker
+ // 'pulling' the tooth (Ron: impossible, teeth only push). This curve seeks
+ // the LOWER boundary of the overlap interval: tooth BELOW the descending
+ // striker, its upper flank on the striker's lower edge -- compression.
+ // RULE: contact calibration must verify the SIDE, not just the distance.
+ // b40 (#36 part 2): NO MOTION BEFORE CONTACT. The b39 entry ramp moved the
+ // tooth down in sync with the approaching striker -- synchronized motion
+ // without contact reads as PULLING. Now: HOLD at park (0) until the striker
+ // edge arrives (d=0.43), a fast pickup glide onto the edge (0.43->0.37,
+ // the lash take-up), then ride the calibrated correct-flank curve.
+ const _CR=[[-0.76,0],[-0.58,-0.9],[-0.43,-1.74],[-0.26,-2.05],[-0.08,-2.36],
+            [0.10,-2.67],[0.27,-2.93],[0.42,-2.80],[0.52,-2.40],[0.60,-2.15],
+            // b43: the pickup CROSSING is scheduled inside the striker's
+            // A' EXTENSION RAMP (d 0.705-0.755, ext 0.45-0.95, >=1.0 mm
+            // radial clearance) -- the tooth passes a SHORTENED slider, not
+            // through an extended one; the ride then carries contact from
+            // d=0.705 all the way down. No pass-through, no routine grinds.
+            [0.705,-1.95],[0.755,0]];
+ function _cint(T,d){
+  if(d<=T[0][0]||d>=T[T.length-1][0])return 0;
+  for(let i=1;i<T.length;i++)if(d<=T[i][0]){
+   const [a,va]=T[i-1],[b2,vb]=T[i];return va+(vb-va)*(d-a)/(b2-a);}
+  return 0;}
+ // per-hour reverse-entry adjustment (b44): the shared _CR was calibrated
+ // on the feb pair; the MONTH pair's drawn entry ran 0.12-0.72 mm deep
+ // (measured per-tooth, k0). The adjustment lifts the month's entry by the
+ // measured penetration profile -- a hairline honest gap instead of drawn
+ // overlap, correct flank throughout, no routine grinds.
+ // b46: CLOSED-LOOP calibrated month reverse-entry lift -- binary-searched
+ // at the runtime drawn state (solver settled) against the grind threshold
+ // itself (0.15 mm), so riding contact stays and only grind-depth excess is
+ // lifted. Zero below d=0.285: the push region is untouched.
+ // b46: entry-lift adjustment DISABLED after closed-loop iterations showed
+ // the lift fights the corridor solver (band-pinned fix +0.3) and ADDED a
+ // second grind at 23:18. The single characterized month-entry amber is
+ // retained over a two-amber regression. Open item: corridor-centering
+ // target vs the physical band in the month entry (see audit addendum).
+ const _ADJ23=[[0,0],[1,0]];
+ const cSat=(D,hh)=>{const w=(dirSmooth+1)/2;
+  let r=_cint(_CR,D);
+  if(hh===23)r+=_cint(_ADJ23,D)*(1-w);
+  return r+(_cint(_CF,D)-r)*w};
+ let phi=st.steps*PITCH+(-6.0832);
+ if(fr<0.76){const hb=Math.round(t-fr), hh=(Math.round(st.h-fr)===0)?24:Math.round(st.h-fr);
+  let pp=st.pos===1?31:st.pos-1, pm=st.mon, py=st.yr;
+  if(st.pos===1){pm=st.mon-1;if(pm<0){pm=11;py--}}
+  const fx=(hh>=21&&hh<=23)?fracS:frac;
+  const e=evalHour(hh,pp,pm,py,st.armed);
+  if(e&&!e.miss){const D=t-hb;
+   phi+=(fx(D)-1)*PITCH+((hh>=21&&hh<=23)?cSat(D,hh):0);}
+  else if(nearB){                         // on-boundary, state disagrees:
+   const e2=evalHour(hh,st.pos,st.mon,st.yr,st.armed);   // current-state form
+   if(e2&&!e2.miss){const D2=t-hb;
+    phi+=fx(D2)*PITCH+((hh>=21&&hh<=23)?cSat(D2,hh):0)}}}
+ if(fr>0.24){const hb=Math.floor(t)+1, hh=Math.round(st.h-fr)+1;
+  const e=evalHour(hh,st.pos,st.mon,st.yr,st.armed);
+  if(e&&!e.miss){const D=t-hb;
+   phi+=((hh>=21&&hh<=23)?(fracS(D)*PITCH+cSat(D,hh)):frac(D)*PITCH)}}
+ return phi}
+
+// ---- TRUE-CONTACT draw correction (flaw #25): during a satellite strike,
+// the linear tracking holds the pair together only to ~1 mm; this solver
+// yields the drawn board in the drive direction until the ACTUAL tooth and
+// finger silhouettes kiss instead of cross. Draw-time only; phiDeg stays
+// pure for the logic/gate layer.
+function _inPoly(p,poly){let c=false;
+ for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+  if(((poly[i][1]>p[1])!=(poly[j][1]>p[1]))&&
+     (p[0]<(poly[j][0]-poly[i][0])*(p[1]-poly[i][1])/(poly[j][1]-poly[i][1])+poly[i][0]))c=!c;}
+ return c;}
+function _dense(poly,step){const out=[];
+ for(let i=0;i<poly.length;i++){const A=poly[i],B=poly[(i+1)%poly.length];
+  const n=Math.max(1,Math.ceil(Math.hypot(B[0]-A[0],B[1]-A[1])/step));
+  for(let t=0;t<n;t++)out.push([A[0]+(B[0]-A[0])*t/n,A[1]+(B[1]-A[1])*t/n]);}
+ return out;}
+function _toothPoly(phi,stn,OFF,kdeg){
+ const spin=(19/12)*phi, aM=(stn+phi)*Math.PI/180;
+ const mc=[SUNORB*Math.cos(aM),SUNORB*Math.sin(aM)];
+ const a=(spin+OFF+kdeg+3.817*dirSmooth)*Math.PI/180;
+ const L=LTIP, rr=L-4.8;
+ const P=[[8,-0.030],[rr,-0.058],[L-1.5,-0.036],[L,-0.015],[L,0.015],[L-1.5,0.036],[rr,0.058],[8,0.030]];
+ return P.map(([r,dw])=>[mc[0]+r*Math.cos(a+dw),mc[1]+r*Math.sin(a+dw)]);}
+function _fingerPoly(offDeg){
+ const a=(180-offDeg-15*st.h)*Math.PI/180,hw=0.045;
+ const ext=strikerExt(offDeg===0?24:24-offDeg/15);
+ const B=DBODY-(1-ext)*STRIKER_STROKE, T=DTIP-(1-ext)*STRIKER_STROKE;
+ return [[DDR+B*Math.cos(a-hw),B*Math.sin(a-hw)],
+         [DDR+T*Math.cos(a-hw*0.4),T*Math.sin(a-hw*0.4)],
+         [DDR+T*Math.cos(a+hw*0.4),T*Math.sin(a+hw*0.4)],
+         [DDR+B*Math.cos(a+hw),B*Math.sin(a+hw)]];}
+function _deepIn(pts,poly,tol){
+ // binding only beyond a hairline depth: sub-tolerance conformal grazes
+ // (release-side flank kisses) are below drawing resolution and must not
+ // pinch the feasible set against the next pair's approach (#27 squeeze)
+ const bd=_dense(poly,0.3);
+ for(const p of pts){
+  if(!_inPoly(p,poly))continue;
+  let m=1e9;
+  for(const q of bd){const d=Math.hypot(p[0]-q[0],p[1]-q[1]);if(d<m)m=d;}
+  if(m>tol)return true;}
+ return false;}
+function _overlap(phi,stn,OFF,ks,offDeg){
+ const TOL=0.12;  // drawing resolution: sub-pixel at display scale
+ const F=_fingerPoly(offDeg),Fd=_dense(F,0.25);
+ for(const k of ks){
+  const T=_toothPoly(phi,stn,OFF,k),Td=_dense(T,0.25);
+  if(_deepIn(Td,F,TOL)||_deepIn(Fd,T,TOL))return true;}
+ return false;}
+const SIM_BUILD='b50';   // increments with EVERY simulator change;
+                         // design version (v1.5.1) tracks geometry only
+let jamInfo=null, grindInfo=null, _prevBase=null, _gapMem={f:null,b:null}, _tgtMem=null, _tgtPend=null;
+// ---- v1.6 ARCH A' CAM LAW ----
+// Each skip striker (21/22/23h) is a radial SLIDER on the 24h wheel, extended
+// by a board-riding cam lobe ONLY on its own strike evening; retracted 1.6 mm
+// otherwise (A' spec: 1.23 mm clearance through the S7 adjacency pass).
+// The lobe dwell spans the mesh transit [D -0.60 .. +0.80] with 0.10 h ramps.
+const STRIKER_STROKE=1.6;
+function strikerExt(hh){                 // 0 = retracted, 1 = extended
+ if(hh===24||hh===0)return 1;            // the daily tooth 208 is rigid
+ const D=st.h-hh;
+ if(D<-0.60||D>0.80)return 0;
+ // does THIS evening's boundary fire? (the cam lobe is placed by the board
+ // lattice exactly where the engine's evening key says the strike lands)
+ let pp=st.pos,pm=st.mon,py=st.yr;
+ if(D>0){pp=st.pos===1?31:st.pos-1;if(st.pos===1){pm=st.mon-1;if(pm<0){pm=11;py--}}}
+ const e=evalHour(hh,pp,pm,py,st.armed);
+ if(!e||e.miss)return 0;
+ const rampIn=Math.min(1,(D+0.60)/0.10), rampOut=Math.min(1,(0.80-D)/0.10);
+ return Math.max(0,Math.min(rampIn,rampOut));}
+const _seenErr={};
+// sandbox-safe console: partial console objects (about:srcdoc previews)
+// must never be able to kill a frame — the b29-b34 freeze root cause (#33)
+function _con(kind){try{
+ const c=typeof console!=='undefined'?console:null;
+ const f=c&&(c[kind]||c.log);
+ if(typeof f==='function')f.apply(c,Array.prototype.slice.call(arguments,1));
+}catch(_){}}
+function _describe(x){
+ if(x==null)return String(x);
+ if(typeof x==='string')return x;
+ if(x instanceof Error||x.message||x.stack)
+  return (x.name?x.name+': ':'')+(x.message||'')+' | '+String(x.stack||'').split('\n').slice(0,3).join(' \u21B5 ');
+ try{return JSON.stringify(x).slice(0,300)}catch(_){return Object.prototype.toString.call(x)}}
+function _logError(msg,src){
+ msg=_describe(msg);
+ const key=String(msg).slice(0,80);
+ if(_seenErr[key])return; _seenErr[key]=1;
+ const entry={build:SIM_BUILD,kind:'error',when:new Date().toISOString().slice(0,19),
+  sim:(st?('day '+st.day+' h'+(+st.h).toFixed(2)):'-'),msg:String(msg).slice(0,200),src:String(src||'').slice(0,120)};
+ jamLog.push(entry); if(jamLog.length>50)jamLog.shift();
+ _con('error','SIM ERROR',entry);
+ try{let b=document.getElementById('errbanner');
+  if(!b){b=document.createElement('div');b.id='errbanner';
+   b.style.cssText='max-width:1360px;margin:6px auto;padding:8px 14px;background:#5a1010;'+
+    'border:2px solid #f44;border-radius:8px;font:600 13px system-ui;color:#ffd7d7';
+   const cvEl=document.getElementById('cv');
+   if(cvEl&&cvEl.parentNode)cvEl.parentNode.insertBefore(b,cvEl);}
+  b.textContent='\u274C '+SIM_BUILD+' \u00B7 '+entry.msg+(entry.src?(' @ '+entry.src):'');}catch(_){}
+ try{const el=document.getElementById('jamlog');
+  if(el){el.style.display='block';
+   el.innerHTML='<b>Jam / grind / error log</b> ('+jamLog.length+'):<br>'+jamLog.map(e=>
+    (e.kind==='error'?'\u274C error \u00B7 ':e.kind==='grind'?'\u2699 grind \u00B7 ':'\u26A0 JAM \u00B7 ')
+    +e.build+' \u00B7 '+e.sim+' \u00B7 '+(e.pair||e.msg)+(e.src?(' \u00B7 '+e.src):'')+(e.note?(' \u00B7 '+e.note):'')
+    ).join('<br>');}}catch(_){}}
+try{
+ window.addEventListener('error',ev=>_logError(ev.error||ev.message,(ev.filename||'').split('/').pop()+':'+ev.lineno));
+ window.addEventListener('unhandledrejection',ev=>_logError(ev.reason,'promise'));
+}catch(_){/* headless harness: traps unavailable, suites don't need them */}
+let jamLog=[]; window.jamLog=undefined;
+try{Object.defineProperty(window,'jamLog',{get:()=>jamLog})}catch(e){}
+let drawFix=0, drawFixT=null;   // sticky contact correction: rides the
+                                // constraint boundary continuously, never snaps
+function phiDraw(){
+ let phi=phiDeg();
+ // Collect ALL strike pairs whose windows are live (reverse handoffs overlap
+ // one pair's contact tail with the next pair's approach), then solve the
+ // single board DOF against the COMBINED no-overlap predicate.
+ const live=[];
+ for(const[hh,stn,OFF,ks,offDeg]of[[21,STN_L,OFF_L,[0],45],
+                                    [22,STN_F,OFF_F,[0],30],
+                                    [23,STN_M,OFF_M,[0,240,270,300,330],15]]){
+  const d=st.h-hh;
+  if(d<-0.98||d>0.98)continue;
+  if(hh===21&&!st.armed)continue;
+  live.push({name:offDeg,pred:p=>_overlap(p,stn,OFF,ks,offDeg)});}
+ {const hm=st.h%24;
+  if(hm>23.05||hm<0.95)live.push({name:0,pred:p=>_boardOv(p)});}
+ const t=st.h+st.day*24;
+ const dt=drawFixT===null?0:Math.abs(t-drawFixT); drawFixT=t;
+ const relaxCap=14*dt;                          // relaxation rate: deg per cranked hour
+ if(!live.length){
+  drawFix=Math.abs(drawFix)<=relaxCap?0:drawFix-Math.sign(drawFix)*relaxCap;
+  jamInfo=null;return phi+drawFix;}
+ const anyOv=p=>live.some(L=>L.pred(p));
+ // steering (corridor centering) uses STRIKE pairs only: the daily's board
+ // form is periodic (a wall every pitch) and its base model is exact -- it
+ // is a hard pass-through constraint, never a target to ride.
+ const anyOvS=p=>live.some(L=>L.name!==0&&L.pred(p));
+ let fix=drawFix;
+ // TELEPORT RESET (b44, #39): a large step across a strike boundary
+ // teleports the BASE by up to a pitch; judging overlap against the stale
+ // fix from the pre-teleport frame produced false jams (boundary slivers,
+ // high-speed play, whole-hour steps). On any base jump > 0.5 pitch the
+ // solver state resets and re-solves fresh; JAMs are reserved for geometry
+ // unclearable in its OWN frame.
+ if(_prevBase!==null&&Math.abs(phi-_prevBase)>0.5*PITCH){
+  fix=0;drawFix=0;grindInfo=null;_gapMem.f=null;_gapMem.b=null;_tgtMem=null;_tgtPend=null;
+  if(jamInfo)jamInfo=null;}
+ _prevBase=phi;
+ if(window.__tap)window.__tap.pre={h:st.h,fix0:+fix.toFixed(3)};
+ const slew=Math.max(0.25,30*dt);        // free-space glide cap per step
+ // PHYSICAL BAND (b41): contact can only demand correction in the drive
+ // direction. Applies to EVERY outcome -- steering, escape, push, fallback --
+ // so boundary-flap teleports under a scrubbing hand can never ratchet the
+ // fix onto the wrong flank (#37).
+ const bandLo = dirState>0 ? -0.3 : -3.2;
+ const bandHi = dirState>0 ?  3.2 :  0.3;
+ const inBand = v=>Math.max(bandLo,Math.min(bandHi,v));
+ fix = inBand(fix);
+ if(anyOv(phi+fix)){
+  // NEAREST-boundary escape, either direction (#27): overlap onset against
+  // conformal flank-riding surfaces has a hairline escape just behind and a
+  // far escape ~2 deg ahead -- always take the near one.
+  let esc=null;
+  for(const r of [0.02,0.05,0.1,0.2,0.4,0.8,1.6,3.4]){
+   if(!anyOv(phi+fix+r*dirState)){esc=fix+r*dirState;break;}
+   if(!anyOv(phi+fix-r*dirState)){esc=fix-r*dirState;break;}}
+  if(esc!==null){
+   let lo=fix,hi=esc;
+   for(let i=0;i<18;i++){const mid=(lo+hi)/2;
+    if(anyOv(phi+mid))lo=mid;else hi=mid;}
+   // absorb, don't teleport: cap the resolution rate; hairline overlap may
+   // persist a few frames (sub-tolerance visually) while the board glides
+   const mv=inBand(hi)-fix, cap2=Math.max(0.45,30*dt);
+   const step=Math.abs(mv)<=cap2?mv:Math.sign(mv)*cap2;
+   if(window.__tap)window.__tap.rec('escape',fix+step);
+   drawFix=fix+step;jamInfo=null;return _finish(phi,fix+step,anyOv,live);}
+  // no escape within authority either way:
+  let hi=fix+3.4*dirState;
+  if(anyOv(phi+hi)){
+   // push-from-current failed: GLOBAL feasibility scan before declaring a
+   // jam -- binding-constraint switches can trap the sticky fix in an
+   // infeasible pocket between two boundaries (Ron's false jam, #27)
+   let bestAlt=null;
+   for(let g=-3.4;g<=3.4;g+=0.1){
+    if(!anyOv(phi+g)&&(bestAlt===null||Math.abs(g-fix)<Math.abs(bestAlt-fix)))bestAlt=g;}
+   if(bestAlt!==null){
+    bestAlt=inBand(bestAlt);
+    const step=Math.min(Math.abs(bestAlt-fix),Math.max(slew,0.6));
+    fix=fix+Math.sign(bestAlt-fix)*step;
+    if(anyOv(phi+fix))fix=bestAlt;       // overlap forbidden: complete the move
+    drawFix=fix;jamInfo=null;return _finish(phi,fix,anyOv,live);}
+   // genuine JAM: hold the drawing at the last clear correction and refuse
+   // further time in this direction (see advanceHours/reverseHours gates)
+   const fresh=!jamInfo;
+   const names={45:'leap 212 vs 21h',30:'feb 211 vs 22h',15:'month 210 vs 23h',
+                0:'daily 208 vs board 204'};
+   const who=live.filter(L=>L.pred(phi+fix))
+                 .map(L=>names[L.name]||('band '+L.name)).join(' + ');
+   jamInfo={dir:(jamInfo?jamInfo.dir:dirState),h:st.h,day:st.day,pair:who,
+    msg:'JAM ('+who+') \u2014 motion stopped; crank the other way to back out'};
+   if(fresh){
+    const mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const entry={build:SIM_BUILD,when:new Date().toISOString().slice(0,19),
+     sim:mons[st.mon]+' '+st.pos+' '+st.yr+' '+
+         String(Math.floor(st.h)).padStart(2,'0')+':'+
+         String(Math.floor((st.h%1)*60)).padStart(2,'0'),
+     pair:who,dir:jamInfo.dir>0?'fwd':'rev',
+     dirSmooth:+dirSmooth.toFixed(2),fix:+fix.toFixed(2),
+     steps:st.steps,armed:st.armed,face:st.face};
+    jamLog.push(entry); if(jamLog.length>50)jamLog.shift();
+    _con('warn','JAM',entry);
+    const el=document.getElementById('jamlog');
+    if(el){el.style.display='block';
+     el.innerHTML='<b>Jam log</b> ('+jamLog.length+'):<br>'+jamLog.map(e=>
+      e.build+' \u00B7 '+e.sim+' \u00B7 '+e.pair+' \u00B7 '+e.dir+' \u00B7 dirSmooth '+e.dirSmooth+
+      ' \u00B7 fix '+e.fix+' \u00B7 steps '+e.steps+(e.armed?' \u00B7 armed':'')
+      ).join('<br>');}}
+   return phi+fix;}
+  let lo=fix;
+  for(let i=0;i<20;i++){const mid=(lo+hi)/2;
+   if(anyOv(phi+mid))lo=mid;else hi=mid;}
+  {const hb=inBand(hi);const mv=hb-fix,cap2=Math.max(0.45,30*dt);
+   fix=Math.abs(mv)<=cap2?hb:fix+Math.sign(mv)*cap2;
+   if(window.__tap)window.__tap.rec('push',fix);}
+ }else{
+  // clear: RIDE THE TOUCH. If the contact boundary is within grasp ahead,
+  // chase it (the driven pair should be touching, not waiting to collide);
+  // otherwise relax toward 0. Both under a time-proportional slew, so the
+  // drawn motion is position-continuous by construction.
+  // corridor policy: between a releasing pair (wall behind) and an
+  // approaching pair (wall ahead) the feasible set is a drifting corridor;
+  // riding either wall is unstable (pinch-jumps). Find both walls and
+  // center; with one wall, ride its touch; with none, relax to 0.
+  let target=0, bF=null, bB=null;
+  for(const r of [0.1,0.25,0.5,0.9,1.5,2.2,3.0]){
+   if(bF===null&&anyOvS(phi+fix+r)){bF=fix+r;}
+   if(bB===null&&anyOvS(phi+fix-r)){bB=fix-r;}
+   if(bF!==null&&bB!==null)break;}
+  const touch=(bnd,side)=>{let lo=bnd,hiC=fix;
+   for(let i=0;i<16;i++){const mid=(lo+hiC)/2;
+    if(anyOvS(phi+mid))lo=mid;else hiC=mid;}
+   return hiC;};
+  // MOTION-CLASSIFIED WALLS (b47): a wall whose gap is SHRINKING is the
+  // driving contact regardless of side -- the old direction convention
+  // (reverse == wall below) misread the month entry, whose striker
+  // approaches from ABOVE in reverse; the ignored wall descended into
+  // overlap and ground every pass. State read at the moment of use.
+  const tF=bF!==null?touch(bF):null, tB=bB!==null?touch(bB):null;
+  const gapF=tF!==null?tF-fix:null, gapB=tB!==null?fix-tB:null;
+  // HYSTERETIC wall classification (b49): the b47 frame-to-frame gap
+  // comparison flickered between branches under timing jitter, stepping
+  // the target 0.18 deg at frame rate -- Ron saw the jerk. A wall becomes
+  // driving after 0.05 deg cumulative approach and stays driving until
+  // 0.05 deg cumulative retreat.
+  const _cls=(key,gap)=>{
+   if(gap===null){_gapMem[key]=null;return false;}
+   const m=_gapMem[key]||(_gapMem[key]={g:null,acc:0,drv:false});
+   if(m.g!==null){const d=gap-m.g;
+    if(m.drv){if(d>1e-5){m.acc+=d;if(m.acc>=0.05){m.drv=false;m.acc=0;}}else m.acc=0;}
+    else{if(d<-1e-5){m.acc-=d;if(m.acc>=0.05){m.drv=true;m.acc=0;}}else m.acc=0;}}
+   m.g=gap;return m.drv;};
+  const drvF=_cls('f',gapF), drvB=_cls('b',gapB);
+  const bDrive=dirState>0?bF:bB;
+  if(bF!==null&&bB!==null){
+   // handoff corridor: the midpoint between two REAL measured walls is
+   // definitionally between the flanks -- centering there is honest and
+   // EXEMPT from the physical band (b47, the month-entry corridor sits
+   // above +0.3 in reverse; clamping it pinned the tooth against the
+   // lower wall and ground every pass). Hygiene clamp to scan authority.
+   target=(touch(bF)+touch(bB))/2;
+   target=Math.max(-3.4,Math.min(3.4,target));
+   if(window.__tap)window.__tap.rec('corridor',target);
+  }else if((bF!==null&&drvF&&dirState<0)||(bB!==null&&drvB&&dirState>0)){
+   // ANTI-CONVENTION approaching wall only (b49): the month-entry class,
+   // band-exempt, ridden with a 0.18 standoff (marginal-contact armor,
+   // Ron's feb 22:42). The DRIVEN side is excluded -- it belongs to the
+   // convention branch at exact touch, where the machine pushes by
+   // contact.
+   target=bF!==null&&drvF&&dirState<0?tF-0.18:tB+0.18;
+   target=Math.max(-3.4,Math.min(3.4,target));
+   if(window.__tap)window.__tap.rec('motion',target);
+  }else if(bDrive!==null){
+   // DRIVEN contact rides EXACT TOUCH (b49 revert of the unified
+   // standoff): riding 0.18 behind an advancing wall let it catch the
+   // tooth and punch through the overlap path in 0.45-deg chunks -- the
+   // forward jerk Ron saw. The machine pushes by contact.
+   target=dirState>0?(tF!==null?tF:0):(tB!==null?tB:0);
+   // PHYSICAL BAND stays for convention-assumed single-wall chases (#37)
+   if(dirState>0)target=Math.max(-0.3,Math.min(3.2,target));
+   else target=Math.min(0.3,Math.max(-3.2,target));
+   if(window.__tap)window.__tap.rec('conv',target);
+  }
+  // TARGET SLEW (b49): the raw target jumps when branch membership
+  // flickers (walls drifting through the scan horizon, corridor <->
+  // single-wall alternation). Smoothing the TARGET at one point kills
+  // every flicker class at once; tracking is preserved (12 deg/h chase).
+  if(_tgtMem!==null){
+   const dT=target-_tgtMem;
+   // ONE-FRAME CONFIRMATION for large target jumps (b49): flicker
+   // ALTERNATES between values; a genuine handoff jumps once and STAYS.
+   // A large jump is held one frame; if the next frame confirms it, it
+   // passes whole (the fix-level cap keeps the drawn motion smooth); if
+   // it reverted, it was flicker and never moves. Small moves pass at
+   // full rate -- the driven-touch chase never lags.
+   if(Math.abs(dT)>0.3){
+    if(_tgtPend!==null&&Math.abs(target-_tgtPend)<0.15){_tgtPend=null;}
+    else{_tgtPend=target;target=_tgtMem;}}
+   else _tgtPend=null;}
+  _tgtMem=target;
+  const cap=30*dt;                               // deg per cranked hour
+  const dTo=target-fix;
+  let cand=Math.abs(dTo)<=cap?target:fix+Math.sign(dTo)*cap;
+  if(anyOv(phi+cand)){
+   let lo=cand,hi=fix;
+   for(let i=0;i<20;i++){const mid=(lo+hi)/2;
+    if(anyOv(phi+mid))lo=mid;else hi=mid;}
+   fix=hi;
+  }else fix=cand;}
+ drawFix=fix; jamInfo=null;
+ return _finish(phi,fix,anyOv,live);}
+
+function _finish(phi,fix,anyOv,live){
+ // GRIND: the returned drawn position still overlaps (a capped absorb in
+ // progress) -- visible, resolvable, NOT a jam: acknowledge and log it.
+ if(!jamInfo&&anyOv(phi+fix)){
+  const names={45:'leap 212 vs 21h',30:'feb 211 vs 22h',15:'month 210 vs 23h',
+               0:'daily 208 vs board 204'};
+  const who=live.filter(L=>L.pred(phi+fix)).map(L=>names[L.name]||L.name).join(' + ');
+  const fresh=!grindInfo;
+  grindInfo={h:st.h,pair:who};
+  if(fresh){
+   const mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+   const entry={build:SIM_BUILD,kind:'grind',when:new Date().toISOString().slice(0,19),
+    sim:mons[st.mon]+' '+st.pos+' '+st.yr+' '+String(Math.floor(st.h)).padStart(2,'0')+':'+
+        String(Math.floor((st.h%1)*60)).padStart(2,'0'),
+    pair:who,dir:dirState>0?'fwd':'rev',fix:+fix.toFixed(2)};
+   // b47: the month reverse-entry site is a CHARACTERIZED drawing-
+   // approximation limit (branch-tap verified: continuous kissing overlap,
+   // clear space beyond the band, wrong-side if resolved). The physical
+   // mechanism clears with 1.33P harness margin. The log says so.
+   const _hh=who.indexOf('month')>=0?23:(who.indexOf('feb')>=0?22:(who.indexOf('leap')>=0?21:null));
+   if(_hh!==null&&dirState<0&&st.h>_hh+0.25&&st.h<_hh+0.65)
+    entry.note='characterized: drawn-approximation limit; physical clearance harness-proven (>=1.13P all trains)';
+   jamLog.push(entry); if(jamLog.length>50)jamLog.shift();
+   _con('info','GRIND',entry);
+   const el=document.getElementById('jamlog');
+   if(el){el.style.display='block';
+    el.innerHTML='<b>Jam / grind log</b> ('+jamLog.length+'):<br>'+jamLog.map(e=>
+     (e.kind==='grind'?'\u2699 grind \u00B7 ':'\u26A0 JAM \u00B7 ')+e.build+' \u00B7 '+e.sim+' \u00B7 '+e.pair+' \u00B7 '+e.dir+(e.note?(' \u00B7 '+e.note):'')
+     ).join('<br>');}}
+ }else grindInfo=null;
+ return phi+fix;}
+
+// board-level jam watch: the midnight finger vs the board's drawn tooth form
+function _boardOv(phi){
+ // daily finger vs the board's drawn tooth form, binding beyond hairline --
+ // a solver constraint like the strike pairs, so strike-fix shifts get
+ // balanced against the midnight pickup instead of tripping a side alarm
+ const F=_dense(_fingerPoly(0),0.3), tp=PITCH; let deep=0;
+ for(const p of F){
+  const r=Math.hypot(p[0],p[1]);
+  if(r<RROOT-0.05||r>RTIP+0.05)continue;
+  let ad=((Math.atan2(p[1],p[0])*180/Math.PI-phi)%tp+tp)%tp;
+  const c=tp/2,d=Math.abs(ad-c),half=tp*0.22,ramp=tp*0.16;
+  const w=d<half?1:d<half+ramp?1-smooth((d-half)/ramp):0;
+  // daily binding depth 0.25 (vs 0.12 global): the midnight-entry passage
+  // is bench-flagged; sub-quarter-mm drawn kisses there are within the
+  // approximation's error bar and must not fire routine grinds (b43)
+  if(r<RROOT+(RTIP-RROOT)*w-0.25)deep++;
+  if(deep>=2)return true;}
+ return false;}
+function _boardJam(phi){
+ const hh=st.h%24, near=(hh>23.2||hh<0.8);
+ if(!near)return false;
+ const F=_dense(_fingerPoly(0),0.3), tp=PITCH; let deep=0;
+ for(const p of F){
+  const r=Math.hypot(p[0],p[1]);
+  if(r<RROOT-0.05||r>RTIP+0.05)continue;
+  let ad=((Math.atan2(p[1],p[0])*180/Math.PI-phi)%tp+tp)%tp;
+  const c=tp/2,d=Math.abs(ad-c),half=tp*0.22,ramp=tp*0.16;
+  const w=d<half?1:d<half+ramp?1-smooth((d-half)/ramp):0;
+  if(r<RROOT+(RTIP-RROOT)*w-0.6)deep++;}       // legit flank contact rides ~0.2;
+ return deep>=3;}                               // a jam is a gross, multi-point foul
+function gearPts(rot,n,rr,rt,longSet,lt){const N=n*12,pts=[];
+ for(let i=0;i<=N;i++){const ad=i/N*360,k=Math.floor(ad/(360/n))%n;
+  const td=ad%(360/n),c=360/n/2,d=Math.abs(td-c),half=360/n*0.22,ramp=360/n*0.16;
+  let w=d<half?1:d<half+ramp?1-smooth((d-half)/ramp):0;
+  const tip=(longSet&&longSet.has(k))?lt:rt;
+  const r=rr+(tip-rr)*w,aa=(ad+rot)*Math.PI/180;
+  pts.push([r*Math.cos(aa),r*Math.sin(aa)])}return pts}
+const hot=tag=>strike&&(performance.now()-strike.w)<700&&strike.tags.includes(tag);
+const anyHot=()=>strike&&(performance.now()-strike.w)<700;
+const seg=tag=>!anyHot()?1:(hot(tag)?1:0.25);
+function traceP(pts,cx,cy){ctx.beginPath();
+ pts.forEach((p,i)=>{const x=cx+p[0]*S,y=cy-p[1]*S;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath()}
+const YW=7.0,X3=190,Y3=1500,S3=9.2,ZS3=22;
+const sx=x=>X3+(x+6)*S3, sz=z=>Y3-z*ZS3;
+function sliceExt(pts,cx,cy){let lo=1e9,hi=-1e9,f=false;
+ for(const p of pts){const xw=cx+p[0],yw=cy+p[1];
+  if(Math.abs(yw)<=YW){f=true;if(xw<lo)lo=xw;if(xw>hi)hi=xw}}
+ return f?[lo,hi]:null}
+function bar(ext,z0,z1,fill,sc,tag,minx){if(!ext)return;
+ let[lo,hi]=ext;if(minx!==undefined)lo=Math.max(lo,minx);if(hi<=lo)return;
+ ctx.globalAlpha=seg(tag);
+ if(hot(tag)){ctx.shadowColor=sc;ctx.shadowBlur=12}
+ ctx.fillStyle=fill;ctx.strokeStyle=sc;ctx.lineWidth=hot(tag)?3:1.5;
+ ctx.beginPath();ctx.rect(sx(lo),sz(z1),(hi-lo)*S3,(z1-z0)*ZS3);ctx.fill();ctx.stroke();
+ ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.lineWidth=1.5}
+function drawDial(){
+ const cx=185,cy=190,R=140;
+ const DOWS=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+ const dow=(5+((st.day%7)+7)%7)%7;
+ ctx.save();
+ ctx.strokeStyle=C.line;ctx.lineWidth=3;
+ ctx.beginPath();ctx.arc(cx,cy,R+7,0,7);ctx.stroke();
+ ctx.fillStyle='rgba(232,230,220,0.045)';
+ ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.fill();
+ ctx.lineWidth=1;
+ for(let k=0;k<60;k++){const a2=(90-k*6)*Math.PI/180;
+  const r0=k%5?R*0.945:R*0.90;
+  ctx.strokeStyle=k%5?C.muted:C.ink;ctx.lineWidth=k%5?0.8:2;
+  ctx.beginPath();ctx.moveTo(cx+r0*Math.cos(a2),cy-r0*Math.sin(a2));
+  ctx.lineTo(cx+R*0.97*Math.cos(a2),cy-R*0.97*Math.sin(a2));ctx.stroke()}
+ ctx.lineWidth=1.5;
+ const win=(x,y,w,h)=>{ctx.fillStyle='rgba(244,241,232,0.92)';
+  ctx.strokeStyle=C.brass;ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.roundRect(cx+x-w/2,cy+y-h/2,w,h,4);ctx.fill();ctx.stroke();
+  ctx.lineWidth=1.5};
+ // transition state (direction-aware, same engine as the rings)
+ const sm=easeFrac();
+ const prevP=st.dir>0?(st.pos==1?31:st.pos-1):st.pos%31+1;
+ const wrapD=((st.dir>0?prevP===31:prevP===1)&&sm<1);
+ const monF=wrapD?((st.mon+(st.dir>0?11:1))%12):st.mon;
+ const nyD=(wrapD&&(st.dir>0?st.mon===0:monF===0));
+ const yrF=nyD?st.yr-st.dir:st.yr;
+ let dowP=1,dowF=dow;
+ if(st.dir>0&&st.h<0.5){dowP=st.h/0.5;dowF=(dow+6)%7}
+ else if(st.dir<0&&st.h>23.5){dowP=(24-st.h)/0.5;dowF=(dow+1)%7}
+ const roll=(x,y,w,h,fs,fromS,toS,p,dr)=>{
+  ctx.save();ctx.beginPath();ctx.rect(cx+x-w/2,cy+y-h/2,w,h);ctx.clip();
+  ctx.fillStyle='#1E1E1C';ctx.font='700 '+fs+'px Georgia,serif';ctx.textAlign='center';
+  if(fromS===toS||p>=1){ctx.fillText(toS,cx+x,cy+y+fs*0.36)}
+  else{const off=p*h*dr;
+   ctx.fillText(fromS,cx+x,cy+y+fs*0.36-off);
+   ctx.fillText(toS,cx+x,cy+y+fs*0.36-off+h*dr)}
+  ctx.restore()};
+ // big date at 12 (twin cells, rolling)
+ win(0,-R*0.55,58,36);
+ ctx.strokeStyle='#9a988e';ctx.beginPath();
+ ctx.moveTo(cx,cy-R*0.55-18);ctx.lineTo(cx,cy-R*0.55+18);ctx.stroke();
+ roll(-14,-R*0.55,26,34,26,String(Math.floor(prevP/10)),String(Math.floor(st.pos/10)),sm,st.dir);
+ roll(14,-R*0.55,26,34,26,String(prevP%10),String(st.pos%10),sm,st.dir);
+ // weekday 9 / month 3 / year 6, all rolling
+ win(-R*0.56,0,52,22);
+ roll(-R*0.56,0,48,21,13,DOWS[dowF],DOWS[dow],dowP,-st.dir);
+ win(R*0.56,0,52,22);
+ roll(R*0.56,0,48,21,13,MONTHS[monF].toUpperCase(),MONTHS[st.mon].toUpperCase(),sm,st.dir);
+ win(0,R*0.55,60,20);
+ for(let p=3;p>=0;p--){const xo=(3-p)*14-21,dv=Math.pow(10,p);
+  roll(xo,R*0.55,13,19,14,String(Math.floor(yrF/dv)%10),String(Math.floor(st.yr/dv)%10),sm,-st.dir)}
+ // hands from st.h
+ const ha=(90-((st.h%12)/12)*360)*Math.PI/180;
+ const ma=(90-(st.h%1)*360)*Math.PI/180;
+ ctx.strokeStyle=C.ink;ctx.lineCap='round';
+ ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(cx,cy);
+ ctx.lineTo(cx+R*0.42*Math.cos(ha),cy-R*0.42*Math.sin(ha));ctx.stroke();
+ ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx,cy);
+ ctx.lineTo(cx+R*0.66*Math.cos(ma),cy-R*0.66*Math.sin(ma));ctx.stroke();
+ ctx.lineWidth=1.5;ctx.lineCap='butt';
+ ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(cx,cy,5,0,7);ctx.fill();
+ ctx.fillStyle=C.muted;ctx.font='500 12px system-ui';
+ ctx.fillText('dial — Layout A, live',cx,cy+R+26);
+ ctx.restore()}
+function draw(){ctx.clearRect(0,0,cv.width,cv.height);
+ c2.setTransform(1,0,0,1,0,0);c2.clearRect(0,0,cv2.width,cv2.height);
+ drawDial();
+ ctx.lineWidth=1.5;
+ const phi=phiDraw(),hh=st.h,spin=(19/12)*phi,driveRot=-(hh/24)*360;
+ // (board fouls are now a solver constraint -- _boardOv in phiDraw)
+ // S7 ADJACENCY ANNOTATION: on the eve-of-strike pass the satellite tooth
+ // sweeps the WRONG side of its striker (presentation crawls 6.8 deg/evening)
+ // -- the v1.3-v1.5 skip-train disease, measured physically (sequence sweep,
+ // finding S7) and retired by arch A' (v1.6: striker retracted, 1.23 mm clear).
+ {const d2=Math.PI/180;
+  for(const[hh2,stn2,OFF2,od2]of[[21,STN_L,OFF_L,45],[22,STN_F,OFF_F,30],[23,STN_M,OFF_M,15]]){
+   const dd=st.h-hh2;
+   if(dd<-1.35||dd>-0.55)continue;               // the pre-window adjacency phase
+   if(hh2===21&&!st.armed)continue;
+   const spin2=(19/12)*phi, aM2=(stn2+phi)*d2;
+   const mc2=[SUNORB*Math.cos(aM2),SUNORB*Math.sin(aM2)];
+   const ta2=(spin2+OFF2+3.823*dirSmooth)*d2;
+   const tp2=[mc2[0]+LTIP*Math.cos(ta2),mc2[1]+LTIP*Math.sin(ta2)];
+   const af2=(180-od2-15*st.h)*d2;
+   const ft2=[DDR+DTIP*Math.cos(af2),DTIP*Math.sin(af2)];
+   const gp=Math.hypot(tp2[0]-ft2[0],tp2[1]-ft2[1]);
+   const ld=((Math.atan2(tp2[1],tp2[0])-Math.atan2(ft2[1],ft2[0]))/d2+540)%360-180;
+   if(ld<0&&gp<2.6){
+    // v1.6: the striker is RETRACTED through this pass -- show the cure
+    ctx.setLineDash([4,4]);ctx.strokeStyle='#3aa06a';ctx.globalAlpha=0.85;
+    const mx2=CX+((tp2[0]+ft2[0])/2)*S, my2=CY-((tp2[1]+ft2[1])/2)*S;
+    ctx.beginPath();ctx.arc(mx2,my2,26,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);ctx.globalAlpha=1;
+    ctx.fillStyle='#3aa06a';ctx.font='600 12px system-ui';ctx.textAlign='left';
+    ctx.fillText('arch A\u2019 (v1.6): striker retracted through the S7 pass \u00B7 '+gp.toFixed(1)+' mm clear',mx2+34,my2+4);
+    break;}
+   if(false){
+    const mx=CX+((tp2[0]+ft2[0])/2)*S, my=CY-((tp2[1]+ft2[1])/2)*S;
+    ctx.setLineDash([4,4]);ctx.strokeStyle='#e0a030';ctx.globalAlpha=0.9;
+    ctx.beginPath();ctx.arc(mx,my,26,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);ctx.globalAlpha=1;
+    ctx.fillStyle='#e0a030';ctx.font='600 12px system-ui';ctx.textAlign='left';
+    ctx.fillText('S7 adjacency pass \u2014 wrong-side graze ('+gp.toFixed(1)+' mm):',mx+34,my-4);
+    ctx.fillText('v1.3 skip-train flaw; v1.6 (arch A\u2019) retracts this striker \u00B7 1.23 mm clear',mx+34,my+12);
+    break;}}}
+ if(grindInfo&&!jamInfo){
+  ctx.fillStyle='rgba(200,140,30,0.88)';ctx.fillRect(0,0,cv.width,30);
+  ctx.fillStyle='#1a1a1a';ctx.font='600 13px system-ui';ctx.textAlign='center';
+  ctx.fillText('\u2699 tight passage \u2014 '+grindInfo.pair+' \u00B7 contact resolving (logged)',cv.width/2,20);
+  ctx.textAlign='left';}
+ if(jamInfo){playing=false;
+  ctx.fillStyle='rgba(200,40,40,0.92)';ctx.fillRect(0,0,cv.width,46);
+  ctx.fillStyle='#fff';ctx.font='700 17px system-ui';ctx.textAlign='center';
+  ctx.fillText('\u26A0 '+jamInfo.msg+'  \u2014 crank the other way to back out',cv.width/2,30);
+  ctx.textAlign='left';}
+ const dcx=CX+DDR*S,dcy=CY;
+ const progP=gearPts(phi,31,RROOT,RTIP,null,0);
+ const sunP=gearPts(0,7,7.0,10.4,null,0);
+ const aM=(STN_M+phi)*Math.PI/180,aF=(STN_F+phi)*Math.PI/180;
+ const mx=SUNORB*Math.cos(aM),my=SUNORB*Math.sin(aM);
+ const fx=SUNORB*Math.cos(aF),fy=SUNORB*Math.sin(aF);
+ const aL=(STN_L+phi)*Math.PI/180;
+ const lx=SUNORB*Math.cos(aL),ly=SUNORB*Math.sin(aL);
+ const satL=gearPts(spin+OFF_L+15,12,SROOT,STIP,new Set(),0);
+ const satM=gearPts(spin+OFF_M,12,SROOT,STIP,new Set(),0);
+ const satF=gearPts(spin+OFF_F,12,SROOT,STIP,new Set(),0);
+ function strikeTooth(cx,cy,ta_deg,col,hollow){
+  // v1.6 receiver form (patent claim 5 / E1): involute BOARD-TOOTH profile
+  // on a slim stem -- same profile as teeth 205, superposed when emerged.
+  // Tip geometry (reach LTIP, center ta_deg) unchanged: all strike
+  // calibrations and drawn-contact gates hold.
+  const a=ta_deg*Math.PI/180;
+  // RETRACTED (hollow) teeth draw at the slider's true retracted radius:
+  // the v1.5 follower stroke pulls the tooth in 1.6 mm, clearing the strike
+  // finger's swept zone by 0.65 mm (phantom sweep P3). Armed teeth at full
+  // reach. No more ghost-at-full-reach for the finger to pass through.
+  const ret=hollow?1.6:0.0, r0=8.0-ret*0.3, TIPD=LTIP-ret;
+  const rr=TIPD-4.8, hwS=0.030, hwR=0.058, hwM=0.036, hwT=0.015;
+  ctx.beginPath();
+  ctx.moveTo(cx+r0*S*Math.cos(a-hwS),cy-r0*S*Math.sin(a-hwS));
+  ctx.lineTo(cx+rr*S*Math.cos(a-hwR),cy-rr*S*Math.sin(a-hwR));
+  ctx.lineTo(cx+(TIPD-1.5)*S*Math.cos(a-hwM),cy-(TIPD-1.5)*S*Math.sin(a-hwM));
+  ctx.lineTo(cx+TIPD*S*Math.cos(a-hwT),cy-TIPD*S*Math.sin(a-hwT));
+  ctx.lineTo(cx+TIPD*S*Math.cos(a+hwT),cy-TIPD*S*Math.sin(a+hwT));
+  ctx.lineTo(cx+(TIPD-1.5)*S*Math.cos(a+hwM),cy-(TIPD-1.5)*S*Math.sin(a+hwM));
+  ctx.lineTo(cx+rr*S*Math.cos(a+hwR),cy-rr*S*Math.sin(a+hwR));
+  ctx.lineTo(cx+r0*S*Math.cos(a+hwS),cy-r0*S*Math.sin(a+hwS));ctx.closePath();
+  if(!hollow){ctx.fillStyle=col;ctx.fill()}
+  ctx.strokeStyle=col;ctx.lineWidth=hollow?2:1.2;ctx.stroke();ctx.lineWidth=1.5}
+ // ---- PLAN ----
+ ctx.setLineDash([6,6]);ctx.strokeStyle=C.muted;ctx.globalAlpha=0.8;
+ ctx.beginPath();ctx.arc(CX,CY,41.3*S,-0.12,0.12);ctx.stroke();
+ ctx.setLineDash([]);ctx.globalAlpha=1;
+ ctx.fillStyle=C.muted;ctx.font='400 15px system-ui';ctx.textAlign='left';
+ ctx.fillText('the mesh — 241/242/243 then 208',CX+43*S+6,CY+5);
+ ctx.globalAlpha=seg('prog');
+ if(hot('prog')&&strike){ctx.shadowColor=strike.c;ctx.shadowBlur=12}
+ traceP(progP,CX,CY);ctx.fillStyle='rgba(90,98,92,0.16)';ctx.fill();
+ ctx.strokeStyle=hot('prog')&&strike?strike.c:C.line;ctx.lineWidth=hot('prog')?3:1.5;ctx.stroke();
+ ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.lineWidth=1.5;
+ for(let k=0;k<31;k++){const a=(phi+k*PITCH+90)*Math.PI/180,r1=33.5*S;
+  ctx.beginPath();ctx.arc(CX+r1*Math.cos(a),CY-r1*Math.sin(a),k==0?4:2.2,0,7);
+  ctx.fillStyle=k==0?C.brass:C.muted;ctx.fill()}
+ ctx.fillStyle=C.ink;ctx.beginPath();ctx.moveTo(CX,CY-RTIP*S-20);
+ ctx.lineTo(CX-7,CY-RTIP*S-36);ctx.lineTo(CX+7,CY-RTIP*S-36);ctx.closePath();ctx.fill();
+ ctx.globalAlpha=seg('sun');traceP(sunP,CX,CY);
+ ctx.fillStyle='rgba(125,140,154,0.28)';ctx.fill();
+ ctx.strokeStyle=hot('sun')?C.ink:C.muted;ctx.lineWidth=hot('sun')?3:1.5;ctx.stroke();
+ ctx.globalAlpha=1;ctx.lineWidth=1.5;
+ {const pr=6.0;
+  // v1.5.1: receiver angle eased with textbook Geneva kinematics (was a 90-deg snap).
+  const yf=(st.mon+(st.pos-1)/31)/12;
+  const armA=(58.8-(yf-0.4543)*360);
+  const CG=43.55,RG=30.8;
+  let phi=103.75-armA;                            // arm phase vs line of centers; yf-continuous, no wrap
+  let adv;                                        // driven quarter-turn progress 0..90
+  if(phi<-45)adv=0;
+  else if(phi<=45){const fr=phi*Math.PI/180;
+   adv=45+Math.atan2(RG*Math.sin(fr),CG-RG*Math.cos(fr))*180/Math.PI}
+  else adv=90;
+  // P: has this year's programmer touch (Jun 15 noon) fired yet? State-derived:
+  // pre-touch face for year Y is (Y-2027)%4 (init: 2027, face 0, pre-touch).
+  const P=(st.face!==(((st.yr-2027)%4)+4)%4)?1:0;
+  const ang0=(st.face-P)*90+adv;                  // continuous through the read instant
+  for(let q=0;q<4;q++){const a1=(ang0-q*90-40)*Math.PI/180,a2=(ang0-q*90+40)*Math.PI/180;
+   const isShort=q==st.shortq;
+   ctx.beginPath();ctx.arc(CX,CY,(isShort?pr-1.6:pr)*S,-a2,-a1);
+   ctx.strokeStyle=isShort?C.muted:C.leap;ctx.lineWidth=4;ctx.stroke()}
+  ctx.lineWidth=1.5;
+  ctx.fillStyle=C.muted;ctx.font='400 12px system-ui';ctx.textAlign='center';
+  ctx.fillText('programmer',CX,CY+pr*S+16)}
+ // ==== GREGORIAN LAYER v1.5.1 (top level): century ring (MANUAL-SET alpha), tube-mounted Geneva receiver, annual drive ====
+ {const pr=6.0;
+  // v1.5.1: receiver angle eased with textbook Geneva kinematics (was a 90-deg snap).
+  const yf=(st.mon+(st.pos-1)/31)/12;
+  const armA=(58.8-(yf-0.4543)*360);
+  const CG=43.55,RG=30.8;
+  let phi=103.75-armA;                            // arm phase vs line of centers; yf-continuous, no wrap
+  let adv;                                        // driven quarter-turn progress 0..90
+  if(phi<-45)adv=0;
+  else if(phi<=45){const fr=phi*Math.PI/180;
+   adv=45+Math.atan2(RG*Math.sin(fr),CG-RG*Math.cos(fr))*180/Math.PI}
+  else adv=90;
+  // P: has this year's programmer touch (Jun 15 noon) fired yet? State-derived:
+  // pre-touch face for year Y is (Y-2027)%4 (init: 2027, face 0, pre-touch).
+  const P=(st.face!==(((st.yr-2027)%4)+4)%4)?1:0;
+  const ang0=(st.face-P)*90+adv;                  // continuous through the read instant
+  const m400=((st.yr%400)+400)%400;
+  const cSt=Math.floor(m400/4)%100;
+  const lobeNow=(m400>=100&&m400<=103)||(m400>=200&&m400<=203)||(m400>=300&&m400<=303);
+  const cr=8.3;
+  // century ring: 100 stations, current under the read point (bearing 0)
+  ctx.setLineDash([1,4]);ctx.strokeStyle=C.brass;ctx.globalAlpha=0.5;
+  ctx.beginPath();ctx.arc(CX,CY,cr*S,0,7);ctx.stroke();ctx.setLineDash([]);
+  for(let k=0;k<100;k+=5){const aa=((k-cSt)*3.6)*Math.PI/180;
+   ctx.beginPath();
+   ctx.moveTo(CX+(cr-0.35)*S*Math.cos(aa),CY-(cr-0.35)*S*Math.sin(aa));
+   ctx.lineTo(CX+(cr+0.35)*S*Math.cos(aa),CY-(cr+0.35)*S*Math.sin(aa));
+   ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.stroke()}
+  // three masking down-lobes (stations 25/50/75) reaching inward to the read radius
+  for(const Ls of [25,50,75]){
+   const a1=((Ls-cSt)*3.6-3.2)*Math.PI/180,a2=((Ls-cSt)*3.6+3.2)*Math.PI/180;
+   const atRead=(Ls===cSt);
+   ctx.beginPath();ctx.arc(CX,CY,(pr+0.55)*S,-a2,-a1);
+   ctx.strokeStyle='#B0413E';ctx.lineWidth=atRead&&lobeNow?7:4;
+   ctx.globalAlpha=atRead&&lobeNow?1:0.55;ctx.stroke();ctx.globalAlpha=0.5}
+  ctx.lineWidth=1.5;ctx.globalAlpha=1;
+  // read point: where the follower foot reads cam + lobes at the Feb approach
+  ctx.fillStyle=lobeNow?'#B0413E':C.ink;
+  ctx.beginPath();ctx.moveTo(CX+(pr+2.1)*S,CY);
+  ctx.lineTo(CX+(pr+3.0)*S,CY-5);ctx.lineTo(CX+(pr+3.0)*S,CY+5);ctx.closePath();ctx.fill();
+  ctx.fillStyle=C.muted;ctx.font='400 11px system-ui';
+  ctx.fillText(lobeNow?'read \u2014 LOBE MASKS':'read',CX+(pr+3.2)*S+26,CY+4);
+  // v1.5.1 Geneva receiver: coaxial TUBE + four twin-rail slotted spokes
+  // (continuous 2.6mm slot r11.4->33.4, jaws at the mouths, hoop above the pin)
+  ctx.globalAlpha=0.4;ctx.strokeStyle=C.leap;
+  ctx.beginPath();ctx.arc(CX,CY,6.4*S,0,7);ctx.lineWidth=2;ctx.stroke(); // tube OD
+  for(let k=0;k<4;k++){const aa=(ang0-31.25+k*90)*Math.PI/180;
+   const px2=-Math.sin(aa),py2=-Math.cos(aa);
+   for(const sd of[-1,1]){const off=sd*2.2*S;              // rail centerlines +-2.2
+    ctx.beginPath();
+    ctx.moveTo(CX+11.4*S*Math.cos(aa)+off*px2,CY-11.4*S*Math.sin(aa)+off*py2);
+    ctx.lineTo(CX+33.4*S*Math.cos(aa)+off*px2,CY-33.4*S*Math.sin(aa)+off*py2);
+    ctx.lineWidth=1.0*S;ctx.stroke();
+    ctx.beginPath();                                        // raised jaws at the mouth
+    ctx.moveTo(CX+28.2*S*Math.cos(aa)+off*px2,CY-28.2*S*Math.sin(aa)+off*py2);
+    ctx.lineTo(CX+33.4*S*Math.cos(aa)+off*px2,CY-33.4*S*Math.sin(aa)+off*py2);
+    ctx.lineWidth=1.8*S;ctx.stroke()}}
+  ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(CX,CY,34.2*S,0,7);
+  ctx.lineWidth=0.5*S;ctx.stroke();                         // hoop (over the pin top)
+  ctx.globalAlpha=1;ctx.lineWidth=1.5;
+  // annual drive: month star underside pin -> two idlers -> shaft -> Geneva arm
+  const armR=armA*Math.PI/180;
+  const shx=CX+10.35*S, shy=CY+42.3*S;
+  ctx.setLineDash([3,4]);ctx.strokeStyle=C.muted;ctx.globalAlpha=0.6;
+  ctx.beginPath();ctx.moveTo(CX-9.59*S,CY+22*S);ctx.lineTo(CX-9.59*S,CY+33*S);
+  ctx.lineTo(CX+0.38*S,CY+37.65*S);ctx.lineTo(shx,shy);ctx.stroke();
+  for(const[ix,iy]of[[-9.59,33.0],[0.38,37.65]]){
+   ctx.beginPath();ctx.arc(CX+ix*S,CY+iy*S,6.4*S,0,7);ctx.stroke()}
+  ctx.setLineDash([]);ctx.globalAlpha=1;
+  ctx.beginPath();ctx.arc(shx,shy,3.0*S,0,7);ctx.strokeStyle=C.mid;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(shx,shy);
+  ctx.lineTo(shx+30.8*S*Math.cos(armR),shy-30.8*S*Math.sin(armR));
+  ctx.strokeStyle=C.mid;ctx.lineWidth=3;ctx.stroke();ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(shx+30.8*S*Math.cos(armR),shy-30.8*S*Math.sin(armR),4.5,0,7);
+  ctx.fillStyle=C.mid;ctx.fill();
+  ctx.fillStyle=C.muted;ctx.font='400 11px system-ui';
+  ctx.fillText('annual drive \u2014 month star \u2192 idlers \u2192 shaft \u2192 Geneva (1 rev/yr) \u00B7 v1.5.1 slots to r11.4',
+   shx-2*S,shy+3.0*S+18);
+  ctx.fillText('century ring \u2014 MANUAL SET (v1.5.1 · sim b50) \u00B7 lobes mask 2100 \u00B7 2200 \u00B7 2300',
+   CX,CY-cr*S-10)}
+ ctx.globalAlpha=seg('mon');
+ if(hot('mon')){ctx.shadowColor=C.mon;ctx.shadowBlur=12}
+ traceP(satM,CX+mx*S,CY-my*S);ctx.fillStyle=C.mon+'22';ctx.fill();
+ ctx.strokeStyle=C.mon;ctx.lineWidth=hot('mon')?3:1.2;ctx.stroke();
+ // FLANK-CONTACT offset: the tooth axis rides beside the finger axis by
+ // the sum of their half-widths (5.06 deg of spin), on the driven-flank
+ // side (direction-aware). Head-on tip-to-tip formation was a drawing lie.
+ const SOFF=3.817*dirSmooth;
+ for(const k of[0,8,9,10,11])strikeTooth(CX+mx*S,CY-my*S,spin+OFF_M+SOFF+k*30,C.mon,false);
+ ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.lineWidth=1.5;
+ ctx.globalAlpha=seg('feb');
+ if(hot('feb')){ctx.shadowColor=C.feb;ctx.shadowBlur=12}
+ traceP(satF,CX+fx*S,CY-fy*S);ctx.fillStyle=C.feb+'22';ctx.fill();
+ ctx.strokeStyle=C.feb;ctx.lineWidth=hot('feb')?3:1.2;ctx.stroke();
+ strikeTooth(CX+fx*S,CY-fy*S,spin+OFF_F+SOFF,C.feb,false);
+ ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.lineWidth=1.5;
+ // leap satellite (level C) with its retractable tooth
+ ctx.globalAlpha=seg('leap');
+ if(hot('leap')){ctx.shadowColor=C.leap;ctx.shadowBlur=12}
+ traceP(satL,CX+lx*S,CY-ly*S);ctx.fillStyle=C.leap+'22';ctx.fill();
+ ctx.strokeStyle=C.leap;ctx.lineWidth=hot('leap')?3:1.5;ctx.stroke();
+ ctx.shadowBlur=0;
+ strikeTooth(CX+lx*S,CY-ly*S,spin+OFF_L+SOFF,C.leap,!st.armed);
+ ctx.globalAlpha=1;ctx.lineWidth=1.5;
+  ctx.globalAlpha=seg('drv');ctx.strokeStyle=C.mid;ctx.fillStyle=C.mid+'1a';
+ ctx.beginPath();ctx.arc(dcx,dcy,DBODY*S,0,7);ctx.fill();
+ ctx.lineWidth=hot('drv')?3:1.5;ctx.stroke();ctx.globalAlpha=1;ctx.lineWidth=1.5;
+ const arms=[[0,C.mid,'drv','24'],[15,C.mon,'f23','23'],[30,C.feb,'f22','22'],[45,C.leap,'f21','21']];
+ for(const[off,col,tag,lab]of arms){const a=(180-off+driveRot)*Math.PI/180,hw=0.045; // physical strike-tooth proportions (was 0.075 decorative)
+  const _ext=strikerExt(off===0?24:24-off/15);
+  const _ret=(1-_ext)*STRIKER_STROKE;
+  ctx.globalAlpha=seg(tag);
+  if(hot(tag)){ctx.shadowColor=col;ctx.shadowBlur=12}
+  ctx.beginPath();
+  const _B=DBODY-_ret,_T=DTIP-_ret;   // the slider carries the whole wedge
+  ctx.moveTo(dcx+_B*S*Math.cos(a-hw),dcy-_B*S*Math.sin(a-hw));
+  ctx.lineTo(dcx+_T*S*Math.cos(a-hw*0.4),dcy-_T*S*Math.sin(a-hw*0.4));
+  ctx.lineTo(dcx+_T*S*Math.cos(a+hw*0.4),dcy-_T*S*Math.sin(a+hw*0.4));
+  ctx.lineTo(dcx+_B*S*Math.cos(a+hw),dcy-_B*S*Math.sin(a+hw));ctx.closePath();
+  ctx.fillStyle=col;ctx.fill();ctx.shadowBlur=0;
+  ctx.font='500 13px system-ui';ctx.textAlign='center';ctx.fillStyle=col;
+  ctx.fillText(lab,dcx+(DTIP+2.5)*S*Math.cos(a),dcy-(DTIP+2.5)*S*Math.sin(a));
+  ctx.globalAlpha=1}
+ // 24 h chapter ring: the drive wheel doubles as a one-hand clock
+ {ctx.fillStyle=C.muted;ctx.font='400 11px system-ui';ctx.textAlign='center';
+  for(const[hh2,lab]of[[0,'24'],[6,'06'],[12,'12'],[18,'18']]){
+   const a2=(180-hh2/24*360)*Math.PI/180;
+   ctx.fillText(lab,dcx+(DBODY+4.5)*S*Math.cos(a2),dcy-(DBODY+4.5)*S*Math.sin(a2)+4)}
+  const ha=(180+driveRot)*Math.PI/180;
+  ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(dcx,dcy);
+  ctx.lineTo(dcx+21*S*Math.cos(ha),dcy-21*S*Math.sin(ha));ctx.stroke();
+  ctx.lineWidth=1.5;
+  ctx.fillStyle=C.muted;ctx.font='400 10px system-ui';
+  ctx.fillText('the 24 h wheel is its own hour hand',dcx,dcy+DBODY*S+34)}
+ const ka=driveRot*Math.PI/180+0.9;
+ ctx.beginPath();ctx.arc(dcx+14*S*Math.cos(ka),dcy-14*S*Math.sin(ka),8,0,7);
+ ctx.fillStyle=C.brass;ctx.fill();
+ ctx.beginPath();ctx.arc(dcx,dcy,5,0,7);ctx.fillStyle=C.muted;ctx.fill();
+ ctx.beginPath();ctx.arc(CX,CY,5,0,7);ctx.fill();
+ for(const[stn,colc]of[[STN_M,C.mon],[STN_F,C.feb],[STN_L,C.leap]]){
+  const a2=(stn+phi)*Math.PI/180,rc=8.75;
+  ctx.beginPath();ctx.arc(CX+rc*S*Math.cos(a2),CY-rc*S*Math.sin(a2),4,0,7);
+  ctx.fillStyle=colc;ctx.fill()}
+ if(document.getElementById('axes').checked){
+  const ax=(x,y,col,lab,big)=>{const R=big?13:9;
+   ctx.strokeStyle=col;ctx.lineWidth=1.6;
+   ctx.beginPath();ctx.arc(x,y,R,0,7);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(x-R-6,y);ctx.lineTo(x+R+6,y);
+   ctx.moveTo(x,y-R-6);ctx.lineTo(x,y+R+6);ctx.stroke();
+   ctx.fillStyle=col;ctx.font='600 13px system-ui';ctx.textAlign='left';
+   ctx.fillText(lab,x+R+9,y-6)};
+  ax(CX,CY,C.ink,'main axis — board 204 + sun 203 (fixed, 7t)',true);
+  ax(dcx,dcy,C.mid,'drive axis — 24h wheel 13',true);
+  ax(CX+mx*S,CY-my*S,C.mon,'210 M');
+  ax(CX+fx*S,CY-fy*S,C.feb,'211 F');
+  ax(CX+lx*S,CY-ly*S,C.leap,'212 L (slider)');
+  ctx.setLineDash([4,4]);ctx.strokeStyle=C.brass;ctx.lineWidth=1.4;
+  ctx.beginPath();ctx.moveTo(CX+mx*S,CY-my*S);ctx.lineTo(CX+fx*S,CY-fy*S);
+  ctx.lineTo(CX+lx*S,CY-ly*S);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=C.brass;ctx.font='400 12px system-ui';
+  ctx.fillText('stud chain 214/218 — pivots 4.81 mm apart, riding board 204',CX+lx*S+16,CY-ly*S+18);
+  ctx.lineWidth=1.5}
+ if(anyHot()){const age=(performance.now()-strike.w)/700;
+  ctx.strokeStyle=strike.c;ctx.lineWidth=4;ctx.globalAlpha=1-age;
+  ctx.beginPath();ctx.arc(CX+41.3*S,CY,14+age*36,0,7);ctx.stroke();
+  if(!strike.miss){ctx.fillStyle=strike.c;ctx.beginPath();ctx.arc(CX+41.3*S,CY,8,0,7);ctx.fill()}
+  ctx.globalAlpha=1;ctx.lineWidth=1.5;
+  ctx.fillStyle=strike.c;ctx.font='500 17px system-ui';ctx.textAlign='center';
+  ctx.fillText(strike.n,CX+10*S,CY+RTIP*S+42)}
+ ctx.fillStyle=C.muted;ctx.font='500 16px system-ui';ctx.textAlign='center';
+ // ==== integrated big-date train — THE DISPLAY RAIL ====
+ // Drives fix each hub's RADIUS from the board axis, not its bearing angle.
+ // So all hubs sit on one chord 22 mm below the axis: date | month | year,
+ // every aperture reading east on a single straight bridge.
+ {const sm=easeFrac();
+  const prev=st.dir>0?(st.pos==1?31:st.pos-1):st.pos%31+1;
+  const dS=(a,b,n)=>((b-a)%n+n)%n==1?1:(((a-b)%n+n)%n==1?-1:0);
+  const nearSta=(deg,half)=>{const d=((deg%360)+360)%360;return d<half||d>360-half};
+  const u0=prev%10,du=dS(u0,st.pos%10,10);
+  const t0=Math.floor(prev/10),dt2=dS(t0,Math.floor(st.pos/10),4);
+  const yR=CY+22*S;
+  // 1) underside pin crown (r 28), rotating with the board
+  const RC=28,kAct=((st.steps%31)+31)%31;
+  ctx.setLineDash([2,4]);ctx.strokeStyle=C.muted;ctx.globalAlpha=0.45;
+  ctx.beginPath();ctx.arc(CX,CY,RC*S,0,7);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+  for(let k=0;k<31;k++){
+   const a3=(216.5-k*PITCH+phi)*Math.PI/180;
+   const px=CX+RC*S*Math.cos(a3),py=CY-RC*S*Math.sin(a3);
+   const gap=(k%31)==0, eng=(k===kAct);
+   ctx.globalAlpha=eng?1:0.4;
+   if(gap){ctx.setLineDash([2,2]);ctx.strokeStyle='#B0413E';
+    ctx.beginPath();ctx.arc(px,py,eng?6:3.6,0,7);ctx.stroke();ctx.setLineDash([]);
+    const qx=CX+(RC-4.5)*S*Math.cos(a3),qy=CY-(RC-4.5)*S*Math.sin(a3);
+    ctx.beginPath();ctx.arc(qx,qy,eng?5:3.4,0,7);ctx.fillStyle=C.leap;ctx.fill();
+    const mx3=CX+(RC-9)*S*Math.cos(a3),my3=CY-(RC-9)*S*Math.sin(a3);
+    ctx.beginPath();ctx.arc(mx3,my3,eng?5:3.4,0,7);ctx.fillStyle=C.mid;ctx.fill()}
+   else{ctx.beginPath();ctx.arc(px,py,eng?5:2.8,0,7);
+    ctx.fillStyle=eng?C.brass:'#7d7c72';ctx.fill()}
+   ctx.globalAlpha=1}
+  // the rail (fixed bridge bar)
+  ctx.strokeStyle=C.line;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(CX-45*S,yR);ctx.lineTo(CX+DDR*S-12.5*S,yR);ctx.stroke();ctx.lineWidth=1.5;
+  // 2) DATE — concentric rings, hub on the rail at 37 mm
+  const ucx=CX+(-29.75)*S, ucy=yR;
+  const uAng=-(u0+du*sm)*36;
+  ctx.strokeStyle=C.mon;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(ucx,ucy,9.5*S,0,7);ctx.stroke();ctx.lineWidth=1.5;
+  for(let k2=0;k2<10;k2++){const ad=uAng+k2*36,a4=ad*Math.PI/180,nr=nearSta(ad,22);
+   ctx.fillStyle=nr?C.ink:C.muted;
+   ctx.font=(nr?'700 17px':'400 12px')+' Georgia,serif';ctx.textAlign='center';
+   ctx.fillText(String(k2),ucx+6.6*S*Math.cos(a4),ucy-6.6*S*Math.sin(a4)+5)}
+  const tAng=-(t0+dt2*sm)*90;
+  ctx.strokeStyle=C.leap;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(ucx,ucy,4.7*S,0,7);ctx.stroke();ctx.lineWidth=1.5;
+  for(let k3=0;k3<4;k3++){const ad=tAng+k3*90,a5=ad*Math.PI/180,nr=nearSta(ad,42);
+   ctx.fillStyle=nr?C.ink:C.muted;
+   ctx.font=(nr?'700 16px':'400 11px')+' Georgia,serif';
+   ctx.fillText(String(k3),ucx+3.3*S*Math.cos(a5),ucy-3.3*S*Math.sin(a5)+5)}
+  const nine=(du!==0&&(st.dir>0?st.pos%10===0:prev%10===0)&&sm<1);
+  const af=(uAng+9.5*36)*Math.PI/180;
+  ctx.strokeStyle=nine?C.leap:C.mon;ctx.lineWidth=nine?5:3;
+  ctx.beginPath();ctx.moveTo(ucx+6.1*S*Math.cos(af),ucy-6.1*S*Math.sin(af));
+  ctx.lineTo(ucx+4.5*S*Math.cos(af),ucy-4.5*S*Math.sin(af));ctx.stroke();ctx.lineWidth=1.5;
+  ctx.strokeStyle=C.brass;ctx.lineWidth=2.5;
+  ctx.strokeRect(ucx+1.9*S,ucy-16,6.4*S,32);ctx.lineWidth=1;
+  ctx.strokeStyle=C.line;
+  ctx.beginPath();ctx.moveTo(ucx+4.9*S,ucy-16);ctx.lineTo(ucx+4.9*S,ucy+16);ctx.stroke();
+  ctx.lineWidth=1.5;
+  // 3) MONTH — star on the rail at 24 mm (meets the 19 mm month-pin track)
+  const wrap=((st.dir>0?prev===31:prev===1)&&sm<1);
+  const m0=wrap?((st.mon+(st.dir>0?11:1))%12):st.mon;
+  const dm=wrap?st.dir:0;
+  const mAng=-(m0+dm*sm)*30;
+  const mcx=CX+(-9.59)*S, mcy=yR;
+  ctx.strokeStyle=C.mid;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(mcx,mcy,7.4*S,0,7);ctx.stroke();ctx.lineWidth=1.5;
+  for(let k4=0;k4<12;k4++){const ad=mAng+k4*30,a6=ad*Math.PI/180,nr=nearSta(ad,13);
+   ctx.fillStyle=nr?C.ink:C.muted;
+   ctx.font=(nr?'700 10.5px':'400 7.5px')+' Georgia,serif';ctx.textAlign='center';
+   ctx.fillText(MONTHS[k4].toUpperCase(),mcx+5.3*S*Math.cos(a6),mcy-5.3*S*Math.sin(a6)+3)}
+  ctx.strokeStyle=C.mid;ctx.lineWidth=2.5;
+  ctx.strokeRect(mcx+3.0*S,mcy-11,4.6*S,22);ctx.lineWidth=1.5;
+  // Dec finger toward the year rings
+  const newYear=(wrap&&(st.dir>0?st.mon===0:m0===0)&&sm<1);
+  const afm=(mAng+11.5*30)*Math.PI/180;
+  ctx.strokeStyle=newYear?C.brass:C.mid;ctx.lineWidth=newYear?5:3;
+  ctx.beginPath();ctx.moveTo(mcx+7.4*S*Math.cos(afm),mcy-7.4*S*Math.sin(afm));
+  ctx.lineTo(mcx+10.2*S*Math.cos(afm),mcy-10.2*S*Math.sin(afm));ctx.stroke();ctx.lineWidth=1.5;
+  // 4) YEAR — FOUR concentric rings: a full decimal odometer to 9999.
+  //    Thousands innermost -> units outermost, so the radial aperture reads
+  //    most-significant first. Each ring carries the next at its 9->0.
+  const yPrev=newYear?st.yr-st.dir:st.yr;
+  const ycx=CX+17*S, ycy=yR;
+  const yr_rd=[5.8,4.4,3.0,1.6], yr_rc=[6.6,5.1,3.7,2.3], yr_fs=[12,11,10,9];
+  const newDig=[],angP=[];
+  for(let p=0;p<4;p++){
+   const v0=Math.floor(yPrev/Math.pow(10,p))%10;
+   const v1=Math.floor(st.yr/Math.pow(10,p))%10;
+   const dd=newYear?dS(v0,v1,10):0;
+   angP[p]=+(v0+dd*sm)*36; newDig[p]=v1}   // CCW: one extra inversion via the month finger
+  ctx.strokeStyle=C.brass;ctx.lineWidth=1.6;
+  for(let p=0;p<4;p++){ctx.beginPath();ctx.arc(ycx,ycy,yr_rc[p]*S,0,7);ctx.stroke()}
+  ctx.lineWidth=1.5;
+  for(let p=0;p<4;p++){
+   for(let k=0;k<10;k++){const ad=angP[p]-k*36,aa=ad*Math.PI/180,nr=nearSta(ad,20);
+    ctx.fillStyle=nr?C.ink:C.muted;
+    ctx.font=(nr?'700 ':'400 ')+(nr?yr_fs[p]:yr_fs[p]-3)+'px Georgia,serif';
+    ctx.textAlign='center';
+    ctx.fillText(String(k),ycx+yr_rd[p]*S*Math.cos(aa),ycy-yr_rd[p]*S*Math.sin(aa)+4)}}
+  ctx.strokeStyle=C.brass;ctx.lineWidth=2.5;
+  ctx.strokeRect(ycx+0.9*S,ycy-12,5.7*S,24);ctx.lineWidth=1.5;
+  // 5) WEEKDAY — 7-station star on the rail, driven NOT by the crown but by
+  //    a pin on the 24 h DRIVE wheel's underside (1 rev/day): midnights only,
+  //    so the month-end skips never touch it.
+  const DOWS=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const dowNow=((5)+((st.day%7)+7)%7)%7;
+  let w0=dowNow,dW=0,smw=1;
+  if(st.dir>0&&st.h<0.5){smw=st.h/0.5;w0=(dowNow+6)%7;dW=1}
+  else if(st.dir<0&&st.h>23.5){smw=(24-st.h)/0.5;w0=(dowNow+1)%7;dW=-1}
+  const wAng=+(w0+dW*smw)*(360/7);   // CCW: pin off the CW drive wheel
+  const wkx=CX+DDR*S+(-20.40)*S, wky=yR;
+  ctx.strokeStyle=C.mid;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(wkx,wky,6.8*S,0,7);ctx.stroke();ctx.lineWidth=1.5;
+  for(let k7=0;k7<7;k7++){const ad=wAng-k7*(360/7),a9=ad*Math.PI/180,nr=nearSta(ad,24);
+   ctx.fillStyle=nr?C.ink:C.muted;
+   ctx.font=(nr?'700 11px':'400 8px')+' Georgia,serif';ctx.textAlign='center';
+   ctx.fillText(DOWS[k7],wkx+4.7*S*Math.cos(a9),wky-4.7*S*Math.sin(a9)+3)}
+  ctx.strokeStyle=C.mid;ctx.lineWidth=2.5;
+  ctx.strokeRect(wkx+2.4*S,wky-11,4.4*S,22);ctx.lineWidth=1.5;
+  ctx.setLineDash([2,4]);ctx.strokeStyle=C.muted;ctx.globalAlpha=0.35;
+  ctx.beginPath();ctx.arc(dcx,dcy,26*S,0,7);ctx.stroke();
+  ctx.setLineDash([]);ctx.globalAlpha=1;
+  const bearW=Math.atan2(-22,(-20.40))*180/Math.PI;
+  const pAng=(bearW+driveRot)*Math.PI/180;
+  ctx.beginPath();ctx.arc(dcx+26*S*Math.cos(pAng),dcy-26*S*Math.sin(pAng),4.4,0,7);
+  ctx.fillStyle=C.mid;ctx.fill();
+  ctx.fillStyle=C.muted;ctx.font='400 11px system-ui';ctx.textAlign='center';
+  ctx.fillText('weekday \u2014 off the 24 h wheel',wkx,wky-6.8*S-10);
+  // rail labels + flow tags + captions
+  ctx.fillStyle=C.muted;ctx.font='500 12px system-ui';ctx.textAlign='center';
+  ctx.fillText('the display rail — date \u00B7 month \u00B7 year \u00B7 weekday, one bridge, all reading east',
+   CX-8*S,yR+11.5*S);
+  ctx.font='500 11px system-ui';
+  ctx.fillText('\u2460 crank turns the 24 h wheel',CX+DDR*S,CY+31*S+22);
+  ctx.fillText('\u2461 each strike steps the board \u2014 crown included',CX+95,CY+RTIP*S+40);
+  ctx.fillText('\u2462 underside pin crown',CX-RC*S*0.35,CY+RC*S+16);
+  ctx.fillText('\u2463 date rings',ucx,ucy-9.5*S-12);
+  ctx.fillText('month star',mcx,mcy-7.4*S-12);
+  ctx.fillText('year rings',ycx,ycy-6.2*S-24);
+  const wx=CX-8*S, wy=yR-26;
+  ctx.font='600 12px system-ui';
+  if(sm<1){
+   if(du===0&&prev===31){ctx.fillStyle='#B0413E';
+    const ny=(st.mon===0);
+    ctx.fillText('CARRY STATION: units holds \u00B7 tens 3\u21920 \u00B7 month +1'+(ny?' \u00B7 YEAR +1':''),wx,wy+96)}
+   else if(nine){ctx.fillStyle=C.leap;
+    ctx.fillText('9\u21920 rollover \u2014 units finger trips the inner tens disc',wx,wy+96)}}
+ }
+ ctx.fillText('plan — all engagement at one mesh; underside pin crown feeds the date train',CX+4*S,CY+RTIP*S+76);
+ // ---- SECTION ---- (second canvas, below the controls bar)
+ const ctxMain=ctx; try{ ctx=c2; ctx.setTransform(1,0,0,1,0,-1120);
+ ctx.font='400 14px system-ui';ctx.textAlign='left';
+ const lv=[['board',5,9,C.mid],['A month',9.5,12.5,C.mon],['B feb + leap',13,16,C.feb],['C',16.5,19.5,C.leap]];
+ for(const[lab,z0,z1,col]of lv){
+  ctx.setLineDash([3,6]);ctx.strokeStyle=col;ctx.globalAlpha=0.35;
+  ctx.beginPath();ctx.moveTo(sx(-6),sz((z0+z1)/2));ctx.lineTo(sx(118),sz((z0+z1)/2));ctx.stroke();
+  ctx.globalAlpha=1;ctx.setLineDash([]);ctx.fillStyle=col;
+  ctx.fillText(lab,sx(-6)-104,sz((z0+z1)/2)+5)}
+ ctx.setLineDash([5,5]);ctx.strokeStyle=C.muted;ctx.globalAlpha=0.7;
+ ctx.beginPath();ctx.moveTo(sx(41.3),sz(20.5));ctx.lineTo(sx(41.3),sz(3.5));ctx.stroke();
+ ctx.setLineDash([]);ctx.globalAlpha=1;
+ ctx.fillStyle=C.muted;ctx.font='400 13px system-ui';ctx.textAlign='center';
+ ctx.fillText('mesh line',sx(41.3),sz(20.5)-8);
+ bar(sliceExt(progP,0,0),5,9,'rgba(90,98,92,0.3)',hot('prog')&&strike?strike.c:C.line,'prog',-4);
+ for(const[z0,z1]of[[9.5,11],[13,14.5],[16.5,18]])
+   bar(sliceExt(sunP,0,0),z0,z1,'rgba(125,140,154,0.35)',hot('sun')?C.ink:C.muted,'sun');
+ for(const[z0,z1]of[[11,13],[14.5,16.5],[18,19.5]])
+   bar([-5,5],z0,z1,'rgba(125,140,154,0.5)',hot('sun')?C.ink:C.muted,'sun');
+ bar(sliceExt(satM,mx,my),9.5,12.5,C.mon+'44',C.mon,'mon');
+ bar(sliceExt(satF,fx,fy),13,16,C.feb+'44',C.feb,'feb');
+ bar(sliceExt(satL,lx,ly),16.5,19.5,C.leap+'33',C.leap,'leap');
+ {const a=(spin+OFF_L)*Math.PI/180,r1=(st.armed?LTIP:STIP-1.2);
+  const xw=lx+r1*Math.cos(a),yw=ly+r1*Math.sin(a);
+  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(18),5,0,7);
+   if(st.armed){ctx.fillStyle=C.leap;ctx.fill()}
+   ctx.strokeStyle=C.leap;ctx.stroke()}}
+ for(const k of[0,1,2,3,4]){const ta=((spin+OFF_M)+k*30)*Math.PI/180;
+  const xw=mx+LTIP*Math.cos(ta),yw=my+LTIP*Math.sin(ta);
+  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(11),4.5,0,7);ctx.fillStyle=C.mon;ctx.fill()}}
+ {const ta=(spin+OFF_F)*Math.PI/180,xw=fx+LTIP*Math.cos(ta),yw=fy+LTIP*Math.sin(ta);
+  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(14.5),4.5,0,7);ctx.fillStyle=C.feb;ctx.fill()}}
+ bar([DDR-DBODY,DDR+2],5,9,C.mid+'22',C.mid,'drv',28);
+ for(let i=0;i<arms.length;i++){const[off,col,tag,lab]=arms[i];
+  const a=(180-off+driveRot)*Math.PI/180;
+  const tp2=[[DBODY,a-0.075],[DTIP,a-0.03],[DTIP,a+0.03],[DBODY,a+0.075]]
+   .map(p=>[DDR+p[0]*Math.cos(p[1]),p[0]*Math.sin(p[1])]);
+  const e=sliceExt(tp2,0,0);
+  if(e){const zl=[[5,9],[9.5,12.5],[13,16],[16.5,19.5]][i];
+   bar(e,zl[0],zl[1],col,col,tag);
+   ctx.fillStyle=col;ctx.font='500 12px system-ui';ctx.textAlign='center';
+   ctx.fillText(lab,sx((e[0]+e[1])/2),sz(zl[1])-5)}}
+ if(anyHot()&&!strike.miss){const age=(performance.now()-strike.w)/700;
+  const lvz=[7,11,14.5,18][strike.lv];
+  ctx.strokeStyle=strike.c;ctx.lineWidth=4;ctx.globalAlpha=1-age;
+  ctx.beginPath();ctx.arc(sx(41.3),sz(lvz),12+age*30,0,7);ctx.stroke();
+  ctx.fillStyle=strike.c;ctx.beginPath();ctx.arc(sx(41.3),sz(lvz),7,0,7);ctx.fill();
+  ctx.globalAlpha=1;ctx.lineWidth=1.5}
+ ctx.fillStyle=C.muted;ctx.font='500 15px system-ui';ctx.textAlign='center';
+ if(document.getElementById('axes').checked){
+  const axline=(xmm,ymm,z0,z1,col,lab)=>{
+   const inpl=Math.abs(ymm)<=YW;
+   ctx.globalAlpha=inpl?0.95:0.3;
+   ctx.setLineDash([10,4,2,4]);ctx.strokeStyle=col;ctx.lineWidth=1.6;
+   ctx.beginPath();ctx.moveTo(sx(xmm),sz(z1)-14);ctx.lineTo(sx(xmm),sz(z0)+14);ctx.stroke();
+   ctx.setLineDash([]);
+   ctx.fillStyle=col;ctx.font='600 12px system-ui';ctx.textAlign='center';
+   ctx.fillText(lab,sx(xmm),sz(z1)-18);
+   ctx.globalAlpha=1;ctx.lineWidth=1.5};
+  axline(0,0,3.5,26.5,C.ink,'main');
+  axline(DDR,0,3.5,26.5,C.mid,'drive');
+  axline(mx,my,9.5,14,C.mon,'M');
+  axline(fx,fy,14,20,C.feb,'F');
+  axline(lx,ly,20,26,C.leap,'L');}
+ ctx.fillText('section (\u00B17 mm) — dash-dot lines are rotation axes; satellite axes ride the board (faded = out of slice)',680,Y3+42)
+ }finally{ctx=ctxMain}}
+(function selfTest(){
+ const key=()=>[st.h.toFixed(6),st.day,st.pos,st.mon,st.yr,st.steps,st.armed,st.face].join('|');
+ const save=JSON.stringify(st), k0=key();
+ try{
+  advanceHours(2*8766); const mid=key();
+  advanceHours(3333); reverseHours(3333);
+  const ok1=key()===mid;
+  reverseHours(2*8766);
+  const ok2=key()===k0;
+  st=JSON.parse(save); strike=null;
+  const el=document.createElement('div');
+  el.style.cssText='padding:2px 26px 0;font-size:12px;color:'+((ok1&&ok2)?'#3FB48E':'#B0413E');
+  el.textContent='engine self-test: '+((ok1&&ok2)?
+   'PASS — 2-year forward/reverse round trip bit-exact':'FAIL — report this');
+  document.querySelector('.bar').after(el);
+ }catch(e){st=JSON.parse(save)}
+})();
+let playing=true,speed=3;
+const spd=document.getElementById('spd'),spdout=document.getElementById('spdout'),
+ slomo=document.getElementById('slomo');
+function updSpeed(){speed=Math.round(Math.pow(10,(+spd.value)/33.3));
+ spdout.textContent=speed.toLocaleString()+' h/s'}
+spd.oninput=updSpeed;updSpeed();
+let dir=1;
+document.getElementById('brev').onclick=e=>{dir=-dir;playing=true;
+ document.getElementById('bplay').textContent='Pause';
+ e.target.textContent=dir<0?'\u25B6 Forward':'\u25C0 Reverse'};
+document.getElementById('bhrm').onclick=()=>reverseHours(1);
+document.getElementById('bdaym').onclick=()=>reverseHours(24);
+document.getElementById('bplay').onclick=e=>{playing=!playing;
+ e.target.textContent=playing?'Pause':'Play'};
+function unStep(){const t=st.h+st.day*24,q=phiDeg()/PITCH;
+ st.steps--;
+ st.dir=-1;st.lastStep=t+0.5*Math.max(0,Math.min(1,(st.steps+1)-q));
+ if(st.pos==1){st.mon--;if(st.mon<0){st.mon=11;st.yr--}}
+ st.pos=st.pos==1?31:st.pos-1}
+function reverseHours(dh){if(jamInfo&&jamInfo.dir===-1)return;renderDir=-1;_dirTick(-1,dh);let rem=dh;
+ while(rem>1e-9){
+  if(Math.abs(st.h-Math.round(st.h))<1e-9){
+   let H=Math.round(st.h);
+   const rflash=(lv,c,tags,n)=>{strike={lv,c,tags,n,t:0,w:performance.now()};st.evt=n};
+   if(H==0){unStep();st.h=24;st.day--;H=24;
+    rflash(0,C.mid,['drv','prog'],'reversing: midnight un-step (now the '+st.pos+')')}
+   if(H==23&&st.pos==31&&[1,3,5,8,10].includes(st.mon)){unStep();rflash(1,C.mon,['f23','mon','sun','prog'],'reversing: month skip undone')}
+   else if(H==22&&st.pos==30&&st.mon==1){unStep();rflash(2,C.feb,['f22','feb','sun','prog'],'reversing: feb skip undone')}
+   else if(H==21&&st.pos==29&&st.mon==1&&st.armed){unStep();rflash(3,C.leap,['f21','leap','sun','prog'],'reversing: leap skip undone')}
+   else if(H==12&&st.mon==5&&st.pos==15){
+    st.face=(st.face+3)%4;st.armed=!leapG(st.yr);
+    st.evt='reversing: programmer touch undone'}}
+  const onInt=Math.abs(st.h-Math.round(st.h))<1e-9;
+  const bnd=onInt?Math.round(st.h)-1:Math.floor(st.h);
+  const step=Math.min(rem,st.h-bnd);
+  st.h-=step;rem-=step}}
+function advanceHours(dh){if(jamInfo&&jamInfo.dir===1)return;renderDir=1;_dirTick(1,dh);let rem=dh;
+ while(rem>0){const nh=Math.floor(st.h)+1,step=Math.min(rem,nh-st.h);
+  st.h+=step;rem-=step;
+  if(Math.abs(st.h-Math.round(st.h))<1e-9){const hh=Math.round(st.h);
+   if(hh>=21&&hh<=24)hourCross(hh);
+   if(hh==12&&st.mon==5&&st.pos==15)progTouch();
+   if(hh==24){st.h=0;st.day++}}}}
+document.getElementById('bhr').onclick=()=>advanceHours(1);
+document.getElementById('bday').onclick=()=>advanceHours(24);
+document.getElementById('bend').onclick=()=>{const len=MLEN(st.yr)[st.mon];
+ let days=len-st.pos;if(days<0)days=0;
+ let dh=days*24+(20-st.h);if(dh<=0)dh+=24;advanceHours(dh)};
+document.getElementById('bfeb').onclick=()=>{
+ let days=0,y=st.yr,m=st.mon,d=st.pos;
+ do{d++;if(d>MLEN(y)[m]){d=1;m++;if(m>11){m=0;y++}}days++}
+ while(!(m==1&&d==26)&&days<800);
+ advanceHours((days-1)*24+(24-st.h)+12)};
+let dragging=false,dragA=0,wasPlaying=true;
+function crankAngleAt(ev){const r=cv.getBoundingClientRect();
+ const px=(ev.clientX-r.left)*cv.width/r.width,py=(ev.clientY-r.top)*cv.height/r.height;
+ return Math.atan2(-(py-CY),px-(CX+DDR*S))}
+cv.addEventListener('pointerdown',ev=>{const r=cv.getBoundingClientRect();
+ const px=(ev.clientX-r.left)*cv.width/r.width,py=(ev.clientY-r.top)*cv.height/r.height;
+ if(Math.hypot(px-(CX+DDR*S),py-CY)<DBODY*S+40){
+  dragging=true;dragA=crankAngleAt(ev);
+  wasPlaying=playing;playing=false;cv.setPointerCapture(ev.pointerId)}});
+cv.addEventListener('pointermove',ev=>{if(!dragging)return;
+ const a=crankAngleAt(ev);let da=a-dragA;
+ while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;
+ dragA=a;
+ const hrs=-da/(2*Math.PI)*24;
+ if(hrs>0)advanceHours(Math.min(hrs,6));
+ else if(hrs<0)reverseHours(Math.min(-hrs,6))});
+cv.addEventListener('pointerup',()=>{if(dragging){dragging=false;playing=wasPlaying;
+ document.getElementById('bplay').textContent=playing?'Pause':'Play'}});
+const dEl=document.getElementById('hud-date'),yEl=document.getElementById('hud-year'),
+ tEl=document.getElementById('hud-time'),eEl=document.getElementById('hud-event'),
+ qEl=document.getElementById('queue'),pEl=document.getElementById('hud-prog');
+const fmtDt=dt=>{const m=Math.round(dt*60);
+ return m>=60?`${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}m`:`${m} min`};
+document.addEventListener('keydown',ev=>{
+ if(ev.target&&ev.target.tagName==='INPUT')return;
+ if(ev.code==='Space'){ev.preventDefault();document.getElementById('bplay').click()}
+ else if(ev.key==='ArrowRight')ev.shiftKey?advanceHours(24):advanceHours(1);
+ else if(ev.key==='ArrowLeft')ev.shiftKey?reverseHours(24):reverseHours(1);
+ else if(ev.key==='r'||ev.key==='R')document.getElementById('brev').click()});
+let last=performance.now();
+function loop(now){const dt=(now-last)/1000;last=now;
+ if(playing){let sp=speed;
+  if(slomo.checked){const len=MLEN(st.yr)[st.mon];
+   if((st.pos>=len&&st.h>=19.6)||(st.pos==1&&st.h<0.5)||(st.pos==1&&st.h>23.4&&dir<0))sp=Math.min(sp,0.22)}
+  // b48: one frame's step clamps to 0.25 h -- a browser hitch (tab switch,
+  // GC pause) must not teleport the machine through a cascade evening
+  if(dir>0)advanceHours(Math.min(dt*sp,0.25));
+  else reverseHours(Math.min(dt*sp,0.25))}
+ dEl.textContent=MONTHS[st.mon]+' '+st.pos;
+ yEl.innerHTML=st.yr+(leapY(st.yr)?' <small>leap</small>':'');
+ tEl.textContent=String(Math.floor(st.h)).padStart(2,'0')+':'+String(Math.floor((st.h%1)*60)).padStart(2,'0');
+ eEl.textContent=st.evt;
+ pEl.innerHTML=`<span style="color:${st.face==st.shortq?'inherit':'#E8A93A'}">${st.face==st.shortq?'short face':'long face'}</span> · tooth <span style="color:${st.armed?'#E8A93A':'inherit'}">${st.armed?'armed':'retracted'}</span>`+((()=>{const m=((st.yr%400)+400)%400;const L=(m>=100&&m<=103)||(m>=200&&m<=203)||(m>=300&&m<=303);return L?' \u00B7 <span style="color:#B0413E">century lobe at read</span>':' \u00B7 century stn '+(Math.floor(m/4)%100)})());
+ const up=upcoming();
+ qEl.innerHTML='<span>Coming up:</span>'+(up.length?up.map(u=>
+  `<span class="chip" style="border-color:${u.c};color:${u.c}">${u.short} · ${fmtDt(u.dt)}</span>`).join(''):
+  ' <span style="color:#666">nothing until this evening</span>');
+ try{draw()}catch(e){_logError(e&&e.message||e,(e&&e.stack||'').split('\n')[1]||'draw')}
+ requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
