@@ -3,3 +3,5 @@
 __pycache__/
 sliced/
 result.json
+cache/
+composed/

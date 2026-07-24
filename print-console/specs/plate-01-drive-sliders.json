@@ -1,0 +1,27 @@
+{
+  "name": "plate-01-drive-sliders",
+  "version_tag": "plate-01-drive-sliders · v16b",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/30_drive_v16.stl",
+      "position": "center-right"
+    },
+    {
+      "stl": "../../parts/stl/31_sliders_v16.stl",
+      "rotate_x": 180,
+      "z_offset": -0.45,
+      "position": "center-left"
+    }
+  ]
+}

@@ -280,18 +280,21 @@ def cmd_start(args):
                 print("Not started.")
                 return
         ok = link.publish({"print": {
+            "sequence_id": "10000000",
             "command": "project_file",
             "param": f"Metadata/plate_{args.plate}.gcode",
-            "file": filename,
-            "url": f"ftp:///{filename}",
-            "bed_leveling": True,
+            "project_id": "0", "profile_id": "0",
+            "task_id": "0", "subtask_id": "0",
+            "subtask_name": filename.replace(".gcode.3mf", ""),
+            "url": f"file:///sdcard/{filename}",
+            "timelapse": False,
             "bed_type": "auto",
+            "bed_levelling": True,
             "flow_cali": not args.no_flow_cali,
             "vibration_cali": True,
             "layer_inspect": False,
             "use_ams": not args.no_ams,
             "ams_mapping": [args.ams_slot],
-            "sequence_id": "10000000",
         }})
         if ok:
             tag = args.version_tag or "(no version tag)"
@@ -410,7 +413,19 @@ def cmd_reslice(args):
     SLICED_DIR.mkdir(exist_ok=True)
     stem = src.name[:-len(".3mf")]
     out_name = f"{stem}{tag}.gcode.3mf"
+    out_path = slice_project(work_src, out_name, args.plate,
+                             label=src.name)
+    print(f"Sliced OK → {out_path}")
+    if work_src is not src:
+        shutil.rmtree(work_src.parent, ignore_errors=True)
 
+
+def slice_project(work_src: Path, out_name: str, plate: int,
+                  label: str = "") -> Path:
+    """Slice a .3mf project via the Bambu Studio CLI; exits on failure."""
+    if not Path(BAMBU_STUDIO).is_file():
+        sys.exit(f"Bambu Studio binary not found at {BAMBU_STUDIO}")
+    SLICED_DIR.mkdir(exist_ok=True)
     pipe_path = Path(tempfile.mkdtemp(prefix="reslice-pipe-")) / "progress"
     os.mkfifo(pipe_path)
 
@@ -439,7 +454,7 @@ def cmd_reslice(args):
 
     cmd = [
         BAMBU_STUDIO,
-        "--slice", str(args.plate),
+        "--slice", str(plate),
         "--export-3mf", out_name,
         "--outputdir", str(SLICED_DIR),
         "--mstpp", "300",
@@ -447,21 +462,78 @@ def cmd_reslice(args):
         "--debug", "1",
         str(work_src),
     ]
-    print(f"Slicing {src.name} (plate {'all' if args.plate == 0 else args.plate})…")
+    print(f"Slicing {label or work_src.name} "
+          f"(plate {'all' if plate == 0 else plate})…")
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     t.join(timeout=2)
 
     out_path = SLICED_DIR / out_name
     if proc.returncode == 0 and out_path.is_file():
-        print(f"Sliced OK → {out_path}")
-    else:
-        print(f"Slice FAILED (exit {proc.returncode}).")
-        tail = "\n".join((proc.stdout + proc.stderr).splitlines()[-15:])
-        if tail:
-            print(tail)
-        sys.exit(1)
-    if work_src is not src:
-        shutil.rmtree(work_src.parent, ignore_errors=True)
+        return out_path
+    print(f"Slice FAILED (exit {proc.returncode}).")
+    tail = "\n".join((proc.stdout + proc.stderr).splitlines()[-15:])
+    if tail:
+        print(tail)
+    sys.exit(1)
+
+
+# ------------------------------------------------------------------ compose
+
+def cmd_compose(args):
+    import compose_plate
+
+    spec_path = Path(args.spec).expanduser()
+    if not spec_path.is_file():
+        sys.exit(f"No such spec: {spec_path}")
+    spec = json.loads(spec_path.read_text())
+    name = spec.get("name") or spec_path.stem
+
+    composed = PROJECT_DIR / "composed" / f"{name}.3mf"
+    compose_plate.compose(spec_path, composed)
+    print(f"Composed project → {composed}")
+
+    sliced = slice_project(composed, f"{name}.gcode.3mf", 1, label=name)
+    print(f"Sliced → {sliced}")
+
+    print("Pre-flight audit…")
+    problems = compose_plate.audit_sliced(sliced, spec)
+
+    link = connect()
+    try:
+        slot = compose_plate.find_ams_slot(
+            link.print_data(), spec.get("ams_tray_type", "PLA"),
+            spec.get("ams_sub_brand", "Matte"),
+            spec.get("filament_colour", "#000000"))
+        if slot is None:
+            problems.append(
+                "AMS: no slot currently holds "
+                f"{spec.get('filament_colour', '#000000')} "
+                f"{spec.get('ams_tray_type', 'PLA')} "
+                f"{spec.get('ams_sub_brand', 'Matte')}")
+        if problems:
+            print("AUDIT FAILED — refusing to stage:")
+            for p in problems:
+                print(f"  ✗ {p}")
+            sys.exit(1)
+        ams_id, tray_id = slot
+        print(f"Audit PASSED. Filament in AMS {ams_id} slot {tray_id}.")
+
+        if args.no_stage:
+            return
+        import bambulabs_api as bl
+        ip, code, serial = load_credentials()
+        printer = bl.Printer(ip, code, serial)
+        print(f"Staging: uploading {sliced.name} "
+              f"({sliced.stat().st_size / 1e6:.1f} MB) over FTPS…")
+        with open(sliced, "rb") as f:
+            result = printer.upload_file(f, sliced.name)
+        if "226" not in str(result):
+            sys.exit(f"Upload finished with unexpected FTP status: {result}")
+        print(f"Staged on printer storage: {sliced.name}")
+        print(f"NOT started. To print: ./pc start {sliced.name} "
+              f"--ams-slot {tray_id}")
+    finally:
+        link.close()
 
 
 # --------------------------------------------------------------------- main
@@ -490,6 +562,13 @@ def main():
     p.set_defaults(fn=cmd_start)
 
     sub.add_parser("watch", help="follow the active job").set_defaults(fn=cmd_watch)
+
+    p = sub.add_parser("compose",
+                       help="compose plate from STLs + spec, slice, audit, stage")
+    p.add_argument("spec", help="plate spec JSON")
+    p.add_argument("--no-stage", action="store_true",
+                   help="compose/slice/audit only, skip the upload")
+    p.set_defaults(fn=cmd_compose)
 
     p = sub.add_parser("reslice", help="headless re-slice of a .3mf project")
     p.add_argument("file")
