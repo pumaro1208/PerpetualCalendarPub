@@ -1,0 +1,3 @@
+#!/bin/zsh
+# Print console wrapper — run from anywhere: ./pc status | upload | start | watch | reslice
+exec "$(dirname "$0")/.venv/bin/python" "$(dirname "$0")/console.py" "$@"
