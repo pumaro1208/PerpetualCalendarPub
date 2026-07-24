@@ -32,4 +32,6 @@ Drag notes:
 - 2026-07-24 15:50 · plate-01b-sliders.gcode.3mf · 31_sliders · v16b (solo plate, attempt 1) · started (outcome pending)
 - 2026-07-24 15:57 · plate-01b-sliders · FINISHED with a caveat — ran to 100%, but the middle slider detached at ~layer 16/16 (Ron observed); outer two stayed down (solo plate cured the outer-slider problem from combined plates). Pattern across all attempts: sliders only ever detach at their final layers — suspect last-layer detail passes + perimeter bulge from the −0.45 sink knocking small stiff parts. Bench-verdict pending: outers' dimensions + whether the 96%-complete middle slider is usable.
 - 2026-07-24 16:25 · plate-01b-sliders.gcode.3mf · 31_sliders · v16b (solo, rev3: supports) · started (outcome pending)
-- 2026-07-24 16:34 · plate-01b-sliders · finished OK
+- 2026-07-24 16:34 · plate-01b-sliders · finished OK — rev3 (solo + plate-only supports + slow finish) ran all 17 layers clean; Ron: parts look great after support removal. First good sliders of the build. Caliper numbers → bench template above when taken.
+- 2026-07-24 17:32 · plate-01a-drive.gcode.3mf · 30_drive · v16b (solo, crank grip deferred) · started (outcome pending)
+- 2026-07-24 17:58 · plate-01a-drive · finished OK

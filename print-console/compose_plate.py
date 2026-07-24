@@ -279,6 +279,70 @@ def bbox(verts):
     return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
 
 
+def drop_midair_components(verts, faces):
+    """Remove connected components that float in mid-air (no part material
+    beneath them) — e.g. features modeled at assembly height. Returns
+    (verts, faces, dropped_descriptions). Stacked-on-body pieces are kept."""
+    parent = list(range(len(verts)))
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    for f in faces:
+        parent[find(f[0])] = find(f[1])
+        parent[find(f[1])] = find(f[2])
+    comp_ids = {}
+    for i in range(len(verts)):
+        comp_ids.setdefault(find(i), []).append(i)
+
+    z_floor = min(v[2] for v in verts)
+    boxes = {}
+    for root, idxs in comp_ids.items():
+        xs = [verts[i][0] for i in idxs]
+        ys = [verts[i][1] for i in idxs]
+        zs = [verts[i][2] - z_floor for i in idxs]
+        boxes[root] = (min(xs), max(xs), min(ys), max(ys), min(zs), max(zs))
+
+    def coverage(a, others):
+        ax0, ax1, ay0, ay1, az0, _ = a
+        area = (ax1 - ax0) * (ay1 - ay0)
+        if not area:
+            return 1.0
+        best = 0.0
+        for b in others:
+            bx0, bx1, by0, by1, bz0, bz1 = b
+            if bz1 < az0 - 0.05 or bz0 >= az0:
+                continue
+            ox = max(0.0, min(ax1, bx1) - max(ax0, bx0))
+            oy = max(0.0, min(ay1, by1) - max(ay0, by0))
+            best = max(best, ox * oy / area)
+        return best
+
+    dropped_roots, dropped_desc = set(), []
+    for root, box in boxes.items():
+        if box[4] <= 0.01:
+            continue
+        others = [b for r, b in boxes.items() if r != root]
+        if coverage(box, others) < 0.3:
+            dropped_roots.add(root)
+            dropped_desc.append(
+                f"z {box[4]:.1f}..{box[5]:.1f} at x {box[0]:.1f}..{box[1]:.1f}"
+                f" y {box[2]:.1f}..{box[3]:.1f}")
+    if not dropped_roots:
+        return verts, faces, []
+
+    keep = [i for r, idxs in comp_ids.items() if r not in dropped_roots
+            for i in idxs]
+    remap = {old: new for new, old in enumerate(sorted(keep))}
+    new_verts = [verts[i] for i in sorted(keep)]
+    new_faces = [[remap[a], remap[b], remap[c]] for a, b, c in faces
+                 if a in remap and b in remap and c in remap]
+    return new_verts, new_faces, dropped_desc
+
+
 # ------------------------------------------------------------------ compose
 
 def compose(spec_path: Path, out_path: Path) -> Path:
@@ -292,6 +356,10 @@ def compose(spec_path: Path, out_path: Path) -> Path:
         m = rot_matrix(part.get("rotate_x", 0), part.get("rotate_y", 0),
                        part.get("rotate_z", 0))
         verts = [apply_m(m, v) for v in verts]
+        if part.get("drop_midair"):
+            verts, faces, dropped = drop_midair_components(verts, faces)
+            for d in dropped:
+                print(f"  dropped mid-air component from {stl.name}: {d}")
         parts.append({"name": stl.name, "verts": verts, "faces": faces,
                       "spec": part})
 
