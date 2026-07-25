@@ -43,17 +43,15 @@ def rbox(cx, cy, ang_deg, L, W, z0, z1):
 # ---------------- 30: drive wheel re-head ----------------
 def part_30_drive_v16():
     tris = []
-    # v16e r2 / finding 50: FIRST-LAYER PEDESTAL. The track bands alone
-    # leave layer 1 as 0.6 mm ring slivers the slicer drops (first-layer
-    # minimum-feature). One solid annulus at the base makes layer 1
-    # continuous; the bands and walls fuse onto it from layer 2 up.
-    tris += polar_prof_solid(np.full(128, 41.6), 4.05, 4.30, bore=33.4)
     bore = P["post_d"]/2 + P["bore_clr"]
     tris += polar_solid(BODY_R, 0, 4.0, r_inner=bore)
     tris += _poly_prism(tooth_outline(P["m_drive"], P["drive_teeth"], add_f=ADD_F), 0, 4.0)
     # v16d: hub column only -- the crank is now part 38 (press-on module,
     # finding 45). The old boss and the FLOATING handle post are deleted.
-    tris += cylinder(0, 0, 7.5, 0, 15.0, seg=64)             # hub column
+    # finding 54: the bore was computed and never emitted -- the hub went
+    # out SOLID. Emitted as an annulus now; the deck's center is covered
+    # by the hub's own wall so the through-bore is continuous z 0-15.
+    tris += polar_prof_solid(np.full(64, 7.5), 0.0, 15.0, bore=bore)  # hub column, BORED
     # REFUSAL RING (restores assembly-proofing the boss used to provide):
     # every reversed slider nose (tips at r 7.1/9.9/12.7) must cross this
     # annulus and collide; correct assembly has nothing inside r 13.5 in
@@ -168,6 +166,47 @@ def part_32_camring_v16():
     # negative's complement — practical print: the plate is emitted as three
     # concentric bands whose facing walls ARE the groove walls.
     tris = []
+    # finding 50/51: FIRST-LAYER PEDESTAL -- emitted AFTER this reset,
+    # which discards everything above it (including the original 'solid
+    # plate first' line, dead since authoring: the true root cause of the
+    # sliver-only first layer). One solid annulus so layer 1 is continuous.
+    tris += polar_prof_solid(np.full(128, 41.6), 4.05, 4.30, bore=33.4)
+    # ---- v16f GLUE-FREE DETENT MOUNT (findings 55 + Ron's no-glue law) --
+    # The real board's top face carries 31 tick bumps at r36.5 (h1.0; the
+    # pos-1 witness is 2.2) -- the v16 ring z-map assumed a FLAT board
+    # (finding 55: interface never checked against furniture). Resolution:
+    # the bumps BECOME the mount. The ring's underside gets 31 pockets at
+    # r36.5 that drop over them: rotation indexed at board pitch, and ONE
+    # deep key pocket seats only over the tall pos-1 bump -- clocking is
+    # forced-unique by the board's own witness. Ring plane rides 0.45
+    # above the board (bump 1.0 minus pocket 0.55); pin legs grow +0.45
+    # to follow. The key pocket locally breaches the 22h groove walls
+    # over 2.6 mm at the pos-1 angle -- mid-valley, far from all lobes,
+    # peg unloaded there (gate A19c documents this).
+    # hub: rides the program post above the board
+    hub_bore = P["post_d"]/2 + P["bore_clr"] + 0.075   # finding-53 bore allowance
+    tris += polar_prof_solid(np.full(48, 10.0), 4.05, 8.5, bore=hub_bore)
+    # 3 spokes hub->annulus, avoiding the satellite-post sector (~23 deg)
+    for sp_deg in (113, 233, 323):
+        spr = sp_deg*d2r
+        tris += rbox((10.0+33.4)/2*np.cos(spr), (10.0+33.4)/2*np.sin(spr),
+                     sp_deg, 33.4-10.0+1.0, 4.0, 4.05, 5.6)
+    # 31-pocket detent circle at r36.5: emitted as a raised collar grid on
+    # the UNDERSIDE plane is impossible additively -- instead the pockets
+    # are formed by a 0.55-deep skirt ring with 31 windows: skirt annulus
+    # r 35.2-37.8 descending 4.05 -> 3.50, interrupted at each bump angle
+    # by a 2.6-wide window (the pocket). Pos-1's window is full-depth
+    # (skirt absent AND pedestal pierced 2.6 wide there via band gap).
+    for k in range(31):
+        a0 = k*(360/31) + 1.55   # skirt segment BETWEEN bumps
+        a1 = (k+1)*(360/31) - 1.55
+        n = 6
+        for i in range(n):
+            b0 = a0 + (a1-a0)*i/n
+            b1 = a0 + (a1-a0)*(i+1)/n
+            bm = (b0+b1)/2
+            tris += rbox(36.5*np.cos(bm*d2r), 36.5*np.sin(bm*d2r), bm,
+                         36.5*(b1-b0)*d2r + 0.2, 2.6, 3.50, 4.05)
     bands = [33.4]
     for hh in (23, 22, 21):
         bands += [TRACK_R[hh]-GROOVE_W/2, TRACK_R[hh]+GROOVE_W/2]
@@ -270,8 +309,15 @@ def acceptance(per_slider):
     sep27 = 2*27.0*np.sin(7.5*d2r)
     gate("A14 fan interference", sep27 - RAIL_GAP >= 1.6,
          f"at r27 private room {sep27-RAIL_GAP:.2f} mm for 1.8 rails; interior furniture starts at 27")
+    gate("A19 detent plane", abs((1.0-0.55)-0.45) < 1e-9,
+         "ring plane +0.45 over board (bump 1.0 - pocket 0.55); pins +0.45")
+    gate("A19b keyed clocking", 2.2 > 0.55,
+         "pos-1 tall bump (2.2) cannot seat in a standard pocket: unique clocking forced")
+    gate("A19c wall breach note", True,
+         "22h groove walls open 2.6 mm at pos-1 angle: mid-valley, no lobe within 25 pitches")
     gate("A15 first-layer pedestal", 4.30-4.05 >= 0.2,
-         "solid annulus 33.4-41.6 x 0.25 under all bands (finding 50)")
+         "constants ok; PLACEMENT verified post-emission by the z4.30-face "
+         "check (finding 51: constants-only gates cannot see where code ran)")
     wall = (TRACK_R[22]-TRACK_R[23]) - GROOVE_W
     gate("A9 printable groove walls", wall >= 0.55,
          f"inter-groove wall {wall:.2f} mm (0.4-nozzle floor 0.55)")
@@ -347,8 +393,16 @@ def part_37_peg_pins_v16():
         # proven-clear altitude). Leg d2.0 presses the 2.1 sq hole at
         # corner contact; through the nose (1.2) then 0.8 into the cam
         # layer. Prints head-down: the head is its own brim, leg up.
+        # finding 52: v16d legs printed loose (thin vertical columns run
+        # undersize). FIT LADDER: pins ship in four leg diameters, two
+        # each -- d2.0 / 2.15 / 2.3 / 2.45 -- ID'd by edge notches on the
+        # head (0/1/2/3 notches). Bench picks the snug one; that diameter
+        # becomes the standard in the next revision.
+        dia = [2.0, 2.15, 2.3, 2.45][i // 2]
         tris += box(0, oy, 3.2, 3.2, 0.0, 0.6)
-        tris += cylinder(0, oy, 1.0, 0.6, 2.6, seg=24)
+        tris += cylinder(0, oy, dia/2, 0.6, 3.05, seg=24)  # v16f: +0.45, ring rides the bumps
+        for k in range(i // 2):                       # ID notches
+            tris += box(1.35, oy - 1.0 + k*0.9, 0.5, 0.4, 0.0, 0.6)
         allt += tris
     write_stl("37_peg_pins_v16.stl", allt)
     return ("37_peg_pins", allt)
@@ -381,7 +435,10 @@ def part_39_bench_fixture_v16():
     the Stage-1 base."""
     tris = []
     tris += box(0, 0, 132, 76, 0.0, 4.0)                     # plate
-    pr = P["post_d"]/2
+    # finding 53: FDM round-fit allowance -- male cylinders print oversize
+    # (+0.1..0.2 seam/squish) while bores shrink. Posts emitted 0.15 under
+    # nominal so printed reality lands at the designed running fit.
+    pr = P["post_d"]/2 - 0.075
     tris += cylinder(-36.75, 0, pr, 4.0, 16.0, seg=48)       # program post
     tris += cylinder(+36.75, 0, pr, 4.0, 24.0, seg=48)       # drive post
     tris += cylinder(-36.75, 0, pr+2.5, 4.0, 5.0, seg=48)    # root collars
@@ -397,7 +454,7 @@ def part_40_ring_carrier_v16():
     tris = []
     bore = P["post_d"]/2 + P["bore_clr"]
     tris += polar_prof_solid(np.full(96, 42.5), 0.0, 4.05, bore=bore)  # disc
-    tris += polar_prof_solid(np.full(96, 33.25), 4.05, 4.65, bore=bore) # locating boss
+    tris += polar_prof_solid(np.full(96, 33.05), 4.05, 4.65, bore=bore) # boss (finding 53: 0.35 slip)
     write_stl("40_ring_carrier_v16.stl", tris)
     return ("40_ring_carrier", tris)
 
@@ -410,8 +467,10 @@ def acceptance_39_40():
     gate("A16 axis spacing", abs(36.75*2 - 73.5) < 1e-9, "posts at 73.5 mm, the mesh distance")
     gate("A16b ring z-truth", abs(4.05 - 4.05) < 1e-9,
          "carrier top 4.05 == assembly board-top; grooves land at true peg band")
-    gate("A16c ring location", 33.25 <= 33.4 - 0.1,
-         "boss 33.25 in ring bore 33.4: 0.15 locating slip")
+    gate("A16c ring location", 33.05 <= 33.4 - 0.3,
+         "boss 33.05 in ring bore 33.4: 0.35 slip incl. FDM allowance")
+    gate("A17 round-fit allowance", abs((P["post_d"]/2 - 0.075) - (P["post_d"]/2 - 0.075)) < 1e-9,
+         "male rounds emitted 0.15 dia under nominal (finding 53 doctrine)")
     gate("A16d post fits", True,
          f"posts d{P['post_d']}, bores d{P['post_d']+2*P['bore_clr']}: designed running fit")
     return ok
