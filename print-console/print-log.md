@@ -42,3 +42,7 @@ Drag notes:
 - 2026-07-25 05:58 · plate-01d-v16d.gcode.3mf · v16d plate (sliders + pins + crank module) · started (outcome pending)
 - 2026-07-25 · BENCH · sliders have poor sliding motion, and lose alignment as they extend — nothing guides the outboard end once the plate leaves the rails (Ron). Mesh analysis of the v16fullset wheel: changes are rail reinforcement + near-hub ring only (all within r≈29; rim at 32.8) — NO outboard guidance added; the failure mode is not addressed in the staged geometry. Needs a design-office fix (rim-side capture/guide); v16d generator still not delivered.
 - 2026-07-25 06:20 · plate-01d-v16d · finished OK, then SUPERSEDED — ran to 100% (105 layers, clean) before the v16d full-set drop landed; parts are from the interim generation. Superseded by plate-02-v16d-set (reinforced-rail wheel + revised 31/37/38).
+- 2026-07-25 09:16 · plate-03-camring.gcode.3mf · 32_camring · v16 (outboard guide) · started (outcome pending)
+- 2026-07-25 09:28 · plate-03-camring · finished OK
+- 2026-07-25 10:24 · plate-02-v16d-set.gcode.3mf · v16d full set + seat markers · started (outcome pending)
+- 2026-07-25 11:05 · plate-02-v16d-set · finished OK — full v16d set in one clean run (105 layers, no interventions): reinforced-rail wheel with seat-indicator bars, revised flat sliders, drop-in pins, spare crank module. Third consecutive zero-intervention print. Bench: full subsystem assembly with camring.
