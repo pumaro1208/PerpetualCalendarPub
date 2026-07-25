@@ -37,3 +37,5 @@ Drag notes:
 - 2026-07-24 17:58 · plate-01a-drive · finished OK
 - 2026-07-24 20:34 · plate-01c-sliders-pegs.gcode.3mf · 31_sliders + 37_peg_pins · v16c (flat, finding-44 fix) · started (outcome pending)
 - 2026-07-24 20:44 · plate-01c-sliders-pegs · finished OK — v16c flat-print run: all 14 layers, zero interventions, no supports, no detachments. Finding-44 categorical fix validated at the printer. Bench next: peg press-fit into sliders, slider drag in drive channels, caliper numbers → template.
+- 2026-07-25 · BENCH · channel rail break on 30_drive during slider fitting (finding #46) — CA-repaired and serviceable; v16d rail reinforcement pending in a future drive re-emit.
+- 2026-07-25 · BENCH · hub crank breakage on 30_drive — 38_crank_module_v16 (press-on crank module) is the field repair; prints disc-down, no source in generator_v16.py (hand-authored).

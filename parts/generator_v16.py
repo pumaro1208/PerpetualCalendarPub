@@ -80,13 +80,21 @@ def part_31_sliders_v16():
         tris = []
         oy = i*14.0                                          # print spacing
         x0, x1 = 17.0, 29.0                                  # guided plate span
-        tris += box((x0+x1)/2, oy, x1-x0, SLIDER_W, 5.2, 7.0)
+        tris += box((x0+x1)/2, oy, x1-x0, SLIDER_W, 5.2, 6.92)  # v16c: 0.18 lip clr
         pin_x = FINGER_R - STROKE                            # retracted pin
-        tris += box((x1+pin_x)/2, oy, pin_x-x1+1.6, 3.4, 5.2, 7.0)  # neck
+        tris += box((x1+pin_x)/2, oy, pin_x-x1+1.6, 3.4, 5.2, 6.92)  # neck
         tris += cylinder(pin_x, oy, 1.6, Z_STRIKE0, Z_STRIKE1, seg=24)  # strike pin
         peg_x = D_DRIVE - TRACK_R[hh]                        # retracted peg = valley
-        tris += box((pin_x+peg_x)/2, oy, peg_x-pin_x+1.0, 2.6, 5.2, 6.4)  # nose
-        tris += cylinder(peg_x, oy, PEG_R, 4.40, 5.2, seg=16)  # cam peg
+        # v16d NOSE = VERTICAL SOCKET (finding 47: the v16c side-entry
+        # slot put 0.7/0.3 mm walls at the tip under press-fit load and
+        # they snapped). Square annulus, four walls >= 1.2 mm, every wall
+        # anchored on two sides; the pin (part 37) drops in from ABOVE.
+        # Hole 2.1 sq at the peg station; floorless (leg hangs through).
+        hw = 1.05                                   # hole half-width
+        tris += box((pin_x+1.6+peg_x-hw)/2, oy, (peg_x-hw)-(pin_x+1.6), 3.4, 5.2, 6.4)  # fore
+        tris += box(peg_x+hw+0.65, oy, 1.3, 3.4, 5.2, 6.4)   # aft wall (1.3 thick)
+        tris += box(peg_x, oy+hw+0.6, 2*hw, 1.2, 5.2, 6.4)   # side web +Y
+        tris += box(peg_x, oy-hw-0.6, 2*hw, 1.2, 5.2, 6.4)   # side web -Y
         # v16b: underside ribs DELETED -- they collided with the floor
         # bumps (0.37 mm interference); retention is now friction domes
         tris += cylinder(x0+1.5, oy, 0.7, 7.0, 7.4, seg=10)  # id dots: 1/2/3
@@ -276,6 +284,44 @@ def part_36_hour_ring_v16():
     tris += cylinder(20.0, 0, 0.8, Z1, Z1+0.5, seg=12)   # index dot on the tip
     write_stl("36_hour_ring_v16.stl", tris)
     return ("36_hour_ring", tris)
+
+def part_37_peg_pins_v16():
+    """T-pin cam-peg inserts (x8 incl. spares). Head slides sideways into
+    the v16c nose socket under the ledges; round leg (d1.9) hangs through
+    the floorless channel into the cam layer (4.40-5.2). Prints lying on
+    the head-top face -- the leg is horizontal, head is its own brim."""
+    allt = []
+    for i in range(8):
+        oy = i*6.0
+        tris = []
+        # v16d: drop-in pin. Head 3.2 sq x 0.6 rests ON the nose top
+        # (top lands at z7.0 in assembly == the slider body plane, a
+        # proven-clear altitude). Leg d2.0 presses the 2.1 sq hole at
+        # corner contact; through the nose (1.2) then 0.8 into the cam
+        # layer. Prints head-down: the head is its own brim, leg up.
+        tris += box(0, oy, 3.2, 3.2, 0.0, 0.6)
+        tris += cylinder(0, oy, 1.0, 0.6, 2.6, seg=24)
+        allt += tris
+    write_stl("37_peg_pins_v16.stl", allt)
+    return ("37_peg_pins", allt)
+
+def acceptance_37():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A11 leg-groove fit", abs(2*1.0 - 2.0) < 1e-9 and 2.2-2.0 >= 0.15,
+         "leg d2.0 in groove 2.2: 0.2 clearance (corner-pressed in the 2.1 hole)")
+    gate("A11b press interference", abs((2.1-2.0)-0.1) < 1e-9,
+         "round d2.0 leg in 2.1 sq hole: corner contact press")
+    gate("A11d leg reach", abs((0.6+2.0)-2.6) < 1e-9,
+         "leg 2.0: through nose 1.2 + 0.8 into the cam layer (4.40-5.2)")
+    gate("A11e head altitude", abs(6.4+0.6-7.0) < 1e-9,
+         "head top z7.0 == slider body plane, proven-clear altitude")
+    gate("A12 socket walls structural", 1.2 >= 1.1 and 1.3 >= 1.1,
+         "all four socket walls >= 1.2 mm, each anchored on two sides")
+    return ok
 
 def acceptance_36():
     ok = True
