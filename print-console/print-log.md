@@ -35,3 +35,5 @@ Drag notes:
 - 2026-07-24 16:34 · plate-01b-sliders · finished OK — rev3 (solo + plate-only supports + slow finish) ran all 17 layers clean; Ron: parts look great after support removal. First good sliders of the build. Caliper numbers → bench template above when taken.
 - 2026-07-24 17:32 · plate-01a-drive.gcode.3mf · 30_drive · v16b (solo, crank grip deferred) · started (outcome pending)
 - 2026-07-24 17:58 · plate-01a-drive · finished OK
+- 2026-07-24 20:34 · plate-01c-sliders-pegs.gcode.3mf · 31_sliders + 37_peg_pins · v16c (flat, finding-44 fix) · started (outcome pending)
+- 2026-07-24 20:44 · plate-01c-sliders-pegs · finished OK — v16c flat-print run: all 14 layers, zero interventions, no supports, no detachments. Finding-44 categorical fix validated at the printer. Bench next: peg press-fit into sliders, slider drag in drive channels, caliper numbers → template.

@@ -378,8 +378,16 @@ def take_snapshot(tag: str = "") -> Path:
     ip, code, serial = load_credentials()
     p = bl.Printer(ip, code, serial)
     p.camera_start()
-    time.sleep(4)
-    img = p.get_camera_image()
+    img = None
+    for attempt in range(4):        # camera can be slow to produce a frame
+        time.sleep(4)
+        try:
+            img = p.get_camera_image()
+            break
+        except Exception:
+            if attempt == 3:
+                p.camera_stop()
+                raise
     p.camera_stop()
     SNAP_DIR.mkdir(exist_ok=True)
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")

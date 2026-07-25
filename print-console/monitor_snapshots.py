@@ -23,15 +23,21 @@ def main():
             layer = pd.get("layer_num") or 0
             pct = pd.get("mc_percent") or 0
 
+            def snap(tag):
+                try:
+                    print(f"snap: {tag} →", take_snapshot(tag))
+                except Exception as e:
+                    print(f"snap: {tag} FAILED ({e}) — continuing")
+
             if "first-layer" not in fired and layer >= 2:
                 fired.add("first-layer")
-                print("snap: first layer →", take_snapshot("first-layer"))
+                snap("first-layer")
             for m in MILESTONES:
                 if m not in fired and pct >= m and layer >= 2:
                     fired.add(m)
-                    print(f"snap: {m}% →", take_snapshot(f"{m}pct"))
+                    snap(f"{m}pct")
             if state in ("FINISH", "FAILED"):
-                print(f"snap: {state} →", take_snapshot(state.lower()))
+                snap(state.lower())
                 return
             time.sleep(15)
     except KeyboardInterrupt:
