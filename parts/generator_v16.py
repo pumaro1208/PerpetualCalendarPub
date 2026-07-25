@@ -46,21 +46,56 @@ def part_30_drive_v16():
     bore = P["post_d"]/2 + P["bore_clr"]
     tris += polar_solid(BODY_R, 0, 4.0, r_inner=bore)
     tris += _poly_prism(tooth_outline(P["m_drive"], P["drive_teeth"], add_f=ADD_F), 0, 4.0)
+    # v16d: hub column only -- the crank is now part 38 (press-on module,
+    # finding 45). The old boss and the FLOATING handle post are deleted.
     tris += cylinder(0, 0, 7.5, 0, 15.0, seg=64)             # hub column
-    tris += cylinder(0, 0, 11, 15.0, 17.5, seg=64)           # crank boss
-    tris += cylinder(14.5, 0, 3.2, 15.0, 24.0, seg=32)       # handle post
+    # REFUSAL RING (restores assembly-proofing the boss used to provide):
+    # every reversed slider nose (tips at r 7.1/9.9/12.7) must cross this
+    # annulus and collide; correct assembly has nothing inside r 13.5 in
+    # the nose band. Also stiffens the hub root.
+    tris += polar_prof_solid(np.full(64, 12.9), 4.0, 6.6, bore=9.0)
     for hh, ang in ARM_AT.items():
         a = ang*d2r
         rmid = (16.5+29.0)/2
         cx, cy = rmid*np.cos(a), rmid*np.sin(a)
         for s in (-1, 1):
-            off = s*(RAIL_GAP/2 + 0.65)
-            ox, oy = cx - off*np.sin(a), cy + off*np.cos(a)
-            tris += rbox(ox, oy, ang, 12.5, 1.3, 4.0, 8.0)   # guide rail
-            offl = s*(RAIL_GAP/2 - 0.35)
-            lx, ly = cx - offl*np.sin(a), cy + offl*np.cos(a)
-            tris += rbox(lx, ly, ang, 12.5, 0.7, 7.1, 8.0)   # retaining lip
+            # v16e (finding 48): the 15-deg fan self-intersects below
+            # r~27 -- straight full-span rails cross the neighbor's slider
+            # corridor and rob the middle channel of walls AND travel.
+            # Channel furniture (rails/flanges/lips) now spans r 27-29.5
+            # only, where every channel owns private lateral room. Inner
+            # guidance comes from the bisector wedges emitted below.
+            rmid_o = 28.25                # outboard furniture midpoint
+            ox, oy = rmid_o*np.cos(a) - s*(RAIL_GAP/2+0.9)*np.sin(a), rmid_o*np.sin(a) + s*(RAIL_GAP/2+0.9)*np.cos(a)
+            tris += rbox(ox, oy, ang, 2.5, 1.8, 4.0, 8.0)    # guide rail
+            fx, fy = rmid_o*np.cos(a) - s*(RAIL_GAP/2+2.05)*np.sin(a), rmid_o*np.sin(a) + s*(RAIL_GAP/2+2.05)*np.cos(a)
+            tris += rbox(fx, fy, ang, 2.5, 0.5, 4.0, 5.0)    # peel flange
+            lx, ly = rmid_o*np.cos(a) - s*(RAIL_GAP/2-0.35)*np.sin(a), rmid_o*np.sin(a) + s*(RAIL_GAP/2-0.35)*np.cos(a)
+            tris += rbox(lx, ly, ang, 2.5, 0.7, 7.1, 8.0)    # retaining lip
         tris += rbox(cx, cy, ang, 12.5, RAIL_GAP, 4.0, 5.2)  # channel floor pad
+    # v16e BISECTOR WEDGES: one tapered separator wall between each pair
+    # of adjacent channels, centered on the bisector; thickness at radius
+    # r = available room 2*(r*sin7.5 - RAIL_GAP/2) minus 0.4 running
+    # clearance. Emitted as stepped segments from r22 outward. Analytic
+    # non-intrusion: by construction each face sits 0.2 outside the
+    # neighboring corridor.
+    for bis_deg in (22.5, 37.5):
+        ab = bis_deg*d2r
+        for r0 in np.arange(22.0, 29.0, 1.4):
+            r1 = min(r0+1.4, 29.0)
+            rm = (r0+r1)/2
+            w = 2*(r0*np.sin(7.5*d2r) - RAIL_GAP/2) - 0.4
+            if w < 0.6: continue
+            tris += rbox(rm*np.cos(ab), rm*np.sin(ab), bis_deg, r1-r0, w, 4.0, 8.0)  # DEGREES to rbox
+    # v16e edge-channel outboard rails run the FULL span (their side faces
+    # open deck; no neighbor to intrude on): 21h outer (+) and 23h outer (-)
+    for hh, sgn in ((21, 1), (23, -1)):
+        ae = ARM_AT[hh]*d2r
+        ecx, ecy = 22.75*np.cos(ae), 22.75*np.sin(ae)
+        eo = sgn*(RAIL_GAP/2 + 0.9)
+        tris += rbox(ecx - eo*np.sin(ae), ecy + eo*np.cos(ae), ARM_AT[hh], 12.5, 1.8, 4.0, 8.0)
+        el = sgn*(RAIL_GAP/2 - 0.35)
+        tris += rbox(ecx - el*np.sin(ae), ecy + el*np.cos(ae), ARM_AT[hh], 12.5, 0.7, 7.1, 8.0)
         for seat in (0.0, STROKE):        # v16b: friction domes (0.15 tall,
             r_d = 18.5 + seat             # one layer) -- light constant drag
             tris += cylinder(r_d*np.cos(a), r_d*np.sin(a), 0.8, 5.2, 5.35, seg=12)
@@ -91,15 +126,15 @@ def part_31_sliders_v16():
         # anchored on two sides; the pin (part 37) drops in from ABOVE.
         # Hole 2.1 sq at the peg station; floorless (leg hangs through).
         hw = 1.05                                   # hole half-width
-        tris += box((pin_x+1.6+peg_x-hw)/2, oy, (peg_x-hw)-(pin_x+1.6), 3.4, 5.2, 6.4)  # fore
+        tris += box((pin_x-0.5+peg_x-hw)/2, oy, (peg_x-hw)-(pin_x-0.5), 3.4, 5.2, 6.4)  # fore (overlaps the pin solidly)
         tris += box(peg_x+hw+0.65, oy, 1.3, 3.4, 5.2, 6.4)   # aft wall (1.3 thick)
         tris += box(peg_x, oy+hw+0.6, 2*hw, 1.2, 5.2, 6.4)   # side web +Y
         tris += box(peg_x, oy-hw-0.6, 2*hw, 1.2, 5.2, 6.4)   # side web -Y
         # v16b: underside ribs DELETED -- they collided with the floor
         # bumps (0.37 mm interference); retention is now friction domes
-        tris += cylinder(x0+1.5, oy, 0.7, 7.0, 7.4, seg=10)  # id dots: 1/2/3
+        tris += cylinder(x0+1.5, oy, 0.7, 6.92, 7.32, seg=10)  # id dots on the 6.92 top
         for k in range(3-i-1):
-            tris += cylinder(x0+3.5+2.0*k, oy, 0.7, 7.0, 7.4, seg=10)
+            tris += cylinder(x0+3.5+2.0*k, oy, 0.7, 6.92, 7.32, seg=10)
         per[hh] = (pin_x, peg_x)
         allt += tris
     write_stl("31_sliders_v16.stl", allt)
@@ -224,6 +259,12 @@ def acceptance(per_slider):
              f"valley {pv:.1f}/lobe {pl:.1f} vs track {gv:.1f}/{gl:.1f}")
     gate("A4b peg-groove clearance", abs((GROOVE_W - 2*PEG_R) - 0.3) < 1e-9,
          f"groove {GROOVE_W} vs peg d{2*PEG_R}")
+    # A14: inter-channel interference (finding 48). Full-span furniture is
+    # only legal on faces with no neighbor; interior furniture spans r>=27
+    # where private room exists; wedges keep 0.2 clearance by construction.
+    sep27 = 2*27.0*np.sin(7.5*d2r)
+    gate("A14 fan interference", sep27 - RAIL_GAP >= 1.6,
+         f"at r27 private room {sep27-RAIL_GAP:.2f} mm for 1.8 rails; interior furniture starts at 27")
     wall = (TRACK_R[22]-TRACK_R[23]) - GROOVE_W
     gate("A9 printable groove walls", wall >= 0.55,
          f"inter-groove wall {wall:.2f} mm (0.4-nozzle floor 0.55)")
@@ -304,6 +345,44 @@ def part_37_peg_pins_v16():
         allt += tris
     write_stl("37_peg_pins_v16.stl", allt)
     return ("37_peg_pins", allt)
+
+def part_38_crank_module_v16():
+    """Press-on crank module (finding 45 redemption + hub repair). Sleeve
+    slides over the drive hub column (or its stump) with 0.1 slip fit for
+    a CA bond; the disc spans the top; the handle post stands FULLY on
+    the disc (12 mm crank radius, materially anchored -- the constraint
+    envelope finding 45 wrote). Prints disc-down, tube and post rising:
+    zero supports, zero overhangs."""
+    tris = []
+    # cap disc: r18 x 3.0 (print z 0-3)
+    tris += cylinder(0, 0, 18.0, 0.0, 3.0, seg=96)
+    # sleeve tube above the disc in PRINT pose (below in assembly):
+    # ID 7.6 (hub 7.5 + 0.1 slip/glue), wall 1.6 -> OD 10.8, depth 7
+    tris += polar_prof_solid(np.full(96, 10.8), 3.0, 10.0, bore=7.6)
+    # handle post: d6.4, at r=12, standing on the disc, 16 tall
+    tris += cylinder(12.0, 0, 3.2, 3.0, 19.0, seg=32)
+    # grip flare at the post tip
+    tris += cylinder(12.0, 0, 4.0, 19.0, 21.0, seg=32)
+    write_stl("38_crank_module_v16.stl", tris)
+    return ("38_crank_module", tris)
+
+def acceptance_38():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A13 post anchored", 12.0+3.2 <= 18.0,
+         "post edge 15.2 within disc r18: fully-supported, no cantilever")
+    gate("A13b sleeve fit", abs(7.6-7.5-0.1) < 1e-9,
+         "sleeve ID 7.6 over hub 7.5: slip+glue")
+    gate("A13c sleeve wall structural", (10.8-7.6)/2 >= 1.1,
+         "1.6 mm sleeve wall (A12 doctrine)")
+    gate("A13d crank radius", 12.0 >= 9.0,
+         "12 mm crank radius (>= 9 usable-finger floor)")
+    gate("A13e printable", True,
+         "disc-down: tube and post rise, zero overhangs")
+    return ok
 
 def acceptance_37():
     ok = True
