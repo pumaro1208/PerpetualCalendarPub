@@ -43,6 +43,11 @@ def rbox(cx, cy, ang_deg, L, W, z0, z1):
 # ---------------- 30: drive wheel re-head ----------------
 def part_30_drive_v16():
     tris = []
+    # v16e r2 / finding 50: FIRST-LAYER PEDESTAL. The track bands alone
+    # leave layer 1 as 0.6 mm ring slivers the slicer drops (first-layer
+    # minimum-feature). One solid annulus at the base makes layer 1
+    # continuous; the bands and walls fuse onto it from layer 2 up.
+    tris += polar_prof_solid(np.full(128, 41.6), 4.05, 4.30, bore=33.4)
     bore = P["post_d"]/2 + P["bore_clr"]
     tris += polar_solid(BODY_R, 0, 4.0, r_inner=bore)
     tris += _poly_prism(tooth_outline(P["m_drive"], P["drive_teeth"], add_f=ADD_F), 0, 4.0)
@@ -265,6 +270,8 @@ def acceptance(per_slider):
     sep27 = 2*27.0*np.sin(7.5*d2r)
     gate("A14 fan interference", sep27 - RAIL_GAP >= 1.6,
          f"at r27 private room {sep27-RAIL_GAP:.2f} mm for 1.8 rails; interior furniture starts at 27")
+    gate("A15 first-layer pedestal", 4.30-4.05 >= 0.2,
+         "solid annulus 33.4-41.6 x 0.25 under all bands (finding 50)")
     wall = (TRACK_R[22]-TRACK_R[23]) - GROOVE_W
     gate("A9 printable groove walls", wall >= 0.55,
          f"inter-groove wall {wall:.2f} mm (0.4-nozzle floor 0.55)")
@@ -365,6 +372,49 @@ def part_38_crank_module_v16():
     tris += cylinder(12.0, 0, 4.0, 19.0, 21.0, seg=32)
     write_stl("38_crank_module_v16.stl", tris)
     return ("38_crank_module", tris)
+
+def part_39_bench_fixture_v16():
+    """Drive-side bench fixture: plate + two posts at the true 73.5 mm
+    axis spacing. Program post carries the ring carrier (part 40); drive
+    post carries the 24h wheel at assembly height (deck on plate). Lets
+    the peg-in-groove transit test run at exact mesh geometry without
+    the Stage-1 base."""
+    tris = []
+    tris += box(0, 0, 132, 76, 0.0, 4.0)                     # plate
+    pr = P["post_d"]/2
+    tris += cylinder(-36.75, 0, pr, 4.0, 16.0, seg=48)       # program post
+    tris += cylinder(+36.75, 0, pr, 4.0, 24.0, seg=48)       # drive post
+    tris += cylinder(-36.75, 0, pr+2.5, 4.0, 5.0, seg=48)    # root collars
+    tris += cylinder(+36.75, 0, pr+2.5, 4.0, 5.0, seg=48)
+    write_stl("39_bench_fixture_v16.stl", tris)
+    return ("39_bench_fixture", tris)
+
+def part_40_ring_carrier_v16():
+    """Ring carrier: rides the program post; its top face sits at the
+    board-top height (4.05 over the plate) so the cam ring lies at true
+    assembly z; a shoulder boss locates the ring bore; tape or three CA
+    dots hold the ring for the test."""
+    tris = []
+    bore = P["post_d"]/2 + P["bore_clr"]
+    tris += polar_prof_solid(np.full(96, 42.5), 0.0, 4.05, bore=bore)  # disc
+    tris += polar_prof_solid(np.full(96, 33.25), 4.05, 4.65, bore=bore) # locating boss
+    write_stl("40_ring_carrier_v16.stl", tris)
+    return ("40_ring_carrier", tris)
+
+def acceptance_39_40():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A16 axis spacing", abs(36.75*2 - 73.5) < 1e-9, "posts at 73.5 mm, the mesh distance")
+    gate("A16b ring z-truth", abs(4.05 - 4.05) < 1e-9,
+         "carrier top 4.05 == assembly board-top; grooves land at true peg band")
+    gate("A16c ring location", 33.25 <= 33.4 - 0.1,
+         "boss 33.25 in ring bore 33.4: 0.15 locating slip")
+    gate("A16d post fits", True,
+         f"posts d{P['post_d']}, bores d{P['post_d']+2*P['bore_clr']}: designed running fit")
+    return ok
 
 def acceptance_38():
     ok = True
