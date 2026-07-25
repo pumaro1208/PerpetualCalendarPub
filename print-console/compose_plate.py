@@ -279,6 +279,50 @@ def bbox(verts):
     return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
 
 
+def check_grounded(verts, faces, tol=0.25):
+    """Return descriptions of components that neither touch the bed nor
+    rest on material below (gaps under `tol` — sub-layer-height — count
+    as resting: the slicer squishes them onto the surface)."""
+    parent = list(range(len(verts)))
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    for f in faces:
+        parent[find(f[0])] = find(f[1])
+        parent[find(f[1])] = find(f[2])
+    comp = {}
+    for i in range(len(verts)):
+        comp.setdefault(find(i), []).append(verts[i])
+    z_floor = min(v[2] for v in verts)
+    boxes = []
+    for vs in comp.values():
+        xs = [p[0] for p in vs]
+        ys = [p[1] for p in vs]
+        zs = [p[2] - z_floor for p in vs]
+        boxes.append((min(xs), max(xs), min(ys), max(ys), min(zs), max(zs)))
+    problems = []
+    for b in boxes:
+        if b[4] <= 0.01:
+            continue
+        cov = 0.0
+        for o in boxes:
+            if o is b or o[5] < b[4] - tol or o[4] >= b[4]:
+                continue
+            ox = max(0.0, min(b[1], o[1]) - max(b[0], o[0]))
+            oy = max(0.0, min(b[3], o[3]) - max(b[2], o[2]))
+            cov = max(cov, ox * oy
+                      / max((b[1] - b[0]) * (b[3] - b[2]), 1e-9))
+        if cov < 0.5:
+            problems.append(f"component at z {b[4]:.2f}..{b[5]:.2f} "
+                            f"(x {b[0]:.1f}..{b[1]:.1f}) floats mid-air "
+                            f"({cov:.0%} rests on material below)")
+    return problems
+
+
 def drop_midair_components(verts, faces):
     """Remove connected components that float in mid-air (no part material
     beneath them) — e.g. features modeled at assembly height. Returns
@@ -360,6 +404,16 @@ def compose(spec_path: Path, out_path: Path) -> Path:
             verts, faces, dropped = drop_midair_components(verts, faces)
             for d in dropped:
                 print(f"  dropped mid-air component from {stl.name}: {d}")
+        elif (not part.get("allow_midair")
+              and spec.get("overrides", {}).get("enable_support") != "1"):
+            grounded_problems = check_grounded(verts, faces)
+            if grounded_problems:
+                raise SystemExit(
+                    f"REFUSING to compose: {stl.name} has unprintable "
+                    "mid-air geometry (supports not spec'd):\n  "
+                    + "\n  ".join(grounded_problems)
+                    + "\nFix the model, spec supports, or set "
+                    "drop_midair/allow_midair on the part.")
         parts.append({"name": stl.name, "verts": verts, "faces": faces,
                       "spec": part})
 
@@ -520,6 +574,28 @@ def audit_sliced(sliced: Path, spec: dict) -> list:
             and "; FEATURE: Support interface" not in gcode):
         problems.append("supports requested but gcode contains no support "
                         "features")
+
+    # per-object first-layer extrusion: every object on the plate must
+    # actually receive material on layer 1 within its own bbox
+    try:
+        with zipfile.ZipFile(sliced) as z:
+            pj = json.loads(z.read("Metadata/plate_1.json"))
+        layer1 = gcode.split("; CHANGE_LAYER")[1] if "; CHANGE_LAYER" in gcode else ""
+        moves = _re.findall(r"G1 X([\d.]+) Y([\d.]+) E[\d.]+", layer1)
+        for obj in pj.get("bbox_objects", []):
+            bb = obj.get("bbox")
+            if not bb or obj.get("name", "").startswith("wipe"):
+                continue
+            n = sum(1 for x, y in moves
+                    if bb[0] - 1 <= float(x) <= bb[2] + 1
+                    and bb[1] - 1 <= float(y) <= bb[3] + 1)
+            if n == 0:
+                problems.append(f"object {obj.get('name')}: no first-layer "
+                                "extrusion inside its bbox — it would print "
+                                "on nothing")
+    except KeyError:
+        problems.append("plate_1.json missing — cannot verify per-object "
+                        "extrusion")
 
     # bed temperature in the gcode must match the plate-temp key for the
     # spec'd bed type (the 45-vs-55 class of failure)
