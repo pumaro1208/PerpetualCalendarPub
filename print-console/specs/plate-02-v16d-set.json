@@ -1,0 +1,37 @@
+{
+  "name": "plate-02-v16d-set",
+  "version_tag": "v16d full set: 30_drive + 31_sliders + 37_peg_pins + 38_crank_module",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "100",
+    "top_surface_speed": "80",
+    "small_perimeter_speed": "30"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/30_drive_v16.stl",
+      "position": [80, 128]
+    },
+    {
+      "stl": "../../parts/stl/38_crank_module_v16.stl",
+      "position": [170, 95]
+    },
+    {
+      "stl": "../../parts/stl/31_sliders_v16.stl",
+      "position": [155, 172]
+    },
+    {
+      "stl": "../../parts/stl/37_peg_pins_v16.stl",
+      "position": [184, 160]
+    }
+  ]
+}

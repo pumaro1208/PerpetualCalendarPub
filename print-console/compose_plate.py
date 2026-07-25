@@ -580,6 +580,16 @@ def audit_sliced(sliced: Path, spec: dict) -> list:
     try:
         with zipfile.ZipFile(sliced) as z:
             pj = json.loads(z.read("Metadata/plate_1.json"))
+        # every spec'd part must survive to the sliced plate — Bambu's
+        # slicer silently drops objects it dislikes (seen: objects placed
+        # at x≳200 on a shared plate vanish without any warning)
+        sliced_names = {o.get("name") for o in pj.get("bbox_objects", [])}
+        for p in spec.get("parts", []):
+            stem = p["stl"].rsplit("/", 1)[-1]
+            if stem not in sliced_names:
+                problems.append(f"object {stem}: spec'd but ABSENT from the "
+                                "sliced plate — the slicer silently dropped "
+                                "it (check placement)")
         layer1 = gcode.split("; CHANGE_LAYER")[1] if "; CHANGE_LAYER" in gcode else ""
         moves = _re.findall(r"G1 X([\d.]+) Y([\d.]+) E[\d.]+", layer1)
         for obj in pj.get("bbox_objects", []):
