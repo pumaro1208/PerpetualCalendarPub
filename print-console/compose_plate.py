@@ -279,6 +279,29 @@ def bbox(verts):
     return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
 
 
+def add_markers(verts, faces, markers):
+    """Append raised marker prisms to a mesh. Each marker is a box in
+    polar-ish local coords: {"angle": deg, "u": [u0,u1] radial span,
+    "w": [w0,w1] lateral span, "z": [z0,z1]} — rotated by angle about z."""
+    # box face pattern as corner indices (i = bit0:u1, bit1:w1, bit2:z1)
+    F = [(0, 2, 3), (0, 3, 1), (4, 5, 7), (4, 7, 6),   # bottom, top
+         (0, 1, 5), (0, 5, 4), (2, 6, 7), (2, 7, 3),   # w0, w1 sides
+         (0, 4, 6), (0, 6, 2), (1, 3, 7), (1, 7, 5)]   # u0, u1 ends
+    for mk in markers:
+        a = math.radians(mk["angle"])
+        ca, sa = math.cos(a), math.sin(a)
+        corners = []
+        for i in range(8):
+            u = mk["u"][(i >> 0) & 1]
+            w = mk["w"][(i >> 1) & 1]
+            z = mk["z"][(i >> 2) & 1]
+            corners.append((u * ca - w * sa, u * sa + w * ca, z))
+        base = len(verts)
+        verts.extend(corners)
+        faces.extend([[base + i for i in tri] for tri in F])
+    return verts, faces
+
+
 def check_grounded(verts, faces, tol=0.25):
     """Return descriptions of components that neither touch the bed nor
     rest on material below (gaps under `tol` — sub-layer-height — count
@@ -400,6 +423,11 @@ def compose(spec_path: Path, out_path: Path) -> Path:
         m = rot_matrix(part.get("rotate_x", 0), part.get("rotate_y", 0),
                        part.get("rotate_z", 0))
         verts = [apply_m(m, v) for v in verts]
+        if part.get("markers"):
+            verts, faces = add_markers(list(verts), list(faces),
+                                       part["markers"])
+            print(f"  added {len(part['markers'])} position markers "
+                  f"to {stl.name}")
         if part.get("drop_midair"):
             verts, faces, dropped = drop_midair_components(verts, faces)
             for d in dropped:
