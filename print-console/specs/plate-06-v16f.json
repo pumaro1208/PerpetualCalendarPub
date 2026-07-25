@@ -1,0 +1,35 @@
+{
+  "name": "plate-06-v16f",
+  "version_tag": "32_camring v16f (detent mount) + 37_peg_pins (+0.45) + 30_drive (files7 rev) · finding 55",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "100",
+    "top_surface_speed": "80",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/32_camring_v16.stl",
+      "position": [55, 128],
+      "allow_midair": true
+    },
+    {
+      "stl": "../../parts/stl/30_drive_v16.stl",
+      "position": [135, 128]
+    },
+    {
+      "stl": "../../parts/stl/37_peg_pins_v16.stl",
+      "position": [184, 150]
+    }
+  ]
+}

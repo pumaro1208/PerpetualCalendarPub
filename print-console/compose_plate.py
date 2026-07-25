@@ -423,6 +423,35 @@ def compose(spec_path: Path, out_path: Path) -> Path:
         m = rot_matrix(part.get("rotate_x", 0), part.get("rotate_y", 0),
                        part.get("rotate_z", 0))
         verts = [apply_m(m, v) for v in verts]
+        if part.get("drop_components_rmin_below") is not None:
+            rmin_lim = float(part["drop_components_rmin_below"])
+            parent = list(range(len(verts)))
+
+            def _find(a):
+                while parent[a] != a:
+                    parent[a] = parent[parent[a]]
+                    a = parent[a]
+                return a
+
+            for fc in faces:
+                parent[_find(fc[0])] = _find(fc[1])
+                parent[_find(fc[1])] = _find(fc[2])
+            comp_idx = {}
+            for i in range(len(verts)):
+                comp_idx.setdefault(_find(i), []).append(i)
+            drop = set()
+            for root, idxs in comp_idx.items():
+                rm = min(math.hypot(verts[i][0], verts[i][1]) for i in idxs)
+                if rm < rmin_lim:
+                    drop.update(idxs)
+                    print(f"  dropped center component from {stl.name}: "
+                          f"r_min {rm:.1f} < {rmin_lim}")
+            if drop:
+                keep = sorted(i for i in range(len(verts)) if i not in drop)
+                remap = {old: new for new, old in enumerate(keep)}
+                verts = [verts[i] for i in keep]
+                faces = [[remap[a], remap[b], remap[c]] for a, b, c in faces
+                         if a in remap and b in remap and c in remap]
         if part.get("markers"):
             verts, faces = add_markers(list(verts), list(faces),
                                        part["markers"])
