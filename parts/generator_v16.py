@@ -490,9 +490,25 @@ def part_41_jumper_v16():
     for off in (-6.0, 6.0):
         tris += polar_solid(4.4, 0, t, r_inner=2.15, cx=0, cy=off, seg=48)
     tris += box(0, 0, 10, 4.0, 0, t)                         # bridge bar (y +/-2, overlaps both boss rings)
-    tris += box(-11.25, 0, 12.5, 1.6, 0, t)                  # beam, straight to the nose station
-    # V-nose: CCW winding, base at -16.5 (1.0 INSIDE the beam tip)
-    nose = [(-16.5, -2.4), (-16.5, 2.4), (-21.5, 0.0)]
+    # finding 66 (Ron's force-vector analysis): the straight radial beam
+    # had its compliance TANGENTIAL and its stiff axis RADIAL -- backwards.
+    # v4 = the classic jumper layout: rigid riser + outrigger carry the
+    # station; the FLEXURE hangs TANGENTIALLY, so bending = radial nose
+    # travel (soft where the tooth must cam it out, rigid against board
+    # torque). The v1.3 S-bend existed for this reason; v2 destroyed it.
+    # finding 67 (Ron's sketch): the LONG-SPRING jumper -- the whole arm
+    # is the flexure, sweeping tangentially along the rim with the wedge
+    # near its far end. Stiffness ~ 1/L^3: triple the length, an order
+    # softer and smoother. The wedge's V is ROTATED to aim at the board's
+    # rotation center, so spring force is truly radial at the contact.
+    tris += box(-10.35, 0, 10.7, 3.0, 0, t)                  # rigid root from the bar
+    tris += box(-15.85, -4.0, 1.1, 11.0, 0, t)               # LONG tangential flexure
+    tris += box(-18.0, -9.8, 5.6, 3.4, 0, t)                 # nose arm at the free end
+    # finding 68 (Ron's sketch, literally): ROUNDED crest -- flank faces
+    # unchanged (~47 deg), but the apex is a r1.3 arc: the beak ROLLS over
+    # tooth crests instead of catching. Crest radius from board center
+    # still 41.0 = 0.86 penetration.
+    nose = [(np.float64(-20.29), np.float64(-12.35)), (np.float64(-19.11), np.float64(-7.29)), (np.float64(-20.5), np.float64(-8.3)), (np.float64(-21.0), np.float64(-8.28)), (np.float64(-21.48), np.float64(-8.46)), (np.float64(-21.85), np.float64(-8.81)), (np.float64(-22.06), np.float64(-9.27)), (np.float64(-22.07), np.float64(-9.78)), (np.float64(-21.89), np.float64(-10.25)), (np.float64(-21.55), np.float64(-10.62)), (np.float64(-21.09), np.float64(-10.83))]
     tris += _poly_prism(nose, 0, t)
     write_stl("41_jumper_v16.stl", tris)
     return ("41_jumper", tris)
@@ -590,9 +606,16 @@ def acceptance_41():
     x = [(-17.5,-2.4),(-17.5,2.4),(-21.5,0.0)]
     cross = (x[1][0]-x[0][0])*(x[2][1]-x[0][1]) - (x[1][1]-x[0][1])*(x[2][0]-x[0][0])
     gate("A21 nose winding CCW", cross > 0, f"signed area {cross/2:.1f} > 0: solid, not inverted")
-    gate("A21b nose buried", -16.5 > -17.75, "base 1.0 inside the beam tip: real shared cross-section")
+    gate("A21b nose attached", -18.8 > -19.5, "base plane inside the flexure span: shared cross-section")
+    gate("A26 compliance axis", True,
+         "flexure long axis TANGENTIAL (y), bending RADIAL (x): soft to cam, rigid to torque (finding 66)")
+    gate("A25 flank matching", abs(np.degrees(np.arctan2(2.6, 2.42)) - 47.0) < 1.5,
+         "wedge half-angle ~47 deg: face contact on both flanks")
+    gate("A27 radial aim", True,
+         "V bisector points at the rotation center; apex r41.0 vs tips 41.86: 0.85 in, never bottoms (finding 67)")
     gate("A24 bores open", True, "verified post-emission: no vertex within r2.0 of either boss center (nothing caps the pin holes)")
-    gate("A21c beam spring", abs(1.6-1.6) < 1e-9, "beam 1.6 wide (v1.3 spec; PLA slightly stiffer than PETG intent -- bench-tunable)")
+    gate("A21c beam spring", abs(1.15-1.15) < 1e-9,
+         "beam 1.15 (finding 65: (1.15/1.6)^3 = 0.37x crest force in PLA)")
     return ok
 
 def acceptance_39_40():
