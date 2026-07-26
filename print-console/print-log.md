@@ -70,3 +70,5 @@ Drag notes:
 - 2026-07-25 21:14 · plate-08-crank · finished OK
 - 2026-07-25 21:28 · plate-07b-jumper.gcode.3mf · 12_jumper v1.3 flexure (audition pair) · started (outcome pending)
 - 2026-07-25 21:36 · plate-07b-jumper · finished OK
+- 2026-07-26 05:53 · plate-09-fixture-r2-arm-a.gcode.3mf · fixture r2 + Arm A hardware (surgical wheel, jumper, sun tower) · started (outcome pending)
+- 2026-07-26 07:39 · plate-09-fixture-r2-arm-a · finished OK — all 138 layers: fixture r2 (sun key, shoulder, jumper wing), surgical drive wheel (no pin/post), spare jumper, sun tower. Arm A moves to real tooling.
