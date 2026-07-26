@@ -82,3 +82,7 @@ Drag notes:
 
 - 2026-07-26 12:28 · plate-11-jumper6-receiver.gcode.3mf · jumper v6 + receiver (findings 67-70) · started (outcome pending)
 - 2026-07-26 12:48 · plate-11-jumper6-receiver · finished OK — all 40 layers: jumper v6 (long-spring rounded beak) + receiver (dot dropped, mark station k=0 by hand). The current program is fully printed.
+- 2026-07-26 · SESSION TAIL · Finding #70 (broadened; supersedes the narrower floating-dot entry above): v16 receiver fingers unrooted — features anchored at stale heights; design office owes 33 r2 next session. Findings #71–73: jumper beak iterations (long-spring V, rounded beak, culminating in Ron's rod-and-ball with the head bench-gauged to r4.4 against the actual board teeth). DOCTRINE reminder: matched-vintage pairs only — tonight's stack runs the v1.3 sun + receiver together.
+
+- 2026-07-26 14:17 · plate-12-jumper-v9.gcode.3mf · jumper v9: rod-and-ball, bench-gauged head (findings 72-73) · started (outcome pending)
+- 2026-07-26 14:27 · plate-12-jumper-v9 · finished OK — all 18 layers: rod-and-ball jumper, bench-gauged r4.4 head (findings 72-73). Ninth jumper iteration, first designed at the bench.
