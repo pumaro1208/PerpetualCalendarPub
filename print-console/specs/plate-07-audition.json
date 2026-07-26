@@ -1,0 +1,30 @@
+{
+  "name": "plate-07-audition",
+  "version_tag": "v1.3 audition: 02_program_wheel + 04_month_wheel (10_drive_wheel held — see log)",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "100",
+    "top_surface_speed": "80",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl_v13/02_program_wheel.stl",
+      "position": [55, 128]
+    },
+    {
+      "stl": "../../parts/stl_v13/04_month_wheel.stl",
+      "position": [140, 128]
+    }
+  ]
+}
