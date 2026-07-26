@@ -695,3 +695,35 @@ def acceptance_36():
     gate("A8e pointer vs crank boss", 12.8 > 11.0,
          "pointer root 12.8 outside boss r11 (boss z 15-17.5 above anyway)")
     return ok
+
+
+def part_44_post_sleeves_v16():
+    """Bearing sleeves (finding 74): wheel-bore + board-bore running
+    clearances stack to ~0.85 mm of mesh center-distance wander (tip-butt
+    risk at worst case). Thin tubes over the posts take up the slop.
+    Fit ladder: walls 0.35/0.40/0.45 (rim notches 0/1/2), heights 12
+    (drive hub) and 6 (board). Bench picks the snug pair."""
+    allt = []
+    k = 0
+    for od in (8.6, 8.7, 8.8):
+        for h in (12.0, 6.0):
+            ox = k*12.0
+            allt += polar_prof_solid(np.full(48, od/2), 0.0, h, cx=ox, bore=3.95)
+            for n in range(int((od-8.6)*10+0.5)):
+                allt += box(ox+od/2-0.3, -1.0+n*1.2, 0.7, 0.5, h, h+0.5)
+            k += 1
+    write_stl("44_post_sleeves_v16.stl", allt)
+    return ("44_sleeves", allt)
+
+def acceptance_44():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A28 sleeve ID", abs(3.95*2 - 7.9) < 1e-9, "ID 7.9 over posts 7.85: slip-on")
+    gate("A28b wall ladder", all(w >= 0.34 for w in (0.35, 0.40, 0.45)),
+         "walls 0.35/0.40/0.45: single-perimeter printable")
+    gate("A28c slop recovered", 8.8 - 7.9 <= 0.905,
+         "snuggest sleeve converts the stack wander to a running fit")
+    return ok

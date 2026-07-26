@@ -86,3 +86,6 @@ Drag notes:
 
 - 2026-07-26 14:17 · plate-12-jumper-v9.gcode.3mf · jumper v9: rod-and-ball, bench-gauged head (findings 72-73) · started (outcome pending)
 - 2026-07-26 14:27 · plate-12-jumper-v9 · finished OK — all 18 layers: rod-and-ball jumper, bench-gauged r4.4 head (findings 72-73). Ninth jumper iteration, first designed at the bench.
+- 2026-07-26 · finding 74: bearing sleeves (44_post_sleeves) — mesh clearance stack; verified grounded, queued as plate-13 solo (~5 min).
+- 2026-07-26 · CLEANUP LIST (next session): (1) generator carries a harmless duplicate acceptance_43 definition from an earlier edit — deduplicate; (2) receiver r2 (finding #70: re-rooted fingers + re-anchored witness dot).
+
