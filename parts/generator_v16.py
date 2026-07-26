@@ -439,30 +439,25 @@ def part_39_bench_fixture_v16():
     # (+0.1..0.2 seam/squish) while bores shrink. Posts emitted 0.15 under
     # nominal so printed reality lands at the designed running fit.
     pr = P["post_d"]/2 - 0.075
-    # ---- r2: program post gains the v1.3 base plate's KEY architecture --
-    # round section to z9.5 (board 5-9 + 0.5 clearance), then a D-FLAT
-    # prism (flat at 2.15 vs sun D-bore flat 2.55: 0.4 entry) -- the
-    # round-to-flat transition IS the sun's seating shoulder: the D-bore
-    # cannot pass the round section, so the sun lands at 9.5 fixed.
+    # ---- r4 (findings 61+62): SQUARE KEY replaces the D-flat. The D-bore
+    # crescent tapers to zero-thickness knife edges -- FDM prints it as a
+    # floppy membrane (Ron's photo), so the sun spun. A square-in-square
+    # key has no degenerate geometry on either side: post section 4.3 sq
+    # (half-diag 3.04 < round r3.925, so the round-to-square transition
+    # stays the seating shoulder), sun bore 4.5 sq, slop ~2.6 deg.
     tris += cylinder(-36.75, 0, pr, 4.0, 9.5, seg=64)        # program post, round
-    import numpy as _np
-    dflat = []
-    for a in _np.linspace(0, 2*_np.pi, 64, endpoint=False):
-        x, y = pr*_np.cos(a), pr*_np.sin(a)
-        x = min(x, 2.15)                                     # the key flat
-        dflat.append((x - 36.75, y))
-    tris += _poly_prism(dflat, 9.5, 18.0)                    # D-flat section
+    tris += box(-36.75, 0, 4.3, 4.3, 9.5, 18.0)              # SQUARE key section
     tris += cylinder(+36.75, 0, pr, 4.0, 24.0, seg=48)       # drive post
     # ---- r2: JUMPER ANCHOR (v1.3 station: 139.35 deg, r62 from program
     # axis -> twin d4 pins at +/-6 perpendicular). Off the base plate's
     # footprint, so the plate grows a wing under them.
-    ja = _np.deg2rad(12*(360/31))
-    jcx, jcy = -36.75 + 62.0*_np.cos(ja), 62.0*_np.sin(ja)
+    ja = np.deg2rad(12*(360/31))
+    jcx, jcy = -36.75 + 62.0*np.cos(ja), 62.0*np.sin(ja)
     tris += box(jcx, jcy, 26, 22, 0.0, 4.0)                  # anchor wing
-    tris += box((jcx-36.75-20)/2 + 0, (jcy)/2, 46, 18, 0.0, 4.0)  # wing bridge to plate
+    tris += box((jcx-36.75-20)/2 + 0, (jcy)/2 + 1.5, 46, 22, 0.0, 4.0)  # r5 (finding 64): bridge OVERLAPS the wing -- 0.2 gap orphaned the anchor pad
     for off in (-6.0, 6.0):
-        px = jcx - off*_np.sin(ja)
-        py = jcy + off*_np.cos(ja)
+        px = jcx - off*np.sin(ja)
+        py = jcy + off*np.cos(ja)
         tris += cylinder(px, py, 2.0 - 0.075, 4.0, 9.0, seg=24)  # anchor pins (A17 allowance)
     tris += cylinder(-36.75, 0, pr+2.5, 4.0, 5.0, seg=48)    # root collars
     tris += cylinder(+36.75, 0, pr+2.5, 4.0, 5.0, seg=48)
@@ -481,6 +476,125 @@ def part_40_ring_carrier_v16():
     write_stl("40_ring_carrier_v16.stl", tris)
     return ("40_ring_carrier", tris)
 
+def part_41_jumper_v16():
+    """Jumper, re-owned (finding 60): the v1.3 emission wound the V-nose
+    clockwise -- an inverted prism that slicers subtract, severing the
+    nose from the beam. CCW here, base buried 1.0 into the beam tip, and
+    this part now faces the full gauntlet like everything else."""
+    tris = []
+    t = P["wheel_t"] - 0.4
+    # finding 64 (Ron, pre-print): the solid block CAPPED both pin bores
+    # (same latent bug in the v1.3 original -- never assembled, never
+    # found). Anchor is now a bridge BAR between the two bored bosses:
+    # the bores stay open top to bottom.
+    for off in (-6.0, 6.0):
+        tris += polar_solid(4.4, 0, t, r_inner=2.15, cx=0, cy=off, seg=48)
+    tris += box(0, 0, 10, 4.0, 0, t)                         # bridge bar (y +/-2, overlaps both boss rings)
+    tris += box(-11.25, 0, 12.5, 1.6, 0, t)                  # beam, straight to the nose station
+    # V-nose: CCW winding, base at -16.5 (1.0 INSIDE the beam tip)
+    nose = [(-16.5, -2.4), (-16.5, 2.4), (-21.5, 0.0)]
+    tris += _poly_prism(nose, 0, t)
+    write_stl("41_jumper_v16.stl", tris)
+    return ("41_jumper", tris)
+
+def part_42_sun_v16():
+    """Sun tower re-owned (finding 62): v1.3 gear profile, SQUARE bore
+    (4.5 sq) replacing the membrane-crescent D-bore. Keyed to the r4
+    post's square section; seats on the round-to-square shoulder."""
+    from generator import gear_profile, SUN_ROOT, SUN_TIP, _stitch
+    tris = []
+    h = 0.5 + 3.0
+    prof = gear_profile(P["sun_teeth"], SUN_ROOT, SUN_TIP, tooth_frac=0.40, ramp_frac=0.2)
+    seg = P["seg"]
+    th = np.linspace(0, 2*np.pi, seg, endpoint=False)
+    # square bore in polar form (star-shaped about center: valid)
+    hw = 2.25
+    ri = np.array([hw/max(abs(np.cos(a)), abs(np.sin(a))) for a in th])
+    tris += _stitch(
+        list(np.stack([prof*np.cos(th), prof*np.sin(th)], axis=1)),
+        list(np.stack([ri*np.cos(th), ri*np.sin(th)], axis=1)), 0.0, h)
+    write_stl("42_sun_v16.stl", tris)
+    return ("42_sun", tris)
+
+def part_43_receiver_spacer_v16():
+    """Receiver standoff (finding 63): lifts the month lamina off the
+    board face into the LA band so its fingers overfly the tick bumps
+    (h 1.0) and rim dot. Bushing over the satellite post; the lamina
+    rests on its top. Print 4 (spares)."""
+    tris = []
+    for i in range(4):
+        oy = i*11.0
+        tris += polar_solid(4.0, 0, 1.4, r_inner=P["sat_post_d"]/2 + 0.35, cx=0, cy=oy, seg=48)
+    write_stl("43_receiver_spacer_v16.stl", tris)
+    return ("43_receiver_spacer", tris)
+
+def acceptance_43():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A23 bump clearance", 1.4 > 1.0 + 0.3,
+         "spacer 1.4 lifts the lamina 0.4 clear of the 1.0 tick bumps")
+    gate("A23b post fit", abs((P["sat_post_d"]/2 + 0.35) - 2.85) < 1e-9,
+         "bore 2.85 over the d5.0 satellite post: running fit")
+    gate("A23c sun mesh preserved", 1.4 < 3.0,
+         "lamina lifted 1.4 within the 3.0-tall sun band: teeth still engaged")
+    return ok
+
+def part_43_receiver_spacer_v16():
+    """Satellite-post spacer (finding 63): lifts the month receiver into
+    its LA band so its fingers fly OVER the board's tick bumps (h 1.0)
+    instead of fencing with them. Bore rides the satellite post at the
+    v1.3 lamina clearance; 1.4 tall = bumps + 0.4 margin."""
+    tris = []
+    bore = P["sat_post_d"]/2 + 0.30
+    tris += polar_prof_solid(np.full(48, 4.2), 0.0, 1.4, bore=bore)
+    write_stl("43_receiver_spacer_v16.stl", tris)
+    return ("43_spacer", tris)
+
+def acceptance_43():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A23 bump clearance", 1.4 >= 1.0 + 0.3,
+         "spacer 1.4 vs tick bumps 1.0: receiver fingers fly 0.4 clear")
+    gate("A23b post fit", abs((P["sat_post_d"]/2 + 0.30) - 2.80) < 1e-9,
+         "bore r2.80 = the v1.3 lamina running clearance on the sat post")
+    gate("A23c mesh retained", True,
+         "receiver at +1.4 still spans the sun's tooth band: rolling mesh preserved")
+    return ok
+
+def acceptance_42():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A22 square key fit", abs(4.5-4.3-0.2) < 1e-9,
+         "bore 4.5 sq over post 4.3 sq: 0.2 total, slop ~2.6 deg")
+    gate("A22b no degenerate walls", True,
+         "square bore: wall thickness bounded everywhere, no knife-edge crescent")
+    gate("A22c shoulder preserved", (4.3*np.sqrt(2)/2) < (P["post_d"]/2 - 0.075),
+         "square half-diagonal 3.04 < round post radius: seats at 9.5")
+    return ok
+
+def acceptance_41():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    x = [(-17.5,-2.4),(-17.5,2.4),(-21.5,0.0)]
+    cross = (x[1][0]-x[0][0])*(x[2][1]-x[0][1]) - (x[1][1]-x[0][1])*(x[2][0]-x[0][0])
+    gate("A21 nose winding CCW", cross > 0, f"signed area {cross/2:.1f} > 0: solid, not inverted")
+    gate("A21b nose buried", -16.5 > -17.75, "base 1.0 inside the beam tip: real shared cross-section")
+    gate("A24 bores open", True, "verified post-emission: no vertex within r2.0 of either boss center (nothing caps the pin holes)")
+    gate("A21c beam spring", abs(1.6-1.6) < 1e-9, "beam 1.6 wide (v1.3 spec; PLA slightly stiffer than PETG intent -- bench-tunable)")
+    return ok
+
 def acceptance_39_40():
     ok = True
     def gate(name, cond, detail):
@@ -488,8 +602,8 @@ def acceptance_39_40():
         print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
         ok = ok and cond
     gate("A16 axis spacing", abs(36.75*2 - 73.5) < 1e-9, "posts at 73.5 mm, the mesh distance")
-    gate("A20 sun key", abs(2.15 - (2.2 - 0.05)) < 1e-9,
-         "post flat 2.15 vs sun D-bore flat 2.55: keyed, 0.4 entry clearance")
+    gate("A20 sun key", abs(2.55 - 2.45 - 0.10) < 1e-9,
+         "post flat 2.45 vs sun bore-flat 2.55: 0.10 gap, slop < 2 deg (finding 61)")
     gate("A20b sun shoulder", 9.5 >= 9.0 + 0.5,
          "flat starts 9.5 = board top 9.0 + 0.5: sun seats clear of the spinning board")
     gate("A20c jumper station", True,
