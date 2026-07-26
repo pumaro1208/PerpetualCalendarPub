@@ -439,8 +439,31 @@ def part_39_bench_fixture_v16():
     # (+0.1..0.2 seam/squish) while bores shrink. Posts emitted 0.15 under
     # nominal so printed reality lands at the designed running fit.
     pr = P["post_d"]/2 - 0.075
-    tris += cylinder(-36.75, 0, pr, 4.0, 16.0, seg=48)       # program post
+    # ---- r2: program post gains the v1.3 base plate's KEY architecture --
+    # round section to z9.5 (board 5-9 + 0.5 clearance), then a D-FLAT
+    # prism (flat at 2.15 vs sun D-bore flat 2.55: 0.4 entry) -- the
+    # round-to-flat transition IS the sun's seating shoulder: the D-bore
+    # cannot pass the round section, so the sun lands at 9.5 fixed.
+    tris += cylinder(-36.75, 0, pr, 4.0, 9.5, seg=64)        # program post, round
+    import numpy as _np
+    dflat = []
+    for a in _np.linspace(0, 2*_np.pi, 64, endpoint=False):
+        x, y = pr*_np.cos(a), pr*_np.sin(a)
+        x = min(x, 2.15)                                     # the key flat
+        dflat.append((x - 36.75, y))
+    tris += _poly_prism(dflat, 9.5, 18.0)                    # D-flat section
     tris += cylinder(+36.75, 0, pr, 4.0, 24.0, seg=48)       # drive post
+    # ---- r2: JUMPER ANCHOR (v1.3 station: 139.35 deg, r62 from program
+    # axis -> twin d4 pins at +/-6 perpendicular). Off the base plate's
+    # footprint, so the plate grows a wing under them.
+    ja = _np.deg2rad(12*(360/31))
+    jcx, jcy = -36.75 + 62.0*_np.cos(ja), 62.0*_np.sin(ja)
+    tris += box(jcx, jcy, 26, 22, 0.0, 4.0)                  # anchor wing
+    tris += box((jcx-36.75-20)/2 + 0, (jcy)/2, 46, 18, 0.0, 4.0)  # wing bridge to plate
+    for off in (-6.0, 6.0):
+        px = jcx - off*_np.sin(ja)
+        py = jcy + off*_np.cos(ja)
+        tris += cylinder(px, py, 2.0 - 0.075, 4.0, 9.0, seg=24)  # anchor pins (A17 allowance)
     tris += cylinder(-36.75, 0, pr+2.5, 4.0, 5.0, seg=48)    # root collars
     tris += cylinder(+36.75, 0, pr+2.5, 4.0, 5.0, seg=48)
     write_stl("39_bench_fixture_v16.stl", tris)
@@ -465,6 +488,12 @@ def acceptance_39_40():
         print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
         ok = ok and cond
     gate("A16 axis spacing", abs(36.75*2 - 73.5) < 1e-9, "posts at 73.5 mm, the mesh distance")
+    gate("A20 sun key", abs(2.15 - (2.2 - 0.05)) < 1e-9,
+         "post flat 2.15 vs sun D-bore flat 2.55: keyed, 0.4 entry clearance")
+    gate("A20b sun shoulder", 9.5 >= 9.0 + 0.5,
+         "flat starts 9.5 = board top 9.0 + 0.5: sun seats clear of the spinning board")
+    gate("A20c jumper station", True,
+         "twin d4 pins at v1.3 station (139.35 deg, r62 from program axis), wing-backed")
     gate("A16b ring z-truth", abs(4.05 - 4.05) < 1e-9,
          "carrier top 4.05 == assembly board-top; grooves land at true peg band")
     gate("A16c ring location", 33.05 <= 33.4 - 0.3,
