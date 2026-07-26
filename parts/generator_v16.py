@@ -501,15 +501,16 @@ def part_41_jumper_v16():
     # near its far end. Stiffness ~ 1/L^3: triple the length, an order
     # softer and smoother. The wedge's V is ROTATED to aim at the board's
     # rotation center, so spring force is truly radial at the contact.
-    tris += box(-10.35, 0, 10.7, 3.0, 0, t)                  # rigid root from the bar
-    tris += box(-15.85, -4.0, 1.1, 11.0, 0, t)               # LONG tangential flexure
-    tris += box(-18.0, -9.8, 5.6, 3.4, 0, t)                 # nose arm at the free end
+    # finding 72 (Ron's design, literal): ONE long slender rod from the
+    # anchor, ONE large round head. The disc nests in the tooth valley
+    # and wedges BOTH flanks -- a circle self-centers in a V by pure
+    # geometry. The rod itself is the spring.
+    tris += rbox(-10.95, -5.0, 39.4, 18.0, 1.3, 0, t)       # the rod (finding 73: shorter, head grew)
     # finding 68 (Ron's sketch, literally): ROUNDED crest -- flank faces
     # unchanged (~47 deg), but the apex is a r1.3 arc: the beak ROLLS over
     # tooth crests instead of catching. Crest radius from board center
     # still 41.0 = 0.86 penetration.
-    nose = [(np.float64(-20.29), np.float64(-12.35)), (np.float64(-19.11), np.float64(-7.29)), (np.float64(-20.5), np.float64(-8.3)), (np.float64(-21.0), np.float64(-8.28)), (np.float64(-21.48), np.float64(-8.46)), (np.float64(-21.85), np.float64(-8.81)), (np.float64(-22.06), np.float64(-9.27)), (np.float64(-22.07), np.float64(-9.78)), (np.float64(-21.89), np.float64(-10.25)), (np.float64(-21.55), np.float64(-10.62)), (np.float64(-21.09), np.float64(-10.83))]
-    tris += _poly_prism(nose, 0, t)
+    tris += cylinder(-17.43, -10.34, 4.4, 0, t, seg=48)  # head r4.4 = the anchor boss OD, bench-gauged by Ron against the teeth (finding 73)
     write_stl("41_jumper_v16.stl", tris)
     return ("41_jumper", tris)
 
