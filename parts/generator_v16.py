@@ -505,12 +505,12 @@ def part_41_jumper_v16():
     # anchor, ONE large round head. The disc nests in the tooth valley
     # and wedges BOTH flanks -- a circle self-centers in a V by pure
     # geometry. The rod itself is the spring.
-    tris += rbox(-10.95, -5.0, 39.4, 18.0, 1.3, 0, t)       # the rod (finding 73: shorter, head grew)
+    tris += rbox(-11.5, -4.8, 36.5, 19.0, 1.8, 0, t)        # rod widened 1.8 (finding 75: real preload)
     # finding 68 (Ron's sketch, literally): ROUNDED crest -- flank faces
     # unchanged (~47 deg), but the apex is a r1.3 arc: the beak ROLLS over
     # tooth crests instead of catching. Crest radius from board center
     # still 41.0 = 0.86 penetration.
-    tris += cylinder(-17.43, -10.34, 4.4, 0, t, seg=48)  # head r4.4 = the anchor boss OD, bench-gauged by Ron against the teeth (finding 73)
+    tris += cylinder(-18.65, -10.06, 4.4, 0, t, seg=48)  # head reach +1.25 deeper (finding 75: was tip-riding)
     write_stl("41_jumper_v16.stl", tris)
     return ("41_jumper", tris)
 
