@@ -68,3 +68,4 @@ Drag notes:
 - QUEUE (pending referendum verdict — if Arm A sweeps its 31 positions, next plates may be a different architecture entirely): v16f-r2 ring (raised plane, real key cavity, printable spider foundation per the ≥3 mm spec); #58-clean wheel emission (markers out of the mesh overlap band + marker-clearance gate); fresh 02_program_wheel regeneration from current source with the full gauntlet (finding #59) — REQUIRED before any Arm B session unless Ron confirms the originally-printed board carries the bump circle and tall pos-1 witness on its face.
 - 2026-07-25 20:56 · plate-08-crank.gcode.3mf · 38_crank_module spare (referendum bench) · started (outcome pending)
 - 2026-07-25 21:14 · plate-08-crank · finished OK
+- 2026-07-25 21:28 · plate-07b-jumper.gcode.3mf · 12_jumper v1.3 flexure (audition pair) · started (outcome pending)
