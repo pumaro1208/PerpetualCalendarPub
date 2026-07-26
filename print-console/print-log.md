@@ -72,3 +72,6 @@ Drag notes:
 - 2026-07-25 21:36 · plate-07b-jumper · finished OK
 - 2026-07-26 05:53 · plate-09-fixture-r2-arm-a.gcode.3mf · fixture r2 + Arm A hardware (surgical wheel, jumper, sun tower) · started (outcome pending)
 - 2026-07-26 07:39 · plate-09-fixture-r2-arm-a · finished OK — all 138 layers: fixture r2 (sun key, shoulder, jumper wing), surgical drive wheel (no pin/post), spare jumper, sun tower. Arm A moves to real tooling.
+- 2026-07-26 · BENCH · Finding #63 CLOSED + wobble doctrine: receiver rides spacer 43 above the tick bumps; gravity-seated for the audition (planar loads only — adequate); cap_sat is the designed retention, queued (inspected: one-piece, consistent winding, spigot bore open in toolpaths — render-verified).
+- 2026-07-26 09:10 · plate-10-referendum-set.gcode.3mf · referendum set: fixture r4 + jumper + sun + spacer (findings 60-64) · STOPPED at layer 0 on Ron's order, still in warm-up — no material laid; file remains staged on SD for a clean restart.
+- 2026-07-26 09:28 · plate-10b-referendum-set.gcode.3mf · referendum set + board (findings 60-64) · started (outcome pending)
