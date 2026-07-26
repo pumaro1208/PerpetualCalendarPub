@@ -80,3 +80,5 @@ Drag notes:
 - 2026-07-26 · DOCTRINE · finding 69: gear pairs are matched-vintage sets; stale receiver vs current sun = interference; meshing parts regenerate together henceforth. First application: 33_receiver_month regenerated from the files13 generator — byte-identical to the repo copy, vintage-match confirmed by regeneration rather than trust.
 - 2026-07-26 · Finding #70: 33_receiver_month's witness dot floats 1.6mm above the hub top (anchored at a stale height since the original emission; ray-parity verified). Field drop for plate-11 — mark station k=0 by hand per the clocking table; design office owes a re-anchored dot.
 
+- 2026-07-26 12:28 · plate-11-jumper6-receiver.gcode.3mf · jumper v6 + receiver (findings 67-70) · started (outcome pending)
+- 2026-07-26 12:48 · plate-11-jumper6-receiver · finished OK — all 40 layers: jumper v6 (long-spring rounded beak) + receiver (dot dropped, mark station k=0 by hand). The current program is fully printed.
