@@ -90,3 +90,5 @@ Drag notes:
 - 2026-07-26 · CLEANUP LIST (next session): (1) generator carries a harmless duplicate acceptance_43 definition from an earlier edit — deduplicate; (2) receiver r2 (finding #70: re-rooted fingers + re-anchored witness dot).
 - 2026-07-26 · SESSION TAIL · Finding #74: bearing clearance stack → post sleeves. Finding #75: jumper reach — head center pulled 1.25mm deeper (44.5 from board axis) to seat in the valley instead of grazing tips; rod 1.3→1.8 for real preload. Sleeve-first doctrine: fix the datum before tuning the instrument. BENCH STATE: v9 installed and tip-riding pre-sleeve; v10 is the post-sleeve contingency; matched v1.3 sun+receiver pair staged for the referendum; receiver 33 r2 and the duplicate acceptance_43 cleanup are the design office's openers next session.
 
+- 2026-07-26 14:54 · plate-13-jumper10-sleeves.gcode.3mf · jumper v10 + post sleeves (findings 74-75) · started (outcome pending)
+- 2026-07-26 15:09 · plate-13-jumper10-sleeves · finished OK — all 63 layers: jumper v10 (seating reach, 1.8 rod) + six-sleeve fit ladder. Sleeve-first doctrine ready to run at the bench.
