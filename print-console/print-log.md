@@ -105,3 +105,6 @@ Drag notes:
 
 - 2026-07-27 12:14 · plate-14-index-set.gcode.3mf · index plate: basin fixture r5 + detent star + arm r3 (findings 82-87) · started (outcome pending)
 - 2026-07-27 13:22 · plate-14-index-set · finished OK — all 120 layers: basin fixture r5, 31-spike detent star, arm r3. The machine's sole index (per finding 86) is printed.
+- 2026-07-27 · Finding #96 (against the design office): the shipped v1 qc_sweep and the tool that produced the 'clean' verdict were different programs — the corrected manifest lived only in a session. The vintage disease (#59, #87) infecting QC tooling itself: THE GATE IN THE REPO MUST BE THE GATE THAT CLEARED THE PLATE. v2 lands with assembly placement, sub-part isolation, flush tolerance 0.12, and the star↔arm + seat whitelists. Shakedown record: six real catches this session (findings 88, 89, 91's island, 92, 95, and 96 itself); two before any plastic moved. Console triage of the five v1 hits confirmed correct; item 5 dissolved as the cam-at-print-position striking the amputated weekday pin — a phantom on a phantom. DOCTRINE residue: multi-part STLs get per-sub-part manifest entries, and swept envelopes model the part AS-PRINTED.
+- STANDING RULE: qc_sweep runs before every compose; any unwhitelisted VIOLATION is stop-and-tell, same authority as the mid-air check.
+
