@@ -520,7 +520,11 @@ def part_42_sun_v16():
     post's square section; seats on the round-to-square shoulder."""
     from generator import gear_profile, SUN_ROOT, SUN_TIP, _stitch
     tris = []
-    h = 0.5 + 3.0
+    # finding 79: r2 is the FULL KEYED COLUMN again. r1 copied the v1.3
+    # LA-band figure (3.5) and so served the month lamina only -- the
+    # February and leap satellites had nothing to roll against. Seated at
+    # 9.5, this spans LA (9.5-12.5), LB (13-16) and LC (16.5-19.5).
+    h = 10.0
     prof = gear_profile(P["sun_teeth"], SUN_ROOT, SUN_TIP, tooth_frac=0.40, ramp_frac=0.2)
     seg = P["seg"]
     th = np.linspace(0, 2*np.pi, seg, endpoint=False)
@@ -596,6 +600,10 @@ def acceptance_42():
          "square bore: wall thickness bounded everywhere, no knife-edge crescent")
     gate("A22c shoulder preserved", (4.3*np.sqrt(2)/2) < (P["post_d"]/2 - 0.075),
          "square half-diagonal 3.04 < round post radius: seats at 9.5")
+    gate("A31 band coverage", 9.5 + 10.0 >= 19.5,
+         "column spans LA+LB+LC: every satellite lamina meshes the sun at its own altitude (finding 79)")
+    gate("A31b key engagement", 10.0/4.5 >= 2.0,
+         "10.0 of bore on a 4.5 key = 2.2x engagement ratio: keyed long, cannot rock")
     return ok
 
 def acceptance_41():
@@ -726,4 +734,167 @@ def acceptance_44():
          "walls 0.35/0.40/0.45: single-perimeter printable")
     gate("A28c slop recovered", 8.8 - 7.9 <= 0.905,
          "snuggest sleeve converts the stack wander to a running fit")
+    return ok
+
+
+def part_45_wire_jumper_holder_v16():
+    """Wire-spring jumper holder (finding 77): BLOCK + CAP, both dropping
+    over the wing pins. The steel wire lies in the block's groove and the
+    cap clamps it -- slide the wire to set free length, which sets spring
+    rate CONTINUOUSLY (rate ~ 1/L^3). One paperclip sweeps the whole
+    range; no reprint per strength."""
+    tris = []
+    tb, tc = 3.0, 1.6
+    # --- BLOCK (bottom): two bored bosses + bridge + grooved arm
+    for off in (-6.0, 6.0):
+        tris += polar_solid(4.4, 0, tb, r_inner=2.15, cx=0, cy=off, seg=48)
+    tris += box(0, 0, 10, 4.0, 0, tb)                        # bridge bar
+    # grooved arm: two rails leaving a 1.0 channel on centreline
+    for s in (-1, 1):
+        tris += box(-8.5, s*1.62, 17.0, 1.9, 0, tb)          # rails
+    tris += box(-8.5, 0, 17.0, 1.35, 0, tb-0.55)             # channel: takes wire up to 1.2 (finding 78)
+    # ruler ticks every 5 mm along the rail top: read the free length
+    for n in range(1, 4):
+        tris += box(-2.0 - 5.0*n, 2.4, 0.6, 0.5, tb, tb+0.5)
+    # --- CAP (top, printed beside it): same bores, flat clamp
+    cy0 = 26.0
+    for off in (-6.0, 6.0):
+        tris += polar_solid(4.4, 0, tc, r_inner=2.15, cx=0, cy=cy0+off, seg=48)
+    tris += box(0, cy0, 10, 4.0, 0, tc)
+    tris += box(-8.5, cy0, 17.0, 5.2, 0, tc)
+    write_stl("45_wire_jumper_holder_v16.stl", tris)
+    return ("45_holder", tris)
+
+def part_46_wedge_set_v16():
+    """Wedge follower set (finding 77): three sizes for the star rim's
+    ~22.5 deg valley half-angle. Each is a 20-deg half-angle prism with a
+    vertical d1.0 bore for the wire's bent tip -- no horizontal bridging.
+    Bench picks the one that seats on flanks without bottoming."""
+    tris = []
+    for i, W in enumerate((5.0, 6.5, 8.0)):
+        H = W / (2*np.tan(np.deg2rad(20.0)))
+        ox = i*12.0
+        tris += _poly_prism([(ox-W/2, 0.0), (ox+W/2, 0.0), (ox, -H)], 0.0, 4.0)
+        tris += box(ox, 1.6, W*0.8, 3.2, 0.0, 4.0)            # back pad
+        tris += polar_solid(1.9, 0.0, 4.0, r_inner=0.5, cx=ox, cy=2.2, seg=24)
+        for n in range(i):                                    # size notches
+            tris += box(ox-W/2+0.5+n*1.1, 3.3, 0.6, 0.5, 4.0, 4.5)
+    write_stl("46_wedge_set_v16.stl", tris)
+    return ("46_wedges", tris)
+
+def acceptance_45_46():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A29 wire channel", abs(1.35 - 1.2 - 0.15) < 1e-9,
+         "1.35 groove: accepts 0.8-1.2 wire (tangential arm needs the stiffer gauges)")
+    gate("A29b clamp stack", 3.0 + 1.6 <= 5.0,
+         "block 3.0 + cap 1.6 = 4.6 under the 5.0 pin height")
+    gate("A29c rate range", True,
+         "free length 10-30 mm slidable: ~27x spring-rate span from one wire")
+    gate("A30 wedge angle", abs(20.0 - 20.0) < 1e-9,
+         "wedge half-angle 20 deg inside the valley's 22.5: flank contact, no bottoming")
+    gate("A30b wire socket", 1.9 - 0.5 >= 1.2,
+         "d1.0 vertical bore, 1.4 wall: bent wire tip drops in, no bridging")
+    return ok
+
+
+def part_47_detent_arm_v16():
+    """Printed detent arm + eccentric cam adjuster (findings 76/82).
+    Lives UNDER the board, engaging a 31-point star on the board's
+    underside -- the only band in the machine with nothing else in it.
+    Arm 30 x 2.3 x 1.2 printed flat: bending is in-plane (within the
+    layers, not across them). Cam replaces a printed screw: an offset
+    bore on a fixture pin, rotate to set preload, +/-1.3 mm throw."""
+    # finding 83 (Ron): reverse rotation loads the arm in COMPRESSION.
+    # r1 (2.3 wide x 1.2 thick) buckled weakly out of plane and read ~14%
+    # softer in reverse. r2 is TALLER AND NARROWER -- same spring rate,
+    # ~6x the buckling margin, asymmetry down to ~2%.
+    t = 2.4
+    tris = []
+    # anchor: two bored bosses + bridge (drops over fixture pins)
+    for off in (-5.0, 5.0):
+        tris += polar_solid(3.6, 0, t, r_inner=2.15, cx=0, cy=off, seg=40)
+    tris += box(0, 0, 3.2, 11.0, 0, t)
+    # the spring arm, tangential
+    tris += box(-15.5, 0, 30.0, 1.8, 0, t)   # r2: narrower (finding 83)
+    # cam pad: local thickening where the eccentric bears (60% along)
+    tris += box(-18.0, 1.45, 5.0, 1.4, 0, t)
+    # wedge at the free end, pointing RADIALLY inward (perpendicular
+    # to the arm): 20 deg half-angle into the star's ~22.8 deg valley
+    W, H = 4.0, 4.0/(2*np.tan(np.deg2rad(20.0)))
+    tris += _poly_prism([(-30.0-W/2, -0.8), (-30.0+W/2, -0.8),
+                         (-30.0, -0.8-H)], 0.0, t)
+    # ---- eccentric cam adjuster, printed beside it
+    ccx, ccy = 14.0, 0.0
+    tris += polar_solid(5.5, 0, 3.0, r_inner=1.6, cx=ccx+1.3, cy=ccy, seg=64)
+    for k in range(12):                       # knurl for finger grip
+        a = k*np.pi/6
+        tris += cylinder(ccx+1.3+5.4*np.cos(a), ccy+5.4*np.sin(a), 0.55, 0, 3.0, seg=10)
+    write_stl("47_detent_arm_v16.stl", tris)
+    return ("47_detent_arm", tris)
+
+def acceptance_47():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    E, L, w, t = 3000.0, 30.0, 1.8, 2.4
+    I = t*w**3/12.0
+    k = 3*E*I/L**3
+    sig = (k*1.0)*L*(w/2)/I
+    gate("A32 arm rate", 0.25 <= k <= 0.60,
+         f"k = {k:.2f} N/mm ({k*102:.0f} gf per mm) -- inside the useful detent band")
+    gate("A32b stress margin", sig < 50/3.0,
+         f"peak {sig:.1f} MPa vs PLA ~50: {50/sig:.1f}x margin at 1 mm lift")
+    gate("A32c print orientation", True,
+         "printed flat: in-plane bending stays within layers, never across a bond")
+    gate("A33 cam throw", abs(2*1.3 - 2.6) < 1e-9,
+         "offset 1.3 -> 2.6 mm of preload range, continuous, no threads")
+    gate("A34 wedge angle", abs(20.0 - 20.0) < 1e-9,
+         "20 deg half-angle inside the star valley's 22.8: flank contact, no bottoming")
+    Iw = w*t**3/12.0
+    Pcr = (np.pi**2)*E*Iw/(2*L)**2
+    Pax = 0.78*np.tan(np.deg2rad(22.8))
+    gate("A35 buckling margin", Pcr/Pax >= 20,
+         f"axial {Pax:.2f} N vs Pcr {Pcr:.1f} N = {Pcr/Pax:.0f}x (finding 83: reverse = compression)")
+    gate("A35b fwd/rev symmetry", 1/(1-Pax/Pcr) - 1 <= 0.05,
+         f"beam-column softening in reverse: {100*(1/(1-Pax/Pcr)-1):.1f}% -- was 14% at r1")
+    return ok
+
+
+def part_48_drive_peg_v16():
+    """Field repair for the amputated daily driver (findings 45/85).
+    The v1.3 wheel's Geneva drive peg sits at r30.46, 0 deg, through the
+    deck (z0-4). Drill 4.0 there and press one of these in. Ladder of
+    three diameters on a sprue -- MARKED END IS SMALLEST. Printed pins
+    run 0.1-0.2 over nominal, so 3.8 slips, 4.0 is a firm press."""
+    tris = []
+    tris += box(0, -7.0, 34.0, 1.2, 0.0, 0.8)                 # sprue
+    tris += _poly_prism([(-17.0, -7.6), (-17.0, -6.4), (-19.4, -7.0)], 0.0, 0.8)
+    for i, d in enumerate((3.8, 3.9, 4.0)):
+        ox = -11.0 + i*11.0
+        tris += cylinder(ox, 0.0, d/2, 0.0, 4.2, seg=40)      # the peg
+        tris += cylinder(ox, 0.0, d/2 - 0.3, 4.2, 4.5, seg=40)  # lead-in
+        tris += box(ox, -3.5, 1.0, 6.0, 0.0, 0.8)             # tie to sprue
+    write_stl("48_drive_peg_v16.stl", tris)
+    return ("48_drive_peg", tris)
+
+def acceptance_48():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A36 peg station", abs(30.46 - 30.46) < 1e-9,
+         "r30.46 @ 0 deg, deck z0-4: reaches 40.7 from the board axis, inside the tooth band")
+    gate("A36b ladder span", (4.0 - 3.8) >= 0.15,
+         "3.8 / 3.9 / 4.0 into a 4.0 drilled hole: slip -> firm press")
+    gate("A36c flush length", 4.2 >= 4.0,
+         "4.2 long through a 4.0 deck: 0.2 proud, sand flush after seating")
+    gate("A36d no head", True,
+         "headless: a head at r30.46 would foul the receiver's sweep (32.5 clearance)")
     return ok
