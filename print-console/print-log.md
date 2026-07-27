@@ -92,3 +92,12 @@ Drag notes:
 
 - 2026-07-26 14:54 · plate-13-jumper10-sleeves.gcode.3mf · jumper v10 + post sleeves (findings 74-75) · started (outcome pending)
 - 2026-07-26 15:09 · plate-13-jumper10-sleeves · finished OK — all 63 layers: jumper v10 (seating reach, 1.8 rod) + six-sleeve fit ladder. Sleeve-first doctrine ready to run at the bench.
+- 2026-07-27 · HOUSEKEEPING · findings 74–86 record:
+  · #74 bearing clearance stack (0.85 mm) → sleeve ladder → fitted; sleeves now being absorbed into bore lands, part 44 retires.
+  · #80 the v1.3 sun cannot key on the r4 square post (1.31 mm gap) — matched gears isn't enough, the sun must match the post.
+  · #83 the detent arm sees compression in reverse; taller-and-narrower section fixes buckling and cuts fwd/rev asymmetry 14% → 2%.
+  · #85 WITHDRAWN — a Geneva locking disc was claimed; there is none.
+  · #86 the drive wheel body clears the board tips by 2.44 mm by design — a rigid lock would block the month-end cascade, so the jumper is the machine's sole index. The plate-09 mid-air drop was correct: the amputated pin was the WEEKDAY pin, not the daily driver — the daily tooth is present and working. Do not drill the wheel; part 48 is withdrawn (archived in parts/stl for the record).
+- 2026-07-27 · Repo sync notes: 02_program_wheel current-source verified (31 tick bumps + tall pos-1 witness in mesh census — finding #59 satisfied); 44 unchanged (already current); 42_sun r2 "full column" NOT yet landed (repo copy is yesterday's — awaiting drop); generator not in this drop (files17 copy stands). Printability flags for future plates: 45 and 46 carry small mid-air features (borderline heuristic; re-check at compose time).
+- NEXT SESSION plate: detent star ring, roller + pin, fixture r5 (pocket, anchor, mid-span guide), arm r3, receiver 33 r2.
+
