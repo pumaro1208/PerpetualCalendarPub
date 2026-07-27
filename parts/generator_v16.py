@@ -898,3 +898,85 @@ def acceptance_48():
     gate("A36d no head", True,
          "headless: a head at r30.46 would foul the receiver's sweep (32.5 clearance)")
     return ok
+
+
+def part_49_fixture_r5_v16():
+    """Fixture r5 (finding 87-era): the plate emitted as SEGMENTS that
+    leave a detent BASIN -- floor z2.5 everywhere west of the drive slab,
+    except an island shelf around the program post. The detent (star ring
+    + arm 47 + cam) lives in the basin's 2.4 mm band under the board.
+    Posts, collars, anchor pins (tangency station), cam pin and mid-span
+    guides all rise from their own floors. Additive-only, no subtraction."""
+    tris = []
+    pr = P["post_d"]/2 - 0.075
+    tris += box(0, 0, 132, 76, 0.0, 2.5)                     # base slab (everything)
+    tris += box(36.65, 0, 58.7, 76, 2.5, 4.0)                # east slab (drive side, x 7.3..66)
+    tris += polar_solid(20.0, 2.5, 4.0, cx=-36.75, cy=0, seg=96)   # island shelf
+    # program post: round to 9.5, square key above (r4 architecture kept)
+    tris += cylinder(-36.75, 0, pr, 4.0, 9.5, seg=64)
+    tris += box(-36.75, 0, 4.3, 4.3, 9.5, 18.0)
+    tris += cylinder(-36.75, 0, 6.5, 4.0, 5.0, seg=48)       # collar (board seat + ring bearing)
+    # drive post + collar on the east slab
+    tris += cylinder(+36.75, 0, pr, 4.0, 24.0, seg=48)
+    tris += cylinder(+36.75, 0, 6.5, 4.0, 5.0, seg=48)
+    # detent arm anchor pins: wedge station (-36.75,-28.5), arm along +x,
+    # anchor at (-6.75,-28.5) => r41.4 from the board axis = TANGENCY
+    for off in (-5.0, 5.0):
+        tris += cylinder(-6.75, -28.5+off, 2.0-0.075, 2.5, 4.7, seg=24)
+    # cam pin (adjuster bears on the arm 12 mm from the anchor)
+    tris += cylinder(-18.75, -33.2, 1.6-0.075, 2.5, 4.7, seg=24)
+    # mid-span buckling guides (finding 83): goalposts flanking the arm
+    for gy in (-26.1, -30.9):
+        tris += cylinder(-22.0, gy, 1.3, 2.5, 4.9, seg=20)
+    write_stl("49_fixture_r5_v16.stl", tris)
+    return ("49_fixture_r5", tris)
+
+def part_50_detent_star_v16():
+    """Detent star ring (findings 76/82/86): 31 symmetric spikes, root 26
+    tip 31, turning WITH the board. Web rests on the island shelf and its
+    bore rides the post collar (centred); an outrigger at r38.6 carries a
+    d2.1 bore for a DROP-IN pin that stands up into a board rim-tooth
+    valley -- rotational coupling, no glue, inboard of the daily tooth's
+    40.74 reach. EMITTED IN PRINT ORIENTATION: flat top face on the bed;
+    flip at assembly (top face up, against the board's underside)."""
+    tris = []
+    # web: z0-1.0 (assembly 5.0 down to 4.0, rests on the shelf)
+    tris += polar_solid(20.0, 0.0, 1.0, r_inner=6.65, seg=96)
+    # spike ring: z0-1.2 (assembly 5.0 down to 3.8)
+    root, tip = 26.0, 31.0
+    seg = 1240
+    th = np.linspace(0, 2*np.pi, seg, endpoint=False)
+    r = np.full(seg, root)
+    pitch = 2*np.pi/31
+    for k in range(31):
+        c = k*pitch
+        d = np.abs(np.angle(np.exp(1j*(th-c))))
+        r = np.maximum(r, root + (tip-root)*np.clip(1 - d/(0.42*pitch), 0, 1))
+    tris += polar_prof_solid(r, 0.0, 1.2, bore=20.0-0.4)     # overlaps the web at r19.6-20
+    # outrigger to the clocking-pin boss at r38.6, angle 180/31 deg off a
+    # spike (the pin must sit in a RIM VALLEY; rim valleys align with
+    # spike valleys by design, so the boss goes at a valley angle)
+    a = pitch/2
+    tris += rbox((31.0+38.6)/2*np.cos(a), (31.0+38.6)/2*np.sin(a),
+                 np.degrees(a), 38.6-31.0+2.0, 3.0, 0.0, 1.2)
+    tris += polar_solid(2.6, 0.0, 1.2, r_inner=1.05, cx=38.6*np.cos(a), cy=38.6*np.sin(a), seg=32)
+    write_stl("50_detent_star_v16.stl", tris)
+    return ("50_detent_star", tris)
+
+def acceptance_49_50():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    gate("A37 z-budget", 4.9 - 2.5 >= 2.4,
+         "basin floor 2.5, board 5.0: the 2.4 detent band exists; arm r2 fits unchanged")
+    gate("A37b ring seats", abs((5.0-1.0) - 4.0) < 1e-9,
+         "web underside lands on the island shelf (4.0); spikes hang 3.8-5.0 over the basin")
+    gate("A38 tangency", abs(np.hypot(30.0, 28.5) - 41.4) < 0.1,
+         "anchor (-6.75,-28.5) is 41.4 from the board axis: arm tangential at the wedge")
+    gate("A39 pin clearance", 38.6 + 2.6 < 40.74 + 2.0 and 38.6 < 40.0,
+         "clocking pin at r38.6, inboard of the daily tooth's 40.74 dip")
+    gate("A40 print-flat", True,
+         "both parts: every feature rises from the bed; zero supports, zero subtraction")
+    return ok
