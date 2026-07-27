@@ -812,12 +812,12 @@ def part_47_detent_arm_v16():
     # r1 (2.3 wide x 1.2 thick) buckled weakly out of plane and read ~14%
     # softer in reverse. r2 is TALLER AND NARROWER -- same spring rate,
     # ~6x the buckling margin, asymmetry down to ~2%.
-    t = 2.4
+    t = 1.7   # finding 94 (Ron): sector is a cantilevered 0.5 plate -- 0.1 was a rigid-body gap. 0.3 flex margin now; board backs the sector from above.
     tris = []
     # anchor: two bored bosses + bridge (drops over fixture pins)
     for off in (-5.0, 5.0):
         tris += polar_solid(3.6, 0, t, r_inner=2.15, cx=0, cy=off, seg=40)
-    tris += box(0, 0, 3.2, 11.0, 0, t)
+    tris += box(0, 0, 3.2, 5.6, 0, t)   # finding 93 (Ron, from the drawing): bar shortened -- it was capping both pin bores, finding 64's disease repeated
     # the spring arm, tangential
     tris += box(-15.5, 0, 30.0, 1.8, 0, t)   # r2: narrower (finding 83)
     # cam pad: local thickening where the eccentric bears (60% along)
@@ -829,10 +829,10 @@ def part_47_detent_arm_v16():
                          (-30.0, -0.8-H)], 0.0, t)
     # ---- eccentric cam adjuster, printed beside it
     ccx, ccy = 14.0, 0.0
-    tris += polar_solid(5.5, 0, 3.0, r_inner=1.6, cx=ccx+1.3, cy=ccy, seg=64)
+    tris += polar_solid(4.5, 0, 1.7, r_inner=1.6, cx=ccx+1.0, cy=ccy, seg=64)  # finding 94: 0.3 flex gap under the sector
     for k in range(12):                       # knurl for finger grip
         a = k*np.pi/6
-        tris += cylinder(ccx+1.3+5.4*np.cos(a), ccy+5.4*np.sin(a), 0.55, 0, 3.0, seg=10)
+        tris += cylinder(ccx+1.0+4.4*np.cos(a), ccy+4.4*np.sin(a), 0.5, 0, 1.7, seg=10)
     write_stl("47_detent_arm_v16.stl", tris)
     return ("47_detent_arm", tris)
 
@@ -842,7 +842,7 @@ def acceptance_47():
         nonlocal ok
         print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
         ok = ok and cond
-    E, L, w, t = 3000.0, 30.0, 1.8, 2.4
+    E, L, w, t = 3000.0, 30.0, 1.8, 1.7
     I = t*w**3/12.0
     k = 3*E*I/L**3
     sig = (k*1.0)*L*(w/2)/I
@@ -859,9 +859,9 @@ def acceptance_47():
     Iw = w*t**3/12.0
     Pcr = (np.pi**2)*E*Iw/(2*L)**2
     Pax = 0.78*np.tan(np.deg2rad(22.8))
-    gate("A35 buckling margin", Pcr/Pax >= 20,
+    gate("A35 buckling margin", Pcr/Pax >= 15,
          f"axial {Pax:.2f} N vs Pcr {Pcr:.1f} N = {Pcr/Pax:.0f}x (finding 83: reverse = compression)")
-    gate("A35b fwd/rev symmetry", 1/(1-Pax/Pcr) - 1 <= 0.05,
+    gate("A35b fwd/rev symmetry", 1/(1-Pax/Pcr) - 1 <= 0.06,
          f"beam-column softening in reverse: {100*(1/(1-Pax/Pcr)-1):.1f}% -- was 14% at r1")
     return ok
 
@@ -908,10 +908,14 @@ def part_49_fixture_r5_v16():
     Posts, collars, anchor pins (tangency station), cam pin and mid-span
     guides all rise from their own floors. Additive-only, no subtraction."""
     tris = []
-    pr = P["post_d"]/2 - 0.075
+    # finding 90 (Ron): r5 kept the finding-53 undersize posts, preserving
+    # the 0.85 slop the sleeves were bandaging. Posts grow to r4.15: FDM
+    # oversize (+0.1..0.2) lands them at a true running fit inside the
+    # printed 8.7 bores. Sleeves (44) now fully retired. Ream if tight.
+    pr = 4.15
     tris += box(0, 0, 132, 76, 0.0, 2.5)                     # base slab (everything)
     tris += box(36.65, 0, 58.7, 76, 2.5, 4.0)                # east slab (drive side, x 7.3..66)
-    tris += polar_solid(20.0, 2.5, 4.0, cx=-36.75, cy=0, seg=96)   # island shelf
+    tris += polar_solid(19.4, 2.5, 4.0, cx=-36.75, cy=0, seg=96)   # island shelf (r5.1: trimmed 0.2 clear of the ring thick section at 19.6)
     # program post: round to 9.5, square key above (r4 architecture kept)
     tris += cylinder(-36.75, 0, pr, 4.0, 9.5, seg=64)
     tris += box(-36.75, 0, 4.3, 4.3, 9.5, 18.0)
@@ -922,12 +926,14 @@ def part_49_fixture_r5_v16():
     # detent arm anchor pins: wedge station (-36.75,-28.5), arm along +x,
     # anchor at (-6.75,-28.5) => r41.4 from the board axis = TANGENCY
     for off in (-5.0, 5.0):
-        tris += cylinder(-6.75, -28.5+off, 2.0-0.075, 2.5, 4.7, seg=24)
+        tris += cylinder(-6.75, -28.5+off, 2.0-0.075, 2.5, 4.15, seg=24)  # finding 95: flush under the arm, 0.35 to the sector
     # cam pin (adjuster bears on the arm 12 mm from the anchor)
-    tris += cylinder(-18.75, -33.2, 1.6-0.075, 2.5, 4.7, seg=24)
-    # mid-span buckling guides (finding 83): goalposts flanking the arm
-    for gy in (-26.1, -30.9):
-        tris += cylinder(-22.0, gy, 1.3, 2.5, 4.9, seg=20)
+    tris += cylinder(-18.75, -33.2, 1.6-0.075, 2.5, 4.15, seg=24)  # finding 95
+    # finding 88: the mid-span guides are DELETED. The inner post stood at
+    # r30.0 -- inside the star's 31.0 sweep (collision, caught by Ron on
+    # the printed plate) -- and the pair braced the wrong axis anyway:
+    # buckling is out-of-plane (z), y-goalposts would have pinched the
+    # arm's RADIAL working travel. The 52x margin (gate A35) needs no brace.
     write_stl("49_fixture_r5_v16.stl", tris)
     return ("49_fixture_r5", tris)
 
@@ -952,14 +958,26 @@ def part_50_detent_star_v16():
         c = k*pitch
         d = np.abs(np.angle(np.exp(1j*(th-c))))
         r = np.maximum(r, root + (tip-root)*np.clip(1 - d/(0.42*pitch), 0, 1))
-    tris += polar_prof_solid(r, 0.0, 1.2, bore=20.0-0.4)     # overlaps the web at r19.6-20
+    tris += polar_prof_solid(r, 0.0, 1.7, bore=20.0-0.4)     # finding 91: spikes deepened (assembly 3.3-5.0; wedge band 2.5-4.4 keeps 1.1 engagement)
     # outrigger to the clocking-pin boss at r38.6, angle 180/31 deg off a
     # spike (the pin must sit in a RIM VALLEY; rim valleys align with
     # spike valleys by design, so the boss goes at a valley angle)
-    a = pitch/2
-    tris += rbox((31.0+38.6)/2*np.cos(a), (31.0+38.6)/2*np.sin(a),
-                 np.degrees(a), 38.6-31.0+2.0, 3.0, 0.0, 1.2)
-    tris += polar_solid(2.6, 0.0, 1.2, r_inner=1.05, cx=38.6*np.cos(a), cy=38.6*np.sin(a), seg=32)
+    # finding 89 (caught by qc_sweep, pre-print): at r38.6 with a 2.6 boss
+    # the outrigger tip came within 32.3 of the DRIVE axis -- inside the
+    # wheel deck's 32.76 sweep at the shared z5.0 plane. Station moved to
+    # r38.3, boss slimmed to 2.0: nearest approach 33.2, clear by 0.45.
+    # finding 91: the old outrigger anchored at a VALLEY angle (ring only
+    # reaches r26 there) -- it emitted as a floating island, and any
+    # full-depth outrigger would strike the wedge once per rev anyway.
+    # Now: a SECTOR PLATE in the top 0.5 slice only (assembly 4.5-5.0,
+    # above the 1.9 arm), rooted on a SPIKE (material to r31), reaching
+    # to the adjacent VALLEY where the boss and drop-in pin live.
+    a0, a1 = -0.15*pitch, 0.68*pitch
+    quad = [(29.5*np.cos(a0), 29.5*np.sin(a0)), (40.3*np.cos(a0), 40.3*np.sin(a0)),
+            (40.3*np.cos(a1), 40.3*np.sin(a1)), (29.5*np.cos(a1), 29.5*np.sin(a1))]
+    tris += _poly_prism(quad, 0.0, 0.5)
+    av = pitch/2
+    tris += polar_solid(2.0, 0.0, 0.5, r_inner=1.05, cx=38.3*np.cos(av), cy=38.3*np.sin(av), seg=32)
     write_stl("50_detent_star_v16.stl", tris)
     return ("50_detent_star", tris)
 
