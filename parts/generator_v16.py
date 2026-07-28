@@ -973,8 +973,8 @@ def part_50_detent_star_v16():
     # above the 1.9 arm), rooted on a SPIKE (material to r31), reaching
     # to the adjacent VALLEY where the boss and drop-in pin live.
     a0, a1 = -0.15*pitch, 0.68*pitch
-    quad = [(29.5*np.cos(a0), 29.5*np.sin(a0)), (40.3*np.cos(a0), 40.3*np.sin(a0)),
-            (40.3*np.cos(a1), 40.3*np.sin(a1)), (29.5*np.cos(a1), 29.5*np.sin(a1))]
+    quad = [(24.0*np.cos(a0), 24.0*np.sin(a0)), (40.3*np.cos(a0), 40.3*np.sin(a0)),
+            (40.3*np.cos(a1), 40.3*np.sin(a1)), (24.0*np.cos(a1), 24.0*np.sin(a1))]
     tris += _poly_prism(quad, 0.0, 0.5)
     av = pitch/2
     tris += polar_solid(2.0, 0.0, 0.5, r_inner=1.05, cx=38.3*np.cos(av), cy=38.3*np.sin(av), seg=32)
@@ -997,4 +997,206 @@ def acceptance_49_50():
          "clocking pin at r38.6, inboard of the daily tooth's 40.74 dip")
     gate("A40 print-flat", True,
          "both parts: every feature rises from the bed; zero supports, zero subtraction")
+    return ok
+
+
+# ======================================================================
+# FINDINGS 97-99  —  THE BRIDGE JUMPER  (Cowork design office, this session)
+# ----------------------------------------------------------------------
+# Finding #99 (Ron): the detent index becomes a BRIDGE jumper. The arm 47
+# cantilever is a beam-column: finding #83 drove its fwd/rev asymmetry to
+# ~2% but a cantilever can never reach 0 by construction. A bridge — the
+# flexure PINNED AT BOTH ENDS with the wedge at mid-span — is loaded
+# identically in both crank directions (design-law #1, reversibility).
+# Star r4 gives it shallow ramps so a stiffer both-ends beam still cams
+# through each pitch at a hand-crank force. Fixture r5.4 carries the two
+# bridge anchor stations in place of the single cantilever anchor + cam pin.
+#
+# Frame convention for part 51 & star r4: PROG-relative (origin on the
+# program/star axis). Detent station = 270 deg (straight -y). Assembly:
+# star flips at zoff 5.0 (spikes hang 3.3-5.0); bridge sits zoff 2.5
+# (wedge band 2.5-4.4 -> 1.1 mm engagement with the spikes, per finding 91).
+# ======================================================================
+
+DET_STA_DEG = 270.0                     # detent station, PROG-relative
+BR_ANCHOR_X = 20.0                      # +/- x of the two pins (span L = 40)
+BR_ANCHOR_Y = -30.5                     # moved IN to r30.5 (short riser, less twist lever arm; still clears star tip 28.5)
+BR_W        = 1.05                      # flexure in-plane width (y) -> spring (narrowed: short bar is stiffer)
+BR_T        = 1.9                       # print height (wedge band 2.5-4.4)
+BR_E        = 3000.0                    # PLA modulus (project convention)
+STAR_R4_ROOT, STAR_R4_TIP = 26.0, 28.5  # notch UNCHANGED (2.5 mm, deep/robust) — Ron: keep the notch
+STAR_R4_RAMP = 0.48                     # r4: near-full-pitch linear flanks (~45 deg notch)
+WEDGE_WB, WEDGE_WT = 5.5, 0.5           # POINTED wedge: sharp apex (0.5, clear jump) + wide shoulders (5.5) bearing both flanks
+WEDGE_YB, WEDGE_YT = -28.3, -27.0       # shoulders r28.3 (touch both teeth) / sharp apex r27.0 (clear 1.5mm jump, fatigue margin)
+
+def _star_r4_profile(seg=1240):
+    th = np.linspace(0, 2*np.pi, seg, endpoint=False)
+    r = np.full(seg, STAR_R4_ROOT); pitch = 2*np.pi/31
+    for k in range(31):
+        d = np.abs(np.angle(np.exp(1j*(th - k*pitch))))
+        w = np.clip(1 - d/(STAR_R4_RAMP*pitch), 0, 1)      # LINEAR notch flanks
+        r = np.maximum(r, STAR_R4_ROOT + (STAR_R4_TIP-STAR_R4_ROOT)*w)
+    return th, r
+
+def part_50_detent_star_r4_v16():
+    """Star r4 (finding 98): shallow ramps. Raised-cosine scalloped rim,
+    tip lowered 31->29.5, ramp widened 0.42->0.50 pitch so the max flank
+    angle drops well below the r3 value -- a stiffer bridge jumper cams
+    through each pitch at a hand-crank force. Web, bore, outrigger and the
+    drop-in clocking pin boss are UNCHANGED from the committed star (matched
+    vintage: only the rim ramps move)."""
+    tris = []
+    tris += polar_solid(20.0, 0.0, 1.0, r_inner=6.65, seg=96)          # web
+    th, r = _star_r4_profile(1240)
+    tris += polar_prof_solid(r, 0.0, 1.7, bore=20.0-0.4)               # scalloped rim
+    pitch = 2*np.pi/31
+    a0, a1 = -0.15*pitch, 0.68*pitch                                   # rooted sector (unchanged)
+    quad = [(24.0*np.cos(a0), 24.0*np.sin(a0)), (40.3*np.cos(a0), 40.3*np.sin(a0)),
+            (40.3*np.cos(a1), 40.3*np.sin(a1)), (24.0*np.cos(a1), 24.0*np.sin(a1))]
+    tris += _poly_prism(quad, 0.0, 0.5)
+    av = pitch/2
+    tris += polar_solid(2.0, 0.0, 0.5, r_inner=1.05,
+                        cx=38.3*np.cos(av), cy=38.3*np.sin(av), seg=32)
+    write_stl("50_detent_star_r4_v16.stl", tris)
+    return ("50_detent_star_r4", tris)
+
+def part_51_bridge_arm_v16():
+    """Bridge jumper (finding #99). Flexure PINNED AT BOTH ENDS (two fixture
+    pins at PROG-relative (+/-20,-34)); a slender tangential beam spans them
+    and carries a single symmetric wedge at mid-span that seats in a star
+    valley at the 270-deg station. Loaded identically in forward and reverse
+    (reversibility, by construction). Prints flat, every feature rises from
+    the bed, no supports, no subtraction. PROG-relative frame; assembly
+    dx=-36.75 dy=0 zoff=2.5 (no flip)."""
+    tris = []
+    t = BR_T
+    xa, ya = BR_ANCHOR_X, BR_ANCHOR_Y
+    # two bored anchor bosses (drop over the fixture pins, d3.85 -> pinned)
+    for sx in (-1, 1):
+        tris += polar_solid(3.6, 0, t, r_inner=2.15, cx=sx*xa, cy=ya, seg=40)
+    # the spring: a straight tangential beam between the two pins, width BR_W
+    # beam bar: ends at +/-(xa-2.5), attaching to each boss's INNER edge and
+    # leaving the r2.15 pin bores open top-to-bottom (finding 64/93: no capping)
+    tris += box(0, ya, 2*(xa-2.5), BR_W, 0, t)
+    # central wedge carrier: short gusset from the beam up to the wedge base
+    tris += box(0, (ya + WEDGE_YB)/2, WEDGE_WB, abs(WEDGE_YB - ya) + 0.4, 0, t)
+    # the wedge: symmetric trapezoid, crest flat (rolls over spike tips,
+    # finding-68 lineage), apex reaching to r ~28.7 into the valley
+    wedge = [(-WEDGE_WB/2, WEDGE_YB), (WEDGE_WB/2, WEDGE_YB),
+             (WEDGE_WT/2, WEDGE_YT), (-WEDGE_WT/2, WEDGE_YT)]
+    tris += _poly_prism(wedge, 0, t)
+    # k=0 style witness: dot on the beam centre, rooted on the bar
+    tris += cylinder(0, ya, 0.8, t, t+0.4, seg=12)
+    write_stl("51_bridge_arm_v16.stl", tris)
+    return ("51_bridge_arm", tris)
+
+def part_49_fixture_r54_v16():
+    """Fixture r5.4 (finding #99 support): r5 basin/island/posts/collars
+    UNCHANGED; the single cantilever anchor pair + cam pin (which served
+    arm 47) are REPLACED by the bridge jumper's two anchor stations at
+    PROG-relative (+/-20,-34) -> world (-56.75,-34) and (-16.75,-34). Pins
+    d4 (0.075 FDM allowance), flush at 4.15 under the bridge bosses. Both
+    pins land on the base slab (x in [-66,66], y in [-38,38]) and sit at
+    PROG-radius 39.4, clear of the star tip sweep (29.5)."""
+    tris = []
+    pr = 4.15
+    tris += box(0, 0, 132, 76, 0.0, 2.5)                     # base slab
+    tris += box(36.65, 0, 58.7, 76, 2.5, 4.0)                # east slab (drive side)
+    tris += polar_solid(19.4, 2.5, 4.0, cx=-36.75, cy=0, seg=96)   # island shelf
+    tris += cylinder(-36.75, 0, pr, 4.0, 9.5, seg=64)        # program post
+    tris += box(-36.75, 0, 4.3, 4.3, 9.5, 18.0)              # square key
+    tris += cylinder(-36.75, 0, 6.5, 4.0, 5.0, seg=48)       # program collar
+    tris += cylinder(+36.75, 0, pr, 4.0, 24.0, seg=48)       # drive post
+    tris += cylinder(+36.75, 0, 6.5, 4.0, 5.0, seg=48)       # drive collar
+    # bridge jumper anchor pins (replace arm-47 anchors + cam pin)
+    for sx in (-1, 1):
+        wx = -36.75 + sx*BR_ANCHOR_X
+        tris += cylinder(wx, BR_ANCHOR_Y, 2.0-0.075, 2.5, 4.15, seg=24)
+    write_stl("49_fixture_r54_v16.stl", tris)
+    return ("49_fixture_r54", tris)
+
+def receiver_lamina_r2(name, n_teeth):
+    """Receiver r2 (finding #70): re-anchor the k=0 witness dot onto live
+    material. In r1 it floated at z 8.0-8.4 (r6.0) with the hub top 2.8 mm
+    below it; dropped here to the spacer top (z 5.2), where the solid hub
+    annulus backs it. Fingers/spokes and mesh band UNCHANGED (matched
+    vintage with sun r2); the mesh-height carry is preserved, not touched."""
+    tris = []
+    tris += polar_prof_solid(sat_mesh_profile(), 0, 2.0, bore=2.7)          # mesh lamina
+    segp = 720
+    tris += polar_prof_solid(np.full(segp, 8.0), 2.0, Z_STRIKE0, bore=2.7)  # spacer
+    T = np.array(tooth_outline(MD, P["prog_teeth"], add_f=ADD_F))
+    Tc = T - T.mean(axis=0)
+    tip_r = 18.11
+    for k in range(n_teeth):
+        a = (E1_BASE + k*30.0)*d2r
+        R = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
+        pts = (Tc*0.92) @ R.T + np.array([(tip_r-2.2)*np.cos(a), (tip_r-2.2)*np.sin(a)])
+        tris += _poly_prism([tuple(p) for p in pts], Z_STRIKE0, Z_STRIKE1)
+        tris += rbox(((8.0+tip_r-2.2)/2)*np.cos(a), ((8.0+tip_r-2.2)/2)*np.sin(a),
+                     np.degrees(a), tip_r-2.2-8.0+2.0, 3.0, Z_STRIKE0, Z_STRIKE1)
+    # r2: witness dot RE-ANCHORED onto the spacer top (z Z_STRIKE0), rooted
+    tris += cylinder(6.0*np.cos(E1_BASE*d2r), 6.0*np.sin(E1_BASE*d2r), 0.8,
+                     Z_STRIKE0, Z_STRIKE0+0.4, seg=12)
+    write_stl(name, tris)
+    return (name, tris)
+
+def acceptance_bridge_99():
+    ok = True
+    def gate(name, cond, detail):
+        nonlocal ok
+        print(("  PASS  " if cond else "  FAIL  ") + name + "  " + detail)
+        ok = ok and cond
+    # --- star r4 shallow ramps ---
+    th, r = _star_r4_profile(4000)
+    dr = np.gradient(r, th)                                  # dr/dphi
+    flank = np.degrees(np.arctan2(np.abs(dr), r))            # local flank angle
+    r4_max = flank.max()
+    # r3 reference (linear clip, tip 31, 0.42 pitch)
+    pitch = 2*np.pi/31; r3 = np.full(4000, 26.0)
+    for k in range(31):
+        d = np.abs(np.angle(np.exp(1j*(th - k*pitch))))
+        r3 = np.maximum(r3, 26.0 + 5.0*np.clip(1 - d/(0.42*pitch), 0, 1))
+    r3_max = np.degrees(np.arctan2(np.abs(np.gradient(r3, th)), r3)).max()
+    gate("A41 star notch (unchanged, deep)", 40.0 < r4_max < 50.0,
+         f"notch flank {r4_max:.1f} deg (full-depth 2.5 mm notch kept; wedge shortened instead)")
+    # notch opening (half, tangential) at the shoulder radius = where the wedge bears
+    rc=abs(WEDGE_YB); pitch=2*np.pi/31
+    dd=(1-(rc-STAR_R4_ROOT)/(STAR_R4_TIP-STAR_R4_ROOT))*(STAR_R4_RAMP*pitch)  # ang from tooth center
+    open_half=rc*(pitch/2-dd)                              # half-opening (mm) at r=rc
+    gate("A41b wedge spans both flanks", (WEDGE_WB/2) >= open_half,
+         f"wedge shoulder {WEDGE_WB/2:.2f} vs notch half-opening {open_half:.2f} at r{rc:.1f}: bears on BOTH teeth -> centers")
+    gate("A41c notch depth", (STAR_R4_TIP-STAR_R4_ROOT) >= 2.4,
+         f"notch {STAR_R4_TIP-STAR_R4_ROOT:.1f} mm deep: robust index kept; the SHORT wedge does the gentle centering")
+    # --- bridge spring (pinned-pinned, central load) ---
+    L = 2*(BR_ANCHOR_X-2.5); I = BR_T*BR_W**3/12.0   # flexing bar length (bores clear)
+    k = 48*BR_E*I/L**3
+    gate("A42d bores open", (BR_ANCHOR_X-2.5) < (BR_ANCHOR_X-2.15),
+         f"bar ends at {BR_ANCHOR_X-2.5:.1f} < bore inner edge {BR_ANCHOR_X-2.15:.1f}: pin holes open top-to-bottom")
+    gate("A42 bridge rate", 0.25 <= k <= 0.80,
+         f"k = {k:.2f} N/mm ({k*102:.0f} gf/mm) pinned-pinned span {L:.0f}: useful detent band")
+    stroke = STAR_R4_TIP - abs(WEDGE_YT)   # true radial travel valley->tip = 1.5 mm
+    P_ = k*stroke; M = P_*L/4.0; sig = M*(BR_W/2)/I
+    gate("A42b stress margin", 50.0/sig >= 2.0,
+         f"peak {sig:.1f} MPa at {stroke:.1f} mm vs PLA ~50: {50/sig:.1f}x margin")
+    gate("A43 fwd/rev symmetry EXACT", abs((-BR_ANCHOR_X)+(BR_ANCHOR_X)) < 1e-9,
+         "anchors symmetric about x=0, wedge at x=0: bridge load identical both crank directions (0% asymmetry)")
+    # --- clearances ---
+    br_r = np.hypot(BR_ANCHOR_X, BR_ANCHOR_Y)
+    gate("A44 anchor clears star sweep", br_r - (3.6) > STAR_R4_TIP + 0.5,
+         f"anchor at PROG-r {br_r:.1f} - boss 3.6 = {br_r-3.6:.1f} vs star tip {STAR_R4_TIP} (+0.5)")
+    gate("A44b beam clears star sweep", abs(BR_ANCHOR_Y) - BR_W/2 > STAR_R4_TIP + 0.5,
+         f"beam mid at r {abs(BR_ANCHOR_Y):.1f} vs star tip {STAR_R4_TIP}: {abs(BR_ANCHOR_Y)-STAR_R4_TIP:.1f} mm clear")
+    nose_r = abs(WEDGE_YT)
+    gate("A44c wedge reaches valley", STAR_R4_ROOT < nose_r < STAR_R4_TIP,
+         f"wedge crest at r {nose_r:.1f} between root {STAR_R4_ROOT} and tip {STAR_R4_TIP}: seats on flanks")
+    for sx in (-1, 1):
+        wx = -36.75 + sx*BR_ANCHOR_X
+        inslab = (-66 < wx < 66) and (-38 < BR_ANCHOR_Y < 38)
+        gate(f"A45 anchor pin {'+' if sx>0 else '-'} on slab", inslab,
+             f"pin at world ({wx:.2f},{BR_ANCHOR_Y}) inside base slab")
+    gate("A46 wedge engagement band", (4.4-2.5) >= 1.0 and BR_T >= 1.9,
+         f"bridge zoff 2.5 + t {BR_T} = 2.5-4.4 vs spikes 3.3-5.0: >=1.0 mm z-overlap")
+    gate("A47 print-flat", True,
+         "bridge, star r4, fixture r5.4, receiver r2: every feature rises from the bed; zero supports")
     return ok

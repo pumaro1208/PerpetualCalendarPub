@@ -70,3 +70,45 @@ scrape one finger; if loose, a strip of tape on the hub shims it.
 STAGE-C NOTE: the true date-ONLY drive (hands stationary while the
 calendar advances) is the keyless-works dog clutch — deliberately deferred
 to the watch stage per ROADMAP-clock-watch.md.
+
+# FLAG-FREE DETENT SET (findings 97–99 + coupling redesign, 2026-07-28)
+The machine's sole index. The daily drive advances the board; this detent settles
+it onto each day's position and holds it. Reversibility is preserved (flexure, not
+ratchet). All parts PLA (rotating parts black), print FLAT, no supports.
+Regenerate the whole set with `parts/emit_final.py`; gate is `qc_sweep_central.py`.
+
+## Parts
+- 02e_board_bigbore — the v1.3 program board (31 involute rim teeth, tip 41.86;
+  31 day-tick bumps at r33.5 with the tall pos-1 witness; month satellite post +
+  D-key), UNCHANGED except the central bore opened 8.7 → 10.9 mm to take the star's
+  press-tube. Prints teeth-up, flat on the bed. THE ONE PART RE-PRINTED from the
+  bench (bigger bore is the only change).
+- 50d_star_hub — detent star, flag-free. 31 symmetric shallow-triangle notches
+  (root 26, tip 28.5 → 2.5 mm deep) on a scallop disc, plus an integral CENTRAL
+  press-tube (ID rides the program post, OD press-fits the board bore) that couples
+  the star rigidly and concentrically to the board — no outrigger, no drop-in pin.
+  Prints scallop-down, tube rising. Rides the post; board seats on the disc top;
+  the disc spins on the fixture thrust pad.
+- 49_fixture_r57 — basin bench fixture: program + drive posts (square-key sun seat),
+  drive collar, a central THRUST PAD the star disc spins on (replaces the program
+  collar), and the two bridge-jumper anchor pins at r30.5. Wedge station = 270°.
+- 51_bridge_arm — the bridge jumper (finding #99). A pinned-pinned flexure (span 35
+  between the boss inner edges; both pin bores OPEN top-to-bottom, finding 64/93),
+  1.05 mm wide, carrying a POINTED wedge at mid-span: a sharp apex reaching r27.0
+  (clear jump into each notch) with wide shoulders that bear on BOTH tooth flanks
+  (geometry centers it). Loaded identically forward and reverse. Beam pulled in to
+  r30.5 so the riser is short (~2.2 mm) — the sideways tooth force has little lever
+  arm to twist the wedge. k = 0.62 N/mm; peak 23 MPa (2.2× PLA) at the 1.5 mm stroke.
+
+## Design laws honored
+Reversibility — pinned-pinned flexure is symmetric fwd/rev, positive transfer, no
+ratchet. Full-depth notch + short pointed wedge = a positive index with a light,
+clean jump. Both press fits are interference — no glue. The gate in the repo
+(qc_sweep_central.py) is the gate that cleared this plate (finding 96 doctrine).
+
+## Bench items on first assembly
+1. Star central tube → board bore: designed interference press; tune on first fit.
+2. Bridge pins → anchor bores: interference; bores print open top-to-bottom.
+3. Wedge drops into each notch with a clear click and self-centers on both flanks;
+   verify no twist as the board sweeps its 31 positions.
+4. Star disc spins freely on the thrust pad; board seats flat on the disc top.
