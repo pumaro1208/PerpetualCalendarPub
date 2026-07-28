@@ -1,0 +1,54 @@
+{
+  "name": "plate-17-flagfree-detent",
+  "version_tag": "flag-free detent: 02e board bigbore (re-print, only changed part) + 50d star hub + 49 fixture r57 + 51 bridge arm (findings 97-100)",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "100",
+    "top_surface_speed": "80",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "z_hop": "0.4",
+    "retraction_length": "1.3",
+    "nozzle_temperature": "215",
+    "slow_down_layer_time": "8"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/49_fixture_r57_v16.stl",
+      "position": [
+        95,
+        58
+      ]
+    },
+    {
+      "stl": "../../parts/stl/02e_board_bigbore_v16.stl",
+      "position": [
+        68,
+        148
+      ]
+    },
+    {
+      "stl": "../../parts/stl/50d_star_hub_v16.stl",
+      "position": [
+        160,
+        152
+      ]
+    },
+    {
+      "stl": "../../parts/stl/51_bridge_arm_v16.stl",
+      "position": [
+        160,
+        112
+      ]
+    }
+  ]
+}
