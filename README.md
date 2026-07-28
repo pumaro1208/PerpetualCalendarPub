@@ -112,3 +112,16 @@ clean jump. Both press fits are interference — no glue. The gate in the repo
 3. Wedge drops into each notch with a clear click and self-centers on both flanks;
    verify no twist as the board sweeps its 31 positions.
 4. Star disc spins freely on the thrust pad; board seats flat on the disc top.
+
+## Board 02f — pegless/dotless (engine clearance sweep, 2026-07-28)
+02f = 02e with the 31 perimeter day-tick pegs (r33.5) AND the three station witness
+dots (r35.05) REMOVED. The engine interference sweep (parts/engine_sweep.py, disc-
+about-fixed-pivot model, frame self-checked against the sun↔month mesh) found that
+on 02e the tall day-1 peg (+0.8mm) and station dots M/F (+0.2mm) poke up into the
+MONTH satellite's mesh lamina (underside z10.4) even with the finding-63 spacer —
+the 30 short pegs clear by 0.4mm, but those three do not. 02f leaves zero raised
+obstacles on the board face except the intended satellite pivot post; the sweep
+reports CLEAR. Involute rim, 10.9 press-bore, and the month post + D-key are
+UNCHANGED, so the flag-free detent press-fit (star tube -> board bore) is unaffected.
+Sun tower confirmed correctly configured (spans LA/LB/LC, meshes at altitude).
+02f SUPERSEDES 02e for the reprint. See docs/engine-clearance-sweep.md.

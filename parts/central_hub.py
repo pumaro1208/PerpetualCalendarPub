@@ -30,6 +30,24 @@ def part_02e_board_bigbore_v16():
         tris += cylinder((PROG_ROOT-2.0)*np.cos(a),(PROG_ROOT-2.0)*np.sin(a),1.2,t,t+1.6,seg=12)
     write_stl("02e_board_bigbore_v16.stl",tris)
 
+def part_02f_board_v16():
+    """Board 02f = 02e with the 31 perimeter day-tick pegs (r33.5) AND the
+    three station witness dots (r35.05) REMOVED. These were cosmetic witness
+    marks; the engine sweep showed the tall pos-1 peg (+0.8) and the dots
+    (+0.2) poked up into the month satellite's mesh-lamina band even with the
+    finding-63 spacer. Removing them clears the orbit. UNCHANGED: 31-tooth
+    involute rim, enlarged 10.9 bore, satellite pivot post + D-key at STN_M."""
+    tris=[]; t=4.0
+    prof,_,_,_=involute_profile(31,MD,add_f=ADD_F)
+    tris += polar_prof_solid(prof,0,t,bore=BORE)
+    # (31 day-tick pegs REMOVED — were cosmetic, fouled the month lamina)
+    ang=np.deg2rad(STN_M); cx,cy=SUNORB*np.cos(ang),SUNORB*np.sin(ang)
+    tris += cylinder(cx,cy,PIV_R,t,12.3,seg=48)
+    kx=dflat_profile(PIV_R-0.2,1.2)
+    tris += _poly_prism([(cx+p[0],cy+p[1]) for p in kx],9.3,12.0)
+    # (3 station witness dots REMOVED — were cosmetic, fouled the month lamina)
+    write_stl("02f_board_v16.stl",tris)
+
 def part_50d_star_hub_v16():
     """Star, flag-free: shallow-triangle scallop disc + integral upward press-tube.
     Disc z0-1.7 (assembly 3.3-5.0); tube z0-3.7 (assembly 3.3-7.0) rides the post
@@ -57,7 +75,8 @@ def part_49_fixture_r58_v16():
     write_stl("49_fixture_r58_v16.stl",tris)
 
 if __name__=="__main__":
-    part_02e_board_bigbore_v16(); part_50d_star_hub_v16(); part_49_fixture_r58_v16()
+    part_02e_board_bigbore_v16(); part_02f_board_v16()
+    part_50d_star_hub_v16(); part_49_fixture_r58_v16()
     print("clearances:")
     print("  tube rides post:", 4.35>4.15, "(ID r4.35 vs post r4.15, 0.2 bearing)")
     print("  tube wall:", round(TUBE_OD-TUBE_ID,2), "mm (printable)")
