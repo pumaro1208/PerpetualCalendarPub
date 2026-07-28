@@ -127,3 +127,5 @@ Drag notes:
   · PRINT NOTE: the tall lone posts string from nozzle ooze on long travels — cosmetic, cleans off. For the reprint a wipe/prime tower or a couple °C lower nozzle + more retraction cuts it.
   · specs/plate-17-flagfree-detent.json, qc_sweep_central.py, README.md updated r5.7→r5.8; 49_fixture_r57 moved to _superseded/.
   · Awaiting Ron's "yes" to compose/print the fixture reprint (standing rule 1).
+- 2026-07-28 15:07 · plate-17b-fixture-r58.gcode.3mf · fixture r58 reprint: program post rooted (finding 101 fix) · started (outcome pending)
+- 2026-07-28 16:05 · plate-17b-fixture-r58 · finished OK — all 120 layers: fixture r58 with the program post ROOTED to the slab (finding 101 fix). Anti-string tweaks (retract 1.6, 210C). Flag-free detent now complete in hand: press star tube->board bore, bridge pins->anchor bores, wedge into 31-notch star.
