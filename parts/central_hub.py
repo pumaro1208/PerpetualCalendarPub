@@ -40,24 +40,24 @@ def part_50d_star_hub_v16():
     tris += polar_solid(TUBE_OD,0.0,3.7,r_inner=TUBE_ID,seg=64)  # integral press-tube
     write_stl("50d_star_hub_v16.stl",tris)
 
-def part_49_fixture_r57_v16():
+def part_49_fixture_r58_v16():
     """Fixture r5.6: r5.5 with the program collar replaced by a THRUST PAD (annulus
     r6.5-13) the wide central star disc spins on -- clears the tube; the board
     seats on the star-disc top. Post, square key, drive collar, bridge pins kept."""
     tris=[]; pr=4.15
     tris += box(0,0,132,76,0.0,2.5)
     tris += box(36.65,0,58.7,76,2.5,4.0)
-    tris += cylinder(-36.75,0,pr,4.0,9.5,seg=64)
+    tris += cylinder(-36.75,0,pr,2.5,9.5,seg=64)
     tris += box(-36.75,0,4.3,4.3,9.5,18.0)
     tris += polar_solid(13.0,2.5,3.3,r_inner=6.5,cx=-36.75,cy=0,seg=64)   # thrust pad
     tris += cylinder(+36.75,0,pr,4.0,24.0,seg=48)
     tris += cylinder(+36.75,0,6.5,4.0,5.0,seg=48)
     for sx in (-1,1):
         tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)  # bridge pins moved IN
-    write_stl("49_fixture_r57_v16.stl",tris)
+    write_stl("49_fixture_r58_v16.stl",tris)
 
 if __name__=="__main__":
-    part_02e_board_bigbore_v16(); part_50d_star_hub_v16(); part_49_fixture_r57_v16()
+    part_02e_board_bigbore_v16(); part_50d_star_hub_v16(); part_49_fixture_r58_v16()
     print("clearances:")
     print("  tube rides post:", 4.35>4.15, "(ID r4.35 vs post r4.15, 0.2 bearing)")
     print("  tube wall:", round(TUBE_OD-TUBE_ID,2), "mm (printable)")

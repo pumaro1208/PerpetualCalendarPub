@@ -16,7 +16,13 @@ def find(fn):
         if os.path.isfile(p): return p
     sys.exit(f"MISSING STL: {fn}  (looked in {CAND})")
 PARTS={"board":"02e_board_bigbore_v16.stl","star":"50d_star_hub_v16.stl",
-       "fixture":"49_fixture_r57_v16.stl","bridge":"51_bridge_arm_v16.stl"}
+       "fixture":"49_fixture_r58_v16.stl","bridge":"51_bridge_arm_v16.stl"}
+def verts_tri(fn):
+    d=open(find(fn),'rb').read(); n=struct.unpack('<I',d[80:84])[0]
+    T=np.zeros((n,3,3)); off=84
+    for i in range(n):
+        v=struct.unpack('<12f',d[off:off+48]); T[i]=[v[3:6],v[6:9],v[9:12]]; off+=50
+    return T
 def verts(fn):
     d=open(find(fn),'rb').read(); n=struct.unpack('<I',d[80:84])[0]
     V=np.zeros((n*3,3)); off=84
@@ -77,6 +83,28 @@ gate("bridge pin bores open", ob, "0 geometry within r1.9 of either boss")
 wy=BR[(np.abs(BR[:,0])<3)&(BR[:,1]>-28.5)&(BR[:,1]<-26.0),1]
 crest=abs(wy.max()) if len(wy) else 0
 gate("wedge crest in notch 26<r<28.5", 26.0<crest<28.5, f"crest r{crest:.2f}")
+
+print("[4] base connectivity (no floating features)")
+def _cross(T,px,py):
+    zs=[]
+    for t in T:
+        (x0,y0,z0),(x1,y1,z1),(x2,y2,z2)=t
+        d=(y1-y2)*(x0-x2)+(x2-x1)*(y0-y2)
+        if abs(d)<1e-9: continue
+        a=((y1-y2)*(px-x2)+(x2-x1)*(py-y2))/d; b=((y2-y0)*(px-x2)+(x0-x2)*(py-y2))/d; c=1-a-b
+        if a>1e-6 and b>1e-6 and c>1e-6: zs.append(a*z0+b*z1+c*z2)
+    return sorted(zs)
+def _rooted(fn,cx,cy,top):
+    T=verts_tri(fn)
+    for dx,dy in ((1.7,0.9),(-0.9,1.7),(1.1,-1.5)):
+        zs=_cross(T,cx+dx,cy+dy)
+        if not zs: continue
+        occ=[ (sum(1 for z in zs if z>h)%2==1) for h in np.arange(0.25,top,0.5)]
+        return all(occ)
+    return False
+gate("program post rooted", _rooted(PARTS["fixture"],-36.75,0,9.0), "continuous solid bed->9 (no float)")
+gate("drive post base solid",  _rooted(PARTS["fixture"], 36.75,0,3.9), "solid bed->3.9 under the post (east slab)")
+
 ok=all(res)
 print("\nRESULT: "+("ALL PASS — safe to compose plate-17" if ok else "*** FAILURES — STOP, do not compose ***"))
 sys.exit(0 if ok else 1)

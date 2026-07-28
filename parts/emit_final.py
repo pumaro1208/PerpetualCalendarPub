@@ -8,7 +8,7 @@ import central_hub as C
 G.part_51_bridge_arm_v16()
 C.part_02e_board_bigbore_v16()
 C.part_50d_star_hub_v16()
-C.part_49_fixture_r57_v16()
+C.part_49_fixture_r58_v16()
 G.receiver_lamina_r2("33_receiver_month_r2_v16.stl", 5)
 ok = G.acceptance_bridge_99()
 print("FINAL SET " + ("ALL GATES PASS" if ok else "*** GATE FAILURES ***"))

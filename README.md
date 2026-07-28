@@ -89,7 +89,7 @@ Regenerate the whole set with `parts/emit_final.py`; gate is `qc_sweep_central.p
   the star rigidly and concentrically to the board — no outrigger, no drop-in pin.
   Prints scallop-down, tube rising. Rides the post; board seats on the disc top;
   the disc spins on the fixture thrust pad.
-- 49_fixture_r57 — basin bench fixture: program + drive posts (square-key sun seat),
+- 49_fixture_r58 — basin bench fixture: program + drive posts (square-key sun seat),
   drive collar, a central THRUST PAD the star disc spins on (replaces the program
   collar), and the two bridge-jumper anchor pins at r30.5. Wedge station = 270°.
 - 51_bridge_arm — the bridge jumper (finding #99). A pinned-pinned flexure (span 35

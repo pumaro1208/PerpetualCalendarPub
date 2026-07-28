@@ -11,7 +11,7 @@ def load(fn,zoff,flip,dx,dy):
     f.close(); V[:,0]+=dx; V[:,1]+=dy; V[:,2]=(zoff-V[:,2]) if flip else V[:,2]+zoff
     return V
 MANIFEST=[
- ("fixture","49_fixture_r57_v16.stl",0.0,False,0,0,None,"frame"),
+ ("fixture","49_fixture_r58_v16.stl",0.0,False,0,0,None,"frame"),
  ("bridge","51_bridge_arm_v16.stl",2.5,False,PROG[0],PROG[1],None,"frame"),
  ("board","02e_board_bigbore_v16.stl",5.0,False,PROG[0],PROG[1],PROG,"board"),
  ("star","50d_star_hub_v16.stl",3.3,False,PROG[0],PROG[1],PROG,"board"),
