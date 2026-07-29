@@ -404,6 +404,125 @@ def cmd_snap(args):
         subprocess.run(["open", str(out)])
 
 
+# ----------------------------------------------------------------- countdown
+
+def _fmt_clock(epoch: float) -> str:
+    return dt.datetime.fromtimestamp(epoch).strftime("%-I:%M %p")
+
+
+def _countdown_html(name, start, finish, sync) -> Path:
+    """Write a self-contained browser countdown seeded from live data."""
+    html = COUNTDOWN_HTML.replace("__NAME__", name.replace("<", "").replace(">", "")) \
+        .replace("__START__", str(int(start * 1000))) \
+        .replace("__FINISH__", str(int(finish * 1000))) \
+        .replace("__SYNC__", str(int(sync * 1000)))
+    out = PROJECT_DIR / "countdown.html"
+    out.write_text(html)
+    return out
+
+
+def cmd_countdown(args):
+    """Live terminal countdown that re-syncs to the printer's own estimate.
+    --html also opens a browser timer seeded from the current job."""
+    link = connect()
+    A, G, D, B, R = ("\033[38;5;179m", "\033[38;5;114m", "\033[2m",
+                     "\033[1m", "\033[0m")
+    finish = start = None
+    last_fetch = 0.0
+    d = {"state": "", "name": "(no job)", "lay": None, "tot": None, "pct": None}
+    html_opened = False
+    try:
+        while True:
+            now = time.time()
+            if now - last_fetch > 8:
+                pd = link.print_data()
+                d["state"] = str(pd.get("gcode_state", "")).upper()
+                d["name"] = pd.get("subtask_name") or pd.get("gcode_file") or "(no job)"
+                d["lay"] = pd.get("layer_num")
+                d["tot"] = pd.get("total_layer_num")
+                d["pct"] = pd.get("mc_percent")
+                rem = pd.get("mc_remaining_time")
+                if isinstance(rem, int) and rem >= 0:
+                    finish = now + rem * 60
+                    pf = (d["pct"] or 0) / 100.0
+                    total = (rem / (1 - pf)) if pf < 0.98 else rem
+                    start = finish - total * 60
+                last_fetch = now
+                if args.html and not html_opened and finish and start:
+                    out = _countdown_html(d["name"], start, finish, now)
+                    subprocess.run(["open", str(out)])
+                    html_opened = True
+                if d["state"] in ("FINISH", "FAILED"):
+                    print("\033[2J\033[H", end="")
+                    tag = f"{G}COMPLETE{R}" if d["state"] == "FINISH" else f"\033[38;5;203mFAILED{R}"
+                    print(f"\n  {tag}  {d['name']}\n")
+                    return
+
+            # local 1s tick between fetches
+            secs = int(finish - now) if finish else None
+            print("\033[2J\033[H", end="")
+            print(f"\n  {A}⏱{R}  {B}{d['name']}{R}   {D}[{d['state'] or '—'}]{R}\n")
+            if secs is not None and secs > 0:
+                h, rem2 = divmod(secs, 3600)
+                m, s = divmod(rem2, 60)
+                print(f"     {B}{A}{h:02d}:{m:02d}:{s:02d}{R}   {D}remaining{R}\n")
+            elif d["state"] == "RUNNING":
+                print(f"     {D}preparing / heating…{R}\n")
+            pct = d["pct"] or 0
+            filled = round(pct / 100 * 26)
+            bar = "█" * filled + "░" * (26 - filled)
+            print(f"     {A}{bar}{R}  {pct}%")
+            lay = f"{d['lay']}/{d['tot']}" if d["tot"] else "—"
+            eta = f"ETA {_fmt_clock(finish)}" if finish else ""
+            print(f"     {D}layer{R} {lay}        {D}{eta}{R}")
+            print(f"\n  {D}re-syncs to the printer every 8s · Ctrl-C to exit"
+                  f" (print keeps running){R}")
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n(exited countdown; print continues)")
+    finally:
+        link.close()
+
+
+COUNTDOWN_HTML = """<!doctype html><html><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Print Countdown</title><style>
+:root{--g:#16130f;--s:#201c16;--s2:#2a251d;--t:#efe9df;--m:#9a917f;--f:#6d6553;
+--a:#d8a24a;--ad:#9c7328;--tr:#322c22;--good:#77c489;--h:#332d23}
+@media(prefers-color-scheme:light){:root{--g:#f0eadd;--s:#fbf8f1;--s2:#f4eee1;
+--t:#241f18;--m:#6a6154;--f:#938872;--a:#b0791f;--ad:#cbb489;--tr:#e4dccb;--good:#3f8f57;--h:#e0d8c6}}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--g);color:var(--t);
+font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:28px}
+.c{width:100%;max-width:420px;background:var(--s);border:1px solid var(--h);border-radius:18px;
+padding:28px;box-shadow:0 22px 55px -26px rgba(0,0,0,.6)}
+.e{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--m);font-weight:600}
+h1{font-size:19px;margin:12px 0 20px;font-weight:650}
+.k{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;font-weight:600;
+font-size:clamp(48px,14vw,68px);line-height:1}.k .s{color:var(--ad)}
+.lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--f);margin:14px 0 4px;font-weight:600}
+.bar{height:8px;background:var(--tr);border-radius:99px;overflow:hidden;margin:18px 0 8px}
+.bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ad),var(--a));transition:width .5s}
+.row{display:flex;justify-content:space-between;font-size:12px;color:var(--m);font-variant-numeric:tabular-nums}
+.ft{margin-top:16px;font-size:11px;color:var(--f);line-height:1.5}</style></head><body>
+<div class=c><div class=e>Printing · silent</div><h1>__NAME__</h1>
+<div class=lab id=lab>Time remaining</div><div class=k id=clk>--:--:--</div>
+<div class=bar><span id=fill></span></div>
+<div class=row><span id=pct>—</span><span id=eta>ETA —</span></div>
+<div class=ft id=ft></div></div><script>
+var S=__START__,F=__FINISH__;function tc(ms){var d=new Date(ms),h=d.getHours(),m=d.getMinutes(),
+ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+(m<10?'0':'')+m+' '+ap}
+document.getElementById('eta').textContent='ETA '+tc(F);
+document.getElementById('ft').textContent='Seeded from the printer estimate at '+tc(__SYNC__)+'; will not re-sync.';
+function t(){var n=Date.now(),r=F-n,p=Math.max(0,Math.min(1,(n-S)/(F-S)));
+document.getElementById('fill').style.width=(p*100).toFixed(1)+'%';
+document.getElementById('pct').textContent=Math.round(p*100)+'% elapsed';
+var c=document.getElementById('clk');if(r<=0){c.textContent='Finishing…';c.style.color='var(--good)';
+document.getElementById('lab').textContent='Past estimate';return}
+var s=Math.floor(r/1000),h=Math.floor(s/3600);s-=h*3600;var m=Math.floor(s/60);s-=m*60;
+function z(n){return(n<10?'0':'')+n}c.innerHTML=z(h)+'<span class=s>:</span>'+z(m)+'<span class=s>:</span>'+z(s)}
+t();setInterval(t,1000)</script></body></html>"""
+
+
 # ------------------------------------------------------------------ reslice
 
 def patch_xy_compensation(src: Path, xy: float) -> Path:
@@ -599,6 +718,12 @@ def main():
     p.set_defaults(fn=cmd_start)
 
     sub.add_parser("watch", help="follow the active job").set_defaults(fn=cmd_watch)
+
+    p = sub.add_parser("countdown",
+                       help="live terminal countdown (re-syncs to the printer)")
+    p.add_argument("--html", action="store_true",
+                   help="also open a browser timer seeded from the current job")
+    p.set_defaults(fn=cmd_countdown)
 
     p = sub.add_parser("snap", help="save a chamber-camera frame")
     p.add_argument("--tag", default="", help="label for the filename")
