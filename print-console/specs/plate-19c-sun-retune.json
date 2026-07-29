@@ -1,0 +1,13 @@
+{
+  "name": "plate-19c-sun-retune",
+  "version_tag": "finding #108 sun-only reprint: re-tuned multi-level sun (taller slim cores 3mm/r4.7 for finger clearance + teeth thinned for backlash) + xy_contour_compensation -0.06. Reuse the board 02h + receiver 33 from plate-19b. Bench: fingers pass freely + mesh drives without jamming.",
+  "machine": "Bambu Lab P1S 0.4 nozzle","process": "0.20mm Standard @BBL X1C","filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle","filament_colour": "#000000","ams_tray_type": "PLA","ams_sub_brand": "Matte","bed_type": "Textured PEI Plate","bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3", "sparse_infill_density": "25%", "outer_wall_speed": "100",
+    "small_perimeter_speed": "30", "detect_thin_wall": "1",
+    "enable_support": "1", "support_type": "tree(auto)", "support_threshold_angle": "30", "support_on_build_plate_only": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4", "retraction_length": "1.6", "nozzle_temperature": "210"
+  },
+  "parts": [ { "stl": "../../parts/stl/42_sun_v16.stl", "position": [128, 128] } ]
+}
