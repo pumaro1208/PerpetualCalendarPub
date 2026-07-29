@@ -1,17 +1,56 @@
 {
   "name": "plate-19d-sun-pieces",
-  "version_tag": "finding #109: sun as 3 identical stacked pieces (full band down = NO SUPPORTS, no spaghetti). Each = one full gear band + slim core; stack keyed on the square post, glue the column. Carries xy_contour_compensation -0.06 for mesh backlash (#108). Reuse board 02h + receiver 33.",
-  "machine": "Bambu Lab P1S 0.4 nozzle","process": "0.20mm Standard @BBL X1C","filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle","filament_colour": "#000000","ams_tray_type": "PLA","ams_sub_brand": "Matte","bed_type": "Textured PEI Plate","bed_temp": 55,
+  "version_tag": "finding #109: sun as 3 identical stacked pieces (full band down = NO SUPPORTS, no spaghetti). Each = one full gear band + slim core; stack keyed on the square post, glue the column. Carries xy_contour_compensation -0.06 for mesh backlash (#108). Reuse board 02h + receiver 33. | QUIET: sliced at low speed + low acceleration (2000-3000) for near-silent running.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
   "overrides": {
-    "wall_loops": "3", "sparse_infill_density": "25%", "outer_wall_speed": "100",
-    "small_perimeter_speed": "30", "detect_thin_wall": "1",
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
     "enable_support": "0",
     "xy_contour_compensation": "-0.06",
-    "z_hop": "0.4", "retraction_length": "1.6", "nozzle_temperature": "210"
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
   },
   "parts": [
-    { "stl": "../../parts/stl/42_sun_piece_v16.stl", "position": [80, 128] },
-    { "stl": "../../parts/stl/42_sun_piece_v16.stl", "position": [128, 128] },
-    { "stl": "../../parts/stl/42_sun_piece_v16.stl", "position": [176, 128] }
+    {
+      "stl": "../../parts/stl/42_sun_piece_v16.stl",
+      "position": [
+        80,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/42_sun_piece_v16.stl",
+      "position": [
+        128,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/42_sun_piece_v16.stl",
+      "position": [
+        176,
+        128
+      ]
+    }
   ]
 }
