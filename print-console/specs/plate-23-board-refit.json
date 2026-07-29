@@ -1,0 +1,56 @@
+{
+  "name": "plate-23-board-refit",
+  "version_tag": "finding #113 lock-in + #111 + #110 — the one clean core reprint. Board 02h POST_R 2.65 (won the tolerance coupon: snug, no wobble, still spins/reverses). Fixture r59 (sun seats 1mm lower, z9.5->8.5, fixes sun-proud-of-board). Receiver 33 compact with SOLID finger bars (#110, no more disconnected tips). Reuse the already-printed 3-piece sun. xy_contour_compensation -0.06 is MANDATORY here — it is the value the r2.65 post was chosen under; change it and the post fit shifts. | QUIET: low speed + low acceleration. WATCH: receiver finger tips are a ~2.5mm cantilever past the mesh disc (r15.8->18.3) at z1.5 — should bridge fine as a solid bar; if tips droop, add build-plate-only tree support next round.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/49_fixture_r59_v16.stl",
+      "position": [
+        78,
+        100
+      ]
+    },
+    {
+      "stl": "../../parts/stl/02h_board_v16.stl",
+      "position": [
+        200,
+        85
+      ]
+    },
+    {
+      "stl": "../../parts/stl/33_receiver_month_compact_v16.stl",
+      "position": [
+        205,
+        190
+      ]
+    }
+  ]
+}

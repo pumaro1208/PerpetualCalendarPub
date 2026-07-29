@@ -89,19 +89,46 @@ def part_49_fixture_r58_v16():
         tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)  # bridge pins moved IN
     write_stl("49_fixture_r58_v16.stl",tris)
 
+def part_49_fixture_r59_v16():
+    """Fixture r59 (finding #111, Ron's core print): the sun sat ~1mm too high so its
+    gear band rode above the receiver's mesh (finger forced up + intermittent jam).
+    The program post's SQUARE key section (where the sun seats) now STARTS 1mm lower
+    (z9.5 -> z8.5), dropping the sun into alignment with the receiver mesh. Everything
+    else identical to r58. (If still off, adjust the 8.5 start.)"""
+    tris=[]; pr=4.15
+    tris += box(0,0,132,76,0.0,2.5)
+    tris += box(36.65,0,58.7,76,2.5,4.0)
+    tris += cylinder(-36.75,0,pr,2.5,8.5,seg=64)                     # round post now to z8.5 (was 9.5)
+    tris += box(-36.75,0,4.3,4.3,8.5,18.0)                           # SQUARE key starts z8.5 (was 9.5) -> sun seats 1mm lower
+    tris += polar_solid(13.0,2.5,3.3,r_inner=6.5,cx=-36.75,cy=0,seg=64)   # thrust pad (unchanged)
+    tris += cylinder(+36.75,0,pr,4.0,24.0,seg=48)                    # drive post (unchanged)
+    tris += cylinder(+36.75,0,6.5,4.0,5.0,seg=48)                    # drive collar (unchanged)
+    for sx in (-1,1):
+        tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)  # bridge pins (unchanged)
+    write_stl("49_fixture_r59_v16.stl",tris)
+
 def part_02h_board_v16():
     """Board 02h (finding #107) — pegless rim like 02f, but the satellite post is
     SHORTENED, not lengthened: with the compact 3mm receiver (bore assembly
     9.5-12.5) the post only rides to z12.5, and it MUST stop below the feb band
     (z13) or it fouls the feb satellite orbiting 4.81mm away. Post: r3.5 seat
     shoulder z9-9.5 (receiver seats at 9.5), then r2.4 bearing z9-12.5 (local 4-7.5).
-    Reverses 02g's taller post — the compact stack wants a shorter one."""
+    Reverses 02g's taller post — the compact stack wants a shorter one.
+    Finding #112 (Ron's core print): the receiver was SLOPPY — he could push the
+    gear sideways to keep it turning. The post was PIV_R 2.4 in a 2.7 bore = 0.3mm
+    radial (0.6mm diametral) play.
+    Finding #113 (post tolerance-ladder coupon, plate-22): Ron tested his printed
+    receiver on stub posts r2.50/2.55/2.60/2.65 (bore r2.70, xy-comp -0.06) and
+    r2.65 was best — snug, no wobble, still spins/reverses free. LOCKED: POST_R 2.65
+    -> 0.05mm nominal radial clearance. Reprint the board ONLY at xy_contour
+    compensation -0.06 (the value the coupon was chosen under), or the fit shifts."""
     tris=[]; t=4.0
+    POST_R = 2.65                                      # finding #113: won the tolerance-ladder coupon (was 2.4/2.55)
     prof,_,_,_=involute_profile(31,MD,add_f=ADD_F)
     tris += polar_prof_solid(prof,0,t,bore=BORE)
     ang=np.deg2rad(STN_M); cx,cy=SUNORB*np.cos(ang),SUNORB*np.sin(ang)
     tris += cylinder(cx,cy,3.5,t,t+0.5,seg=32)        # seat shoulder (assembly 9-9.5)
-    tris += cylinder(cx,cy,PIV_R,t,7.5,seg=48)         # bearing post to assembly 12.5 (local 7.5)
+    tris += cylinder(cx,cy,POST_R,t,7.5,seg=48)        # bearing post to assembly 12.5 (local 7.5)
     write_stl("02h_board_v16.stl",tris)
 
 def part_42_sun_multilevel(bands=None, tooth_frac=0.32):

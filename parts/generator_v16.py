@@ -1134,15 +1134,16 @@ def receiver_compact(name, n_teeth):
     tris = []
     tris += polar_prof_solid(sat_mesh_profile(), 0, ZM, bore=2.7)          # mesh lamina z0-1.5
     tris += polar_solid(np.full(seg, 4.0), ZM, ZS, r_inner=2.7)           # hub z1.5-3, bore 2.7
-    T = np.array(tooth_outline(MD, P["prog_teeth"], add_f=ADD_F))
-    Tc = T - T.mean(axis=0); tip_r = 18.11
+    # finding #110 (Ron's print): the detailed E1 tooth heads printed DISCONNECTED —
+    # thin features at only 1.5mm tall, laid down as the last layers, they detached.
+    # Replace each finger with a SOLID robust bar hub(r4)->tip(r18.3), one piece,
+    # nothing thin to break off. Reaches r18.3 so it still clears the sun slim core.
+    # (The E1 strike-tooth face form is deferred to the drive reconciliation.)
+    TIP_R = 18.3
     for k in range(n_teeth):
         a = (E1_BASE + k*30.0)*d2r
-        R = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
-        pts = (Tc*0.92) @ R.T + np.array([(tip_r-2.2)*np.cos(a), (tip_r-2.2)*np.sin(a)])
-        tris += _poly_prism([tuple(p) for p in pts], ZM, ZS)              # strike tooth (on the mesh disc)
-        tris += rbox(((4.0+tip_r-2.2)/2)*np.cos(a), ((4.0+tip_r-2.2)/2)*np.sin(a),
-                     np.degrees(a), tip_r-2.2-4.0+2.0, 4.5, ZM, ZS)       # spoke hub->tooth, rooted
+        rmid = (4.0+TIP_R)/2
+        tris += rbox(rmid*np.cos(a), rmid*np.sin(a), np.degrees(a), TIP_R-4.0, 4.5, ZM, ZS)  # solid finger bar (flat end at r18.3)
     write_stl(name, tris)
     return (name, tris)
 
