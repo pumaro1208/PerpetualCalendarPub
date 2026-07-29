@@ -1,14 +1,84 @@
 {
   "name": "plate-19-calendar-core",
-  "version_tag": "Stage-1 calendar core: 42 sun + 33 month + 34 feb + 35 leap + 40 carrier + 43 spacer (print 3-4 for spares). Rotating stack on the new detent board 02f. All black PLA Matte.",
-  "machine": "Bambu Lab P1S 0.4 nozzle","process": "0.20mm Standard @BBL X1C","filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle","filament_colour": "#000000","ams_tray_type": "PLA","ams_sub_brand": "Matte","bed_type": "Textured PEI Plate","bed_temp": 55,
-  "overrides": { "wall_loops":"3","sparse_infill_density":"25%","outer_wall_speed":"100","top_surface_speed":"80","small_perimeter_speed":"30","detect_thin_wall":"1","z_hop":"0.4","retraction_length":"1.6","nozzle_temperature":"210","slow_down_layer_time":"8","enable_prime_tower":"1" },
+  "version_tag": "plate-19 \u00b7 calendar core Stage-1 (sun+month+feb+carrier+4 spacers; leap shuttle DEFERRED \u2014 E1 tooth overhang; feb witness dot dropped, mark by hand)",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "100",
+    "top_surface_speed": "80",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "slow_down_layer_time": "8",
+    "enable_prime_tower": "1"
+  },
   "parts": [
-    { "stl": "../../parts/stl/40_ring_carrier_v16.stl", "position": [150, 128] },
-    { "stl": "../../parts/stl/42_sun_v16.stl",            "position": [50, 55] },
-    { "stl": "../../parts/stl/33_receiver_month_r2_v16.stl", "position": [50, 130] },
-    { "stl": "../../parts/stl/34_receiver_feb_v16.stl",   "position": [50, 205] },
-    { "stl": "../../parts/stl/35_leap_shuttle_v16.stl",   "position": [220, 205] },
-    { "stl": "../../parts/stl/43_receiver_spacer_v16.stl","position": [218, 55] }
+    {
+      "stl": "../../parts/stl/40_ring_carrier_v16.stl",
+      "position": [
+        65,
+        110
+      ]
+    },
+    {
+      "stl": "../../parts/stl/42_sun_v16.stl",
+      "position": [
+        155,
+        150
+      ]
+    },
+    {
+      "stl": "../../parts/stl/33_receiver_month_r2_v16.stl",
+      "position": [
+        155,
+        105
+      ]
+    },
+    {
+      "stl": "../../parts/stl/34_receiver_feb_v16.stl",
+      "position": [
+        155,
+        60
+      ],
+      "drop_midair": true
+    },
+    {
+      "stl": "../../parts/stl/43_receiver_spacer_v16.stl",
+      "position": [
+        185,
+        60
+      ]
+    },
+    {
+      "stl": "../../parts/stl/43_receiver_spacer_v16.stl",
+      "position": [
+        185,
+        80
+      ]
+    },
+    {
+      "stl": "../../parts/stl/43_receiver_spacer_v16.stl",
+      "position": [
+        185,
+        100
+      ]
+    },
+    {
+      "stl": "../../parts/stl/43_receiver_spacer_v16.stl",
+      "position": [
+        185,
+        120
+      ]
+    }
   ]
 }
