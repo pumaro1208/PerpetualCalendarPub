@@ -1,0 +1,12 @@
+{
+  "name": "plate-20-drive-train",
+  "version_tag": "Stage-2 drive/skip train: 30 drive wheel + 32 camring + 31 sliders (x3 on plate) + 37 peg pins. Cam-gated slider strikers (arch A'). All black PLA Matte.",
+  "machine": "Bambu Lab P1S 0.4 nozzle","process": "0.20mm Standard @BBL X1C","filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle","filament_colour": "#000000","ams_tray_type": "PLA","ams_sub_brand": "Matte","bed_type": "Textured PEI Plate","bed_temp": 55,
+  "overrides": { "wall_loops":"3","sparse_infill_density":"25%","outer_wall_speed":"100","top_surface_speed":"80","small_perimeter_speed":"30","detect_thin_wall":"1","z_hop":"0.4","retraction_length":"1.6","nozzle_temperature":"210","slow_down_layer_time":"8","enable_prime_tower":"1" },
+  "parts": [
+    { "stl": "../../parts/stl/30_drive_v16.stl",   "position": [60, 128] },
+    { "stl": "../../parts/stl/32_camring_v16.stl", "position": [158, 128] },
+    { "stl": "../../parts/stl/31_sliders_v16.stl", "position": [60, 215] },
+    { "stl": "../../parts/stl/37_peg_pins_v16.stl","position": [150, 215] }
+  ]
+}
