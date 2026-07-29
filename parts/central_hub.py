@@ -135,6 +135,27 @@ def part_42_sun_multilevel(bands=None, tooth_frac=0.32):
         tris += _stitch(outer, inner, z0, z1)
     write_stl("42_sun_v16.stl", tris)
 
+def part_42_sun_piece(tooth_frac=0.32):
+    """Finding #109 (Ron): print the sun as THREE identical stacked pieces so no
+    supports are needed (the one-piece sun's full-band overhangs made spaghetti).
+    Each piece = ONE full 7t gear band (z0-1.5, r9.55) + its slim core (z1.5-4.5,
+    r4.7), square keyed bore. Printed FULL-BAND-DOWN: going up the diameter only
+    shrinks (9.55 -> 4.7), so there is NO overhang -> zero supports. Print x3, stack
+    keyed on the square post (glue the column, or friction on the post). Assembled
+    they reproduce the #108 multi-level sun exactly (13.5mm, full bands 4.5 apart)."""
+    import numpy as np
+    from generator import gear_profile, _stitch, P
+    SUN_ROOT, SUN_TIP, CORE_R, HW = 7.4, 9.55, 4.7, 2.25
+    seg = P["seg"]; th = np.linspace(0, 2*np.pi, seg, endpoint=False)
+    ri = np.array([HW/max(abs(np.cos(a)),abs(np.sin(a))) for a in th])
+    inner = list(np.stack([ri*np.cos(th), ri*np.sin(th)],1))
+    full = gear_profile(P["sun_teeth"], SUN_ROOT, SUN_TIP, tooth_frac=tooth_frac, ramp_frac=0.2)
+    slim = np.full(seg, CORE_R)
+    tris=[]
+    tris += _stitch(list(np.stack([full*np.cos(th), full*np.sin(th)],1)), inner, 0.0, 1.5)   # full band (on the bed)
+    tris += _stitch(list(np.stack([slim*np.cos(th), slim*np.sin(th)],1)), inner, 1.5, 4.5)   # slim core (rises, no overhang)
+    write_stl("42_sun_piece_v16.stl", tris)
+
 if __name__=="__main__":
     part_02e_board_bigbore_v16(); part_02f_board_v16()
     part_50d_star_hub_v16(); part_49_fixture_r58_v16()
