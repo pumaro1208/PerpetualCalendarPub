@@ -48,6 +48,21 @@ def part_02f_board_v16():
     # (3 station witness dots REMOVED — were cosmetic, fouled the month lamina)
     write_stl("02f_board_v16.stl",tris)
 
+def part_02g_board_v16():
+    """Board 02g = 02f with the satellite pivot post EXTENDED (finding #106):
+    the receiver bore now rides the post through both laminae (z0-8 local ->
+    assembly 10.4-18.4 on the 1.4 spacer), so the post must reach that height to
+    support the full two-lamina receiver instead of ending 1.1mm short and letting
+    it tilt. Post local top 12.3 -> 14.0 (assembly 17.3 -> 19.0). Everything else
+    identical to 02f (pegless rim, 10.9 bore). The old D-key stub is a no-op (r2.2
+    buried inside the r2.4 post) and is dropped; the post is a clean round bearing."""
+    tris=[]; t=4.0
+    prof,_,_,_=involute_profile(31,MD,add_f=ADD_F)
+    tris += polar_prof_solid(prof,0,t,bore=BORE)
+    ang=np.deg2rad(STN_M); cx,cy=SUNORB*np.cos(ang),SUNORB*np.sin(ang)
+    tris += cylinder(cx,cy,PIV_R,t,14.0,seg=48)          # extended bearing post (was 12.3)
+    write_stl("02g_board_v16.stl",tris)
+
 def part_50d_star_hub_v16():
     """Star, flag-free: shallow-triangle scallop disc + integral upward press-tube.
     Disc z0-1.7 (assembly 3.3-5.0); tube z0-3.7 (assembly 3.3-7.0) rides the post
@@ -73,6 +88,52 @@ def part_49_fixture_r58_v16():
     for sx in (-1,1):
         tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)  # bridge pins moved IN
     write_stl("49_fixture_r58_v16.stl",tris)
+
+def part_02h_board_v16():
+    """Board 02h (finding #107) — pegless rim like 02f, but the satellite post is
+    SHORTENED, not lengthened: with the compact 3mm receiver (bore assembly
+    9.5-12.5) the post only rides to z12.5, and it MUST stop below the feb band
+    (z13) or it fouls the feb satellite orbiting 4.81mm away. Post: r3.5 seat
+    shoulder z9-9.5 (receiver seats at 9.5), then r2.4 bearing z9-12.5 (local 4-7.5).
+    Reverses 02g's taller post — the compact stack wants a shorter one."""
+    tris=[]; t=4.0
+    prof,_,_,_=involute_profile(31,MD,add_f=ADD_F)
+    tris += polar_prof_solid(prof,0,t,bore=BORE)
+    ang=np.deg2rad(STN_M); cx,cy=SUNORB*np.cos(ang),SUNORB*np.sin(ang)
+    tris += cylinder(cx,cy,3.5,t,t+0.5,seg=32)        # seat shoulder (assembly 9-9.5)
+    tris += cylinder(cx,cy,PIV_R,t,7.5,seg=48)         # bearing post to assembly 12.5 (local 7.5)
+    write_stl("02h_board_v16.stl",tris)
+
+def part_42_sun_multilevel(bands=None):
+    """Multi-level sun (finding #107 — restore the v1.3 03_sun_tower relief that
+    finding #79's full column removed). FULL 7t gear bands (root 7.4, tip 9.55)
+    at each satellite's mesh altitude; SLIM core (r5.0) at the strike-finger
+    altitudes so the fingers sweep past close to center. Tip 9.55 (not 11.25)
+    also clears the mesh-lamina root by 0.8mm -> no jam. Square keyed bore (hw2.25)
+    seats on the fixture post's square section, same as the full column."""
+    import numpy as np
+    from generator import gear_profile, _stitch, P
+    SUN_ROOT, SUN_TIP, CORE_R, HW = 7.4, 9.55, 5.0, 2.25
+    if bands is None:
+        # sun LOCAL z (seats at assembly 9.5). Bands per the simulator b50 section
+        # view (authoritative): FULL gear at each satellite mesh altitude, SLIM r5
+        # core at each strike-finger altitude. assembly = local + 9.5.
+        #   FULL  9.5-11 / 13-14.5 / 16.5-18   -> local 0-1.5 / 3.5-5 / 7-8.5
+        #   SLIM 11-13 / 14.5-16.5 / 18-19.5   -> local 1.5-3.5 / 5-7 / 8.5-10
+        bands = [(0.0,1.3,'full'),(1.3,3.5,'slim'),(3.5,4.8,'full'),
+                 (4.8,7.0,'slim'),(7.0,8.3,'full'),(8.3,10.0,'slim')]
+    seg = P["seg"]
+    th = np.linspace(0, 2*np.pi, seg, endpoint=False)
+    ri = np.array([HW/max(abs(np.cos(a)),abs(np.sin(a))) for a in th])   # square bore
+    inner = list(np.stack([ri*np.cos(th), ri*np.sin(th)],1))
+    full = gear_profile(P["sun_teeth"], SUN_ROOT, SUN_TIP, tooth_frac=0.40, ramp_frac=0.2)
+    slim = np.full(seg, CORE_R)
+    tris=[]
+    for z0,z1,kind in bands:
+        prof = full if kind=='full' else slim
+        outer = list(np.stack([prof*np.cos(th), prof*np.sin(th)],1))
+        tris += _stitch(outer, inner, z0, z1)
+    write_stl("42_sun_v16.stl", tris)
 
 if __name__=="__main__":
     part_02e_board_bigbore_v16(); part_02f_board_v16()

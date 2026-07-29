@@ -25,6 +25,8 @@ ARM_AT  = {23: 15.0, 22: 30.0, 21: 45.0} # strike arms lead the long tooth
 TRACK_R = {23: 34.6, 22: 37.4, 21: 40.2} # groove centerlines, WORLD radii
 LOBEPOS = {21: 28, 22: 29, 23: 30}       # engine-derived lobe map
 Z_STRIKE0, Z_STRIKE1 = 5.2, 8.0          # strike interface band (restacked)
+ROOT_Z = 2.0                             # finding #104: root strike fingers onto the mesh lamina (was floating at Z_STRIKE0)
+RIB_W  = 4.5                             # finding #104: widened finger rib (was 3.0) for strength
 Z_RING0,  Z_RING1   = 4.05, 4.75         # cam ring plate (on board top)
 Z_GROOVE0           = 4.35               # blind groove floor
 GROOVE_W, PEG_R     = 2.2, 0.95   # v16b: 0.6 mm printable groove walls (0.4 nozzle)
@@ -245,7 +247,7 @@ def receiver_lamina(name, n_teeth):
     tris = []
     tris += polar_prof_solid(sat_mesh_profile(), 0, 2.0, bore=2.7)   # mesh lamina
     segp = 720
-    tris += polar_prof_solid(np.full(segp, 8.0), 2.0, Z_STRIKE0, bore=2.7)  # spacer
+    tris += polar_prof_solid(np.full(segp, 8.0), 2.0, Z_STRIKE1, bore=2.7)  # finding #106: hub now full height (z2-8), so the post rides the bore through BOTH laminae
     T = np.array(tooth_outline(MD, P["prog_teeth"], add_f=ADD_F))    # E1 profile
     Tc = T - T.mean(axis=0)
     tip_r = 18.11                                                    # long-tooth tip
@@ -253,10 +255,15 @@ def receiver_lamina(name, n_teeth):
         a = (E1_BASE + k*30.0)*d2r
         R = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
         pts = (Tc*0.92) @ R.T + np.array([ (tip_r-2.2)*np.cos(a), (tip_r-2.2)*np.sin(a)])
-        tris += _poly_prism([tuple(p) for p in pts], Z_STRIKE0, Z_STRIKE1)
-        aa = a  # spoke from hub to tooth
+        # finding #104 (Ron, printed): strike fingers floated as a mid-air crown
+        # (spoke z5.2-8.0 bridged a 3.2mm void over the mesh lamina) -> printed
+        # stringy. ROOT the finger onto the mesh lamina: rib + tooth run z2.0-8.0
+        # (solid onto the disc below), rib widened 3.0 -> 4.5. Strike tooth head,
+        # radius and the 5.2-8.0 strike band UNCHANGED -- support added beneath only.
+        tris += _poly_prism([tuple(p) for p in pts], ROOT_Z, Z_STRIKE1)
+        aa = a  # rooted rib from mesh lamina up to the tooth
         tris += rbox(( (8.0+tip_r-2.2)/2 )*np.cos(a), ((8.0+tip_r-2.2)/2)*np.sin(a),
-                     np.degrees(a), tip_r-2.2-8.0+2.0, 3.0, Z_STRIKE0, Z_STRIKE1)
+                     np.degrees(a), tip_r-2.2-8.0+2.0, RIB_W, ROOT_Z, Z_STRIKE1)
     tris += cylinder(6.0*np.cos(E1_BASE*d2r), 6.0*np.sin(E1_BASE*d2r), 0.8,
                      Z_STRIKE1, Z_STRIKE1+0.4, seg=12)               # k=0 witness
     write_stl(name, tris)
@@ -1115,6 +1122,30 @@ def part_49_fixture_r54_v16():
     write_stl("49_fixture_r54_v16.stl", tris)
     return ("49_fixture_r54", tris)
 
+def receiver_compact(name, n_teeth):
+    """Compact receiver (finding #107) — restore the simulator b50 vertical stack:
+    mesh and strike laminae ADJACENT, ~3mm total, so satellites fit 3.5mm apart and
+    the strike teeth land in the multi-level sun's slim cores. mesh z0-1.5 (assembly
+    9.5-11, meshes the sun full band); strike z1.5-3.0 (assembly 11-12.5, in the slim
+    core). The strike teeth root directly on the mesh disc, so they print supported
+    (subsumes finding #104); bore 2.7 rides the post through both laminae (#106)."""
+    ZM, ZS = 1.5, 3.0
+    seg = P["seg"]
+    tris = []
+    tris += polar_prof_solid(sat_mesh_profile(), 0, ZM, bore=2.7)          # mesh lamina z0-1.5
+    tris += polar_solid(np.full(seg, 4.0), ZM, ZS, r_inner=2.7)           # hub z1.5-3, bore 2.7
+    T = np.array(tooth_outline(MD, P["prog_teeth"], add_f=ADD_F))
+    Tc = T - T.mean(axis=0); tip_r = 18.11
+    for k in range(n_teeth):
+        a = (E1_BASE + k*30.0)*d2r
+        R = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
+        pts = (Tc*0.92) @ R.T + np.array([(tip_r-2.2)*np.cos(a), (tip_r-2.2)*np.sin(a)])
+        tris += _poly_prism([tuple(p) for p in pts], ZM, ZS)              # strike tooth (on the mesh disc)
+        tris += rbox(((4.0+tip_r-2.2)/2)*np.cos(a), ((4.0+tip_r-2.2)/2)*np.sin(a),
+                     np.degrees(a), tip_r-2.2-4.0+2.0, 4.5, ZM, ZS)       # spoke hub->tooth, rooted
+    write_stl(name, tris)
+    return (name, tris)
+
 def receiver_lamina_r2(name, n_teeth):
     """Receiver r2 (finding #70): re-anchor the k=0 witness dot onto live
     material. In r1 it floated at z 8.0-8.4 (r6.0) with the hub top 2.8 mm
@@ -1124,7 +1155,7 @@ def receiver_lamina_r2(name, n_teeth):
     tris = []
     tris += polar_prof_solid(sat_mesh_profile(), 0, 2.0, bore=2.7)          # mesh lamina
     segp = 720
-    tris += polar_prof_solid(np.full(segp, 8.0), 2.0, Z_STRIKE0, bore=2.7)  # spacer
+    tris += polar_prof_solid(np.full(segp, 8.0), 2.0, Z_STRIKE1, bore=2.7)  # finding #106: hub now full height (z2-8), so the post rides the bore through BOTH laminae
     T = np.array(tooth_outline(MD, P["prog_teeth"], add_f=ADD_F))
     Tc = T - T.mean(axis=0)
     tip_r = 18.11
@@ -1132,9 +1163,11 @@ def receiver_lamina_r2(name, n_teeth):
         a = (E1_BASE + k*30.0)*d2r
         R = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
         pts = (Tc*0.92) @ R.T + np.array([(tip_r-2.2)*np.cos(a), (tip_r-2.2)*np.sin(a)])
-        tris += _poly_prism([tuple(p) for p in pts], Z_STRIKE0, Z_STRIKE1)
+        # finding #104 (Ron): root the strike finger onto the mesh lamina (z2.0-8.0,
+        # was floating z5.2-8.0), rib widened 3.0 -> 4.5. Strike band unchanged.
+        tris += _poly_prism([tuple(p) for p in pts], ROOT_Z, Z_STRIKE1)
         tris += rbox(((8.0+tip_r-2.2)/2)*np.cos(a), ((8.0+tip_r-2.2)/2)*np.sin(a),
-                     np.degrees(a), tip_r-2.2-8.0+2.0, 3.0, Z_STRIKE0, Z_STRIKE1)
+                     np.degrees(a), tip_r-2.2-8.0+2.0, RIB_W, ROOT_Z, Z_STRIKE1)
     # r2: witness dot RE-ANCHORED onto the spacer top (z Z_STRIKE0), rooted
     tris += cylinder(6.0*np.cos(E1_BASE*d2r), 6.0*np.sin(E1_BASE*d2r), 0.8,
                      Z_STRIKE0, Z_STRIKE0+0.4, seg=12)
