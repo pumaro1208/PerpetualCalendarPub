@@ -104,29 +104,29 @@ def part_02h_board_v16():
     tris += cylinder(cx,cy,PIV_R,t,7.5,seg=48)         # bearing post to assembly 12.5 (local 7.5)
     write_stl("02h_board_v16.stl",tris)
 
-def part_42_sun_multilevel(bands=None):
-    """Multi-level sun (finding #107 — restore the v1.3 03_sun_tower relief that
-    finding #79's full column removed). FULL 7t gear bands (root 7.4, tip 9.55)
-    at each satellite's mesh altitude; SLIM core (r5.0) at the strike-finger
-    altitudes so the fingers sweep past close to center. Tip 9.55 (not 11.25)
-    also clears the mesh-lamina root by 0.8mm -> no jam. Square keyed bore (hw2.25)
-    seats on the fixture post's square section, same as the full column."""
+def part_42_sun_multilevel(bands=None, tooth_frac=0.32):
+    """Multi-level sun (finding #107; RE-TUNED #108 from Ron's core print). FULL 7t
+    gear bands (root 7.4, tip 9.55) at each satellite mesh altitude; SLIM core at the
+    strike-finger altitudes so fingers sweep past close to center.
+    #108 changes from Ron's bench feedback:
+      - SLIM cores TALLER (3.0mm vs 2.0) and full bands spaced 4.5mm apart, so the
+        strike fingers have vertical room to pass between bands (they were binding).
+      - SLIM radius 4.7 (was 5.0): finger reach 5.47 now clears by 0.77mm (was 0.47).
+      - Sun teeth thinned (tooth_frac 0.32 vs 0.40) for real mesh BACKLASH — the
+        printed gears over-engaged and bound. Pair with XY compensation on the print."""
     import numpy as np
     from generator import gear_profile, _stitch, P
-    SUN_ROOT, SUN_TIP, CORE_R, HW = 7.4, 9.55, 5.0, 2.25
+    SUN_ROOT, SUN_TIP, CORE_R, HW = 7.4, 9.55, 4.7, 2.25
     if bands is None:
-        # sun LOCAL z (seats at assembly 9.5). Bands per the simulator b50 section
-        # view (authoritative): FULL gear at each satellite mesh altitude, SLIM r5
-        # core at each strike-finger altitude. assembly = local + 9.5.
-        #   FULL  9.5-11 / 13-14.5 / 16.5-18   -> local 0-1.5 / 3.5-5 / 7-8.5
-        #   SLIM 11-13 / 14.5-16.5 / 18-19.5   -> local 1.5-3.5 / 5-7 / 8.5-10
-        bands = [(0.0,1.3,'full'),(1.3,3.5,'slim'),(3.5,4.8,'full'),
-                 (4.8,7.0,'slim'),(7.0,8.3,'full'),(8.3,10.0,'slim')]
+        # sun LOCAL z (seats at assembly 9.5). #108: full 1.5mm, slim 3.0mm, sats 4.5 apart.
+        #   month full 0-1.5 / slim 1.5-4.5 ; feb full 4.5-6 / slim 6-9 ; leap full 9-10.5 / slim 10.5-13.5
+        bands = [(0.0,1.5,'full'),(1.5,4.5,'slim'),(4.5,6.0,'full'),
+                 (6.0,9.0,'slim'),(9.0,10.5,'full'),(10.5,13.5,'slim')]
     seg = P["seg"]
     th = np.linspace(0, 2*np.pi, seg, endpoint=False)
     ri = np.array([HW/max(abs(np.cos(a)),abs(np.sin(a))) for a in th])   # square bore
     inner = list(np.stack([ri*np.cos(th), ri*np.sin(th)],1))
-    full = gear_profile(P["sun_teeth"], SUN_ROOT, SUN_TIP, tooth_frac=0.40, ramp_frac=0.2)
+    full = gear_profile(P["sun_teeth"], SUN_ROOT, SUN_TIP, tooth_frac=tooth_frac, ramp_frac=0.2)
     slim = np.full(seg, CORE_R)
     tris=[]
     for z0,z1,kind in bands:

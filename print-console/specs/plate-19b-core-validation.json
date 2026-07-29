@@ -1,6 +1,6 @@
 {
   "name": "plate-19b-core-validation",
-  "version_tag": "finding #107 core validation: multi-level sun 42 + compact month receiver 33 + short-post board 02h. Bench test: sun drives receiver (no jam) + receiver spins past sun over 360 (fingers clear slim cores). Black PLA. SUN NEEDS SUPPORTS (full bands overhang slim cores); board+receiver print flat/no support.",
+  "version_tag": "finding #108 re-tune of #107 core (Ron bench feedback): sun slim cores taller (3mm) + slim r4.7 for finger clearance (was binding), sun teeth thinned tooth_frac 0.32 for mesh backlash (was jamming). + xy_contour_compensation -0.06 to counter FDM oversizing. Bench: sun drives receiver smoothly (no jam) + fingers pass the slim sections freely.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -21,7 +21,8 @@
     "support_on_build_plate_only": "0",
     "z_hop": "0.4",
     "retraction_length": "1.6",
-    "nozzle_temperature": "210"
+    "nozzle_temperature": "210",
+    "xy_contour_compensation": "-0.06"
   },
   "parts": [
     {
