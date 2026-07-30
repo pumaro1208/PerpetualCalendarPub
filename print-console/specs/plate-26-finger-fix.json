@@ -1,0 +1,49 @@
+{
+  "name": "plate-26-finger-fix",
+  "version_tag": "#117 coupon finger/sun collision fix (Ron: finger overhang droops onto the sun tooth; forcing it under lifts the receiver over the sun). Sun full band shortened to z0-1.0 (top now 0.5mm BELOW the finger bottom -- was zero clearance) + receiver finger split: full-height where the disc backs it (r<16), raised tip beyond (underside 1.2mm above the sun band) so print droop lands in air. Sun also drops the profile shift (#116 thin clean involute). Two parts only -- REUSE the plate-24 base and posts. xy_contour_compensation -0.06. | QUIET: low speed + low acceleration.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/115_meshtest_sun_piece_inv_v16.stl",
+      "position": [
+        100,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/115_meshtest_receiver_inv_v16.stl",
+      "position": [
+        160,
+        128
+      ]
+    }
+  ]
+}

@@ -33,14 +33,17 @@ def part_sun():
     from generator import _stitch, P
     SUN_ROOT, SUN_TIP, CORE_R = 7.4, 9.55, 4.7
     seg = P["seg"]; th = np.linspace(0, 2*np.pi, seg, endpoint=False)
-    full = MI.inv_shift_profile(MI.N_SUN, x=+0.40, tip_cap=SUN_TIP, root_r=SUN_ROOT, backlash=BL, seg=seg)
+    full = MI.inv_shift_profile(MI.N_SUN, x=0.0, tip_cap=SUN_TIP, root_r=SUN_ROOT, backlash=BL, seg=seg)
     slim = np.full(seg, CORE_R)
     ri = np.full(seg, 2.70)
     inner = list(np.stack([ri*np.cos(th), ri*np.sin(th)], 1))
     def band(prof, z0, z1):
         return _stitch(list(np.stack([prof*np.cos(th), prof*np.sin(th)],1)), inner, z0, z1)
-    tris  = band(full, 0.0, 1.5)      # full involute band (meshes) — on the bed
-    tris += band(slim, 1.5, 4.5)      # slim core (fingers pass), shrinks upward: no support
+    # #117: full band shortened 1.5 -> 1.0 so its TOP drops 0.5mm below the receiver
+    # finger bottom -> vertical clearance for the finger (was zero-margin = the collision).
+    # x dropped to 0 too (the shift fattened the tooth and bound — finding #116).
+    tris  = band(full, 0.0, 1.0)      # full involute band (meshes) — shorter, on the bed
+    tris += band(slim, 1.0, 4.5)      # slim core starts 0.5mm lower: finger clearance
     write_stl("115_meshtest_sun_piece_inv_v16.stl", tris)
 
 def part_sat():
@@ -54,9 +57,14 @@ def part_sat():
     tris  = polar_prof_solid(prof, 0.0, ZM, bore=2.70)                    # involute mesh lamina
     tris += polar_solid(np.full(seg, 4.0), ZM, ZS, r_inner=2.70)         # hub
     for k in range(MI.N_SAT // 2):                                        # solid finger bars (every 30 deg)
-        a = (E1_BASE + k*30.0)*d2r
-        rmid = (4.0+TIP_R)/2
-        tris += rbox(rmid*np.cos(a), rmid*np.sin(a), np.degrees(a), TIP_R-4.0, 4.5, ZM, ZS)
+        a = (E1_BASE + k*30.0)*d2r; ad = np.degrees(a)
+        # #117: inner finger (r4->16) full-height, backed by the mesh lamina to r15.8 (no droop).
+        rmid = (4.0+16.0)/2
+        tris += rbox(rmid*np.cos(a), rmid*np.sin(a), ad, 16.0-4.0, 4.5, ZM, ZS)
+        # overhanging TIP (r15.5->18.3) raised to z2.2 so its unsupported bridge droops well
+        # clear of the sun full band instead of onto it.
+        rmt = (15.5+TIP_R)/2
+        tris += rbox(rmt*np.cos(a), rmt*np.sin(a), ad, TIP_R-15.5, 4.5, 2.2, ZS)
     ag = (E1_BASE + 15.0)*d2r                                             # grip pin in a finger gap
     tris += cylinder(10.0*np.cos(ag), 10.0*np.sin(ag), 2.5, ZM, 7.5, seg=24)
     write_stl("115_meshtest_receiver_inv_v16.stl", tris)
