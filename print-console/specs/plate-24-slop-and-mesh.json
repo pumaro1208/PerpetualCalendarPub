@@ -1,6 +1,6 @@
 {
   "name": "plate-24-slop-and-mesh",
-  "version_tag": "two hand-tests in one quiet plate. #114 central-bearing sleeve ladder (3 drop-in hubs, tube bore 4.27/4.22/4.17 on the r4.15 board post) to kill the board-post play that still binds after the #113 gear-post fix -- swap each into the board, pick snug-but-free, lock into the star hub. #115 involute mesh coupon (base + 7t profile-shifted involute sun + 12t involute sat w/ grip pin @ CD 23.75) to feel the new flank form (sim: 0.00mm2 tooth overlap vs 0.42 for the trapezoid) before regenerating the full sun tower + receiver laminae. All flat, no supports. xy_contour_compensation -0.06 to match the build (r2.65 posts + sleeve bores chosen under it). | QUIET: low speed + low acceleration.",
+  "version_tag": "two hand-tests in one quiet plate. #114 central-bearing sleeve ladder (3 drop-in hubs, tube bore 4.27/4.22/4.17 on the r4.15 board post) to kill the board-post play that still binds after the #113 gear-post fix -- swap each into the board, pick snug-but-free, lock into the star hub. #115 involute mesh coupon MATCHED to the engine heights: sun = real multi-level month section in involute (full band z0-1.5 + slim core z1.5-4.5), receiver = real compact involute (mesh lamina + solid fingers); both seat at z3.5 so the mesh lamina lands on the sun full band exactly like the assembly (coplanar 3.5-5.0), fingers clear the slim core 0.75mm. Feel the new flank (sim: 0.00mm2 overlap vs 0.42 trapezoid) at true heights before the full sun-tower/receiver regen. All flat, no supports. xy_contour_compensation -0.06 to match the build. | QUIET: low speed + low acceleration.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -31,11 +31,11 @@
     "travel_acceleration": "3000"
   },
   "parts": [
-    { "stl": "../../parts/stl/115_meshtest_base_v16.stl",       "position": [65, 75] },
-    { "stl": "../../parts/stl/115_meshtest_sun7t_inv_v16.stl",  "position": [150, 70] },
-    { "stl": "../../parts/stl/115_meshtest_sat12t_inv_v16.stl", "position": [205, 82] },
-    { "stl": "../../parts/stl/114_central_sleeve_id27_v16.stl", "position": [60, 155] },
-    { "stl": "../../parts/stl/114_central_sleeve_id22_v16.stl", "position": [120, 155] },
-    { "stl": "../../parts/stl/114_central_sleeve_id17_v16.stl", "position": [180, 155] }
+    { "stl": "../../parts/stl/115_meshtest_base_v16.stl",           "position": [60, 70] },
+    { "stl": "../../parts/stl/115_meshtest_sun_piece_inv_v16.stl",  "position": [150, 60] },
+    { "stl": "../../parts/stl/115_meshtest_receiver_inv_v16.stl",   "position": [205, 75] },
+    { "stl": "../../parts/stl/114_central_sleeve_id27_v16.stl",     "position": [55, 150] },
+    { "stl": "../../parts/stl/114_central_sleeve_id22_v16.stl",     "position": [120, 150] },
+    { "stl": "../../parts/stl/114_central_sleeve_id17_v16.stl",     "position": [185, 150] }
   ]
 }
