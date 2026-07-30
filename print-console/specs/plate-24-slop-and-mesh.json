@@ -1,0 +1,41 @@
+{
+  "name": "plate-24-slop-and-mesh",
+  "version_tag": "two hand-tests in one quiet plate. #114 central-bearing sleeve ladder (3 drop-in hubs, tube bore 4.27/4.22/4.17 on the r4.15 board post) to kill the board-post play that still binds after the #113 gear-post fix -- swap each into the board, pick snug-but-free, lock into the star hub. #115 involute mesh coupon (base + 7t profile-shifted involute sun + 12t involute sat w/ grip pin @ CD 23.75) to feel the new flank form (sim: 0.00mm2 tooth overlap vs 0.42 for the trapezoid) before regenerating the full sun tower + receiver laminae. All flat, no supports. xy_contour_compensation -0.06 to match the build (r2.65 posts + sleeve bores chosen under it). | QUIET: low speed + low acceleration.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    { "stl": "../../parts/stl/115_meshtest_base_v16.stl",       "position": [65, 75] },
+    { "stl": "../../parts/stl/115_meshtest_sun7t_inv_v16.stl",  "position": [150, 70] },
+    { "stl": "../../parts/stl/115_meshtest_sat12t_inv_v16.stl", "position": [205, 82] },
+    { "stl": "../../parts/stl/114_central_sleeve_id27_v16.stl", "position": [60, 155] },
+    { "stl": "../../parts/stl/114_central_sleeve_id22_v16.stl", "position": [120, 155] },
+    { "stl": "../../parts/stl/114_central_sleeve_id17_v16.stl", "position": [180, 155] }
+  ]
+}
