@@ -43,7 +43,8 @@
       "position": [
         160,
         128
-      ]
+      ],
+      "allow_midair": true
     }
   ]
 }

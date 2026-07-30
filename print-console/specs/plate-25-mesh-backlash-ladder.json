@@ -34,50 +34,50 @@
     {
       "stl": "../../parts/stl/116_meshladder_base_v16.stl",
       "position": [
-        70,
-        128
+        55,
+        110
       ]
     },
     {
       "stl": "../../parts/stl/116_meshladder_sun_bl05_v16.stl",
       "position": [
-        150,
-        60
+        120,
+        50
       ]
     },
     {
       "stl": "../../parts/stl/116_meshladder_rec_bl05_v16.stl",
       "position": [
-        205,
-        60
+        165,
+        50
       ]
     },
     {
       "stl": "../../parts/stl/116_meshladder_sun_bl09_v16.stl",
       "position": [
-        150,
-        128
+        120,
+        110
       ]
     },
     {
       "stl": "../../parts/stl/116_meshladder_rec_bl09_v16.stl",
       "position": [
-        205,
-        128
+        165,
+        110
       ]
     },
     {
       "stl": "../../parts/stl/116_meshladder_sun_bl13_v16.stl",
       "position": [
-        150,
-        196
+        120,
+        170
       ]
     },
     {
       "stl": "../../parts/stl/116_meshladder_rec_bl13_v16.stl",
       "position": [
-        205,
-        196
+        165,
+        170
       ]
     }
   ]
