@@ -1,0 +1,42 @@
+{
+  "name": "plate-29-month-b270",
+  "version_tag": "#122 slop fix (Ron's bench): the ballmesh month gear shipped with bore 2.80 (sized for the loose ladder base on purpose) but on the board 02h post the proven fit is the #113 winner: r2.65 post in a 2.70 bore = 0.05mm radial. This is the same month gear (patent-form conjugate, sculpted teeth) re-emitted at bore 2.70. 1 part, flat, no supports. xy_contour_compensation -0.06 (the value the r2.65/2.70 fit was chosen under). | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/121_ballmesh_month_b270_v16.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ]
+}
