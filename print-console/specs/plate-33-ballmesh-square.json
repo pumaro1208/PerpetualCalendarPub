@@ -1,0 +1,49 @@
+{
+  "name": "plate-33-ballmesh-square",
+  "version_tag": "#126 Ron's spec round 2: month teeth SQUARE-tipped and as long as geometry allows. +2mm was impossible (teeth would strike the sun hub); achieved +1.15 over plate-32 by SHRINKING the sun core 6.3->5.3 (key-bore wall 2.1 kept): blank tip 18.2 -> climb-sweep carved 17.91 with corners auto-relieved. Teeth dive to r5.84 from sun center \u2014 PAST the ball centers; printed engagement ~3.5mm (vs 1.6 orig / 2.6 plate-32). Zero design overlap; play unchanged (~7.7deg static). MATCHED PAIR \u2014 use together only. Square-key sun (hw2.25) + b270 month. ENGINE CAVEAT: month tip printed ~17.65 EXCEEDS the 23h drive-arm dip clearance \u2014 bench-only geometry until the drive arm is re-planned. 2 parts, flat, no supports, xy-comp -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/126_ballsun_slimcore_v16.stl",
+      "position": [
+        104,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/126_month_square_deep_v16.stl",
+      "position": [
+        158,
+        128
+      ]
+    }
+  ]
+}
