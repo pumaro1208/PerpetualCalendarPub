@@ -1,0 +1,42 @@
+{
+  "name": "plate-28-ballsun-keyed",
+  "version_tag": "#121 keyed ball sun for the REAL rig: same patent-form ball sun (7 mushroom teeth r2.0) with the SQUARE keyed bore (hw 2.25) so it seats stationary on fixture r59's square post (key starts z8.5). 4.0mm tall -> teeth span assembly 8.5-12.5, fully covering the ballmesh month gear riding the board 02h post (bore 2.80 on the r2.65 post, band 9.5-12.5). Bench: crank the board and let the month gear climb the patent sun on real hardware. 1 part, flat, no supports. xy_contour_compensation -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/121_ballmesh_sun_keyed_v16.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ]
+}
