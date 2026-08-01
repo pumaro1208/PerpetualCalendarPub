@@ -1,6 +1,6 @@
 {
   "name": "plate-46-swoopy-chute",
-  "version_tag": "Swoopy Poop Chute for X1/P1P/P1S (third-party, MakerWorld 93198) \u2014 purge catcher, timed for plate-45 which is the first two-colour plate and will make a real pile of poops. NOT a mechanism part, so two of our standing settings are deliberately OFF: (1) xy_contour_compensation is 0, NOT -0.06. Our -0.06 exists to make posts and keys print at their mate bore size (#136); a third-party model was drawn for nominal, and shrinking every outer contour 0.06/side would tighten its chassis mounting for no reason. (2) walls 2 and infill 10% instead of 3/25% \u2014 the designer's 165g/3.9h figure is at standard settings and this is a hollow box that catches waste, not a part under load. Quiet slicing overrides kept as always. No supports (the designer states none needed). PARTS LIST IS PROVISIONAL: the download may be one STL or several, or a 3mf. Confirm what actually landed in parts/stl/ before composing and fix the list. Position is 'center' rather than a coordinate because the design office has not seen the model's bounding box. | QUIET.",
+  "version_tag": "Swoopy Poop Chute for X1/P1P/P1S (third-party, MakerWorld 93198, PDXCNC) \u2014 purge catcher, timed for plate-45, the first two-colour plate. Measured from the downloaded STL: 208.2 x 228.9 x 181.8mm, watertight, one body, 190796 tris, 164.6cm3 solid. *** THIS PLATE EXPOSED A BED BUG (#144) \u2014 read before composing anything. *** The flattened canonical config claimed printable_area 200x200 and printable_height 100 for a P1S, whose real build volume is 256x256x256. Nothing caught it because every mechanism part so far is under 45mm tall and 90mm wide \u2014 but it is why plate-41 and plate-43 both had to be reflowed by hand at the printer, and it silently capped this machine at 100mm of Z. It would have refused this 182mm chute outright. compose_plate now takes printable_area_mm / printable_height_mm from the spec (all live specs updated to 256/256/256), centres on the real envelope rather than a hard-coded 256 that disagreed with the config's 200, and GATES placement: any part off the bed, over height, inside the bed exclusion zone, or overlapping another part now fails at compose time with the offending numbers. NOT a mechanism part, so two standing settings are deliberately off: xy_contour_compensation is 0, NOT -0.06 (that exists to make posts and keys print at their mate bore size per #136; this model was drawn for nominal and shrinking its contours would tighten the chassis mount for nothing), and walls 2 / infill 10% instead of 3/25% since it is a hollow waste catcher. Quiet slicing kept, no supports (designer states none needed). 1 part, position center. | QUIET.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -35,5 +35,10 @@
       "stl": "../../parts/stl/swoopy_poop_chute.stl",
       "position": "center"
     }
-  ]
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
 }

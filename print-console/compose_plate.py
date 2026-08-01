@@ -217,7 +217,49 @@ def build_project_settings(spec: dict) -> dict:
         cfg[k] = [want] if isinstance(cfg.get(k), list) else want
     if spec.get("filament_2"):
         _add_second_filament(cfg, spec)
+    _apply_bed_envelope(cfg, spec)
     return cfg
+
+
+def _apply_bed_envelope(cfg: dict, spec: dict) -> None:
+    """Let the spec state the real build envelope, and say so when it differs.
+
+    #144: the flattened canonical config came back claiming printable_area
+    200x200 and printable_height 100 for a P1S, whose actual build volume is
+    256x256x256. Nothing caught it because every mechanism part so far is under
+    45mm tall and under 90mm wide — but it is the reason parts kept having to be
+    reflowed at the printer, and it silently caps this machine at 100mm of Z.
+    Left alone it would also refuse the 182mm poop chute outright.
+    """
+    area = spec.get("printable_area_mm")
+    hgt = spec.get("printable_height_mm")
+    if area:
+        w, d = float(area[0]), float(area[1])
+        was = cfg.get("printable_area")
+        cfg["printable_area"] = [f"0x0", f"{w:g}x0", f"{w:g}x{d:g}", f"0x{d:g}"]
+        if was and was != cfg["printable_area"]:
+            print(f"  bed envelope: printable_area {was} -> {cfg['printable_area']} (spec)")
+    if hgt:
+        was = cfg.get("printable_height")
+        cfg["printable_height"] = str(hgt)
+        if was and str(was) != str(hgt):
+            print(f"  bed envelope: printable_height {was} -> {hgt} (spec)")
+
+
+def bed_envelope(cfg: dict):
+    """(width, depth, height, [exclude rects]) as the slicer will actually see it."""
+    def _pts(key, default):
+        raw = cfg.get(key) or default
+        return [tuple(float(t) for t in p.split("x")) for p in raw]
+    a = _pts("printable_area", ["0x0", "256x0", "256x256", "0x256"])
+    w = max(p[0] for p in a); d = max(p[1] for p in a)
+    h = float(cfg.get("printable_height") or 256)
+    ex = []
+    if cfg.get("bed_exclude_area"):
+        e = _pts("bed_exclude_area", [])
+        ex.append((min(p[0] for p in e), min(p[1] for p in e),
+                   max(p[0] for p in e), max(p[1] for p in e)))
+    return w, d, h, ex
 
 
 def _add_second_filament(cfg: dict, spec: dict) -> None:
@@ -553,23 +595,62 @@ def compose(spec_path: Path, out_path: Path) -> Path:
     for p in parts:
         lo, hi = bbox(p["verts"])
         widths[id(p)] = (lo, hi)
+    bed_w, bed_d, bed_h, bed_ex = bed_envelope(cfg)
     for p in parts:
         lo, hi = widths[id(p)]
         w = hi[0] - lo[0]
         pos = p["spec"].get("position", "center")
+        # centre on the envelope the slicer will use. BED was hard-coded 256 while
+        # the config said 200, so "center" landed 28mm off-centre (#144).
         if pos == "center-right":
-            cx = BED / 2 + GAP / 2 + w / 2
+            cx = bed_w / 2 + GAP / 2 + w / 2
         elif pos == "center-left":
-            cx = BED / 2 - GAP / 2 - w / 2
+            cx = bed_w / 2 - GAP / 2 - w / 2
         elif pos == "center":
-            cx = BED / 2
+            cx = bed_w / 2
         else:
             cx = float(pos[0])
-        cy = BED / 2 if isinstance(pos, str) else float(pos[1])
+        cy = bed_d / 2 if isinstance(pos, str) else float(pos[1])
         dx = cx - (lo[0] + hi[0]) / 2
         dy = cy - (lo[1] + hi[1]) / 2
         dz = -lo[2] + float(p["spec"].get("z_offset", 0.0))
         p["verts"] = [(v[0] + dx, v[1] + dy, v[2] + dz) for v in p["verts"]]
+
+    # ---- #144 bounds gate: catch this here, not at the printer ----
+    # Two plates in a row had to be reflowed by hand because a part hung off the
+    # bed and nothing checked. Compose knows the envelope and the placed bbox, so
+    # there is no excuse for finding out at slice time.
+    oob = []
+    for p in parts:
+        lo, hi = bbox(p["verts"])
+        n = p["name"]
+        if lo[0] < 0 or hi[0] > bed_w or lo[1] < 0 or hi[1] > bed_d:
+            oob.append(f"{n}: X[{lo[0]:.1f},{hi[0]:.1f}] Y[{lo[1]:.1f},{hi[1]:.1f}] "
+                       f"outside the {bed_w:g}x{bed_d:g} printable area")
+        if hi[2] > bed_h:
+            oob.append(f"{n}: {hi[2]:.1f}mm tall, over the {bed_h:g}mm printable height")
+        for ex in bed_ex:
+            if not (hi[0] < ex[0] or lo[0] > ex[2] or hi[1] < ex[1] or lo[1] > ex[3]):
+                oob.append(f"{n}: overlaps the bed exclusion zone "
+                           f"X[{ex[0]:g},{ex[2]:g}] Y[{ex[1]:g},{ex[3]:g}]")
+    for i, a in enumerate(parts):
+        alo, ahi = bbox(a["verts"])
+        for b in parts[i+1:]:
+            # a two-colour inlay is DELIBERATELY co-located with its host — the
+            # white glyphs sit inside the board's recesses. Only an explicit
+            # allow_overlap exempts a pair; everything else is a collision.
+            if a["spec"].get("allow_overlap") or b["spec"].get("allow_overlap"):
+                continue
+            blo, bhi = bbox(b["verts"])
+            if not (ahi[0] < blo[0] or alo[0] > bhi[0]
+                    or ahi[1] < blo[1] or alo[1] > bhi[1]):
+                oob.append(f"{a['name']} and {b['name']} overlap on the bed")
+    if oob:
+        raise SystemExit("REFUSING to compose: parts do not fit the bed\n  "
+                         + "\n  ".join(oob)
+                         + f"\n(envelope in use: {bed_w:g} x {bed_d:g} x {bed_h:g}mm — "
+                           "if that looks wrong for this machine, set "
+                           "printable_area_mm / printable_height_mm in the spec)")
 
     # 3D/3dmodel.model
     obj_xml, items, ms_objects, ms_instances, ms_assemble = [], [], [], [], []

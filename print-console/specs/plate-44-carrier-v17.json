@@ -59,5 +59,10 @@
         45
       ]
     }
-  ]
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
 }

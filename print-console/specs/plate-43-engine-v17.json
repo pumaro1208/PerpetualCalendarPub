@@ -69,9 +69,14 @@
     {
       "stl": "../../parts/stl/143_receiver_leap_v17.stl",
       "position": [
-        178,
+        195,
         105
       ]
     }
-  ]
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
 }

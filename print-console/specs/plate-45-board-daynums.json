@@ -45,10 +45,16 @@
         110.389
       ],
       "extruder": 2,
-      "allow_midair": true
+      "allow_midair": true,
+      "allow_overlap": true
     }
   ],
   "filament_2": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
   "filament_2_colour": "#FFFFFF",
-  "ams_tray_type_2": "PLA"
+  "ams_tray_type_2": "PLA",
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
 }
