@@ -107,6 +107,24 @@ def part_49_fixture_r59_v16():
         tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)  # bridge pins (unchanged)
     write_stl("49_fixture_r59_v16.stl",tris)
 
+def part_49_fixture_r60_v16():
+    """Fixture r60 (finding #135, Ron's pick 'K4'): the SQUARE key printed ~0.12
+    under its 4.3 design (outer-contour comp shrink) -> ~0.3 rattle in the sun's
+    4.5 bore. K4 = design across-flats 4.42 (prints ~4.30): snug, no rattle, still
+    slides. Everything else identical to r59 (key starts z8.5, thrust pad, drive
+    post, bridge pins)."""
+    tris=[]; pr=4.15
+    tris += box(0,0,132,76,0.0,2.5)
+    tris += box(36.65,0,58.7,76,2.5,4.0)
+    tris += cylinder(-36.75,0,pr,2.5,8.5,seg=64)
+    tris += box(-36.75,0,4.42,4.42,8.5,18.0)                         # K4 key: design 4.42 across
+    tris += polar_solid(13.0,2.5,3.3,r_inner=6.5,cx=-36.75,cy=0,seg=64)
+    tris += cylinder(+36.75,0,pr,4.0,24.0,seg=48)
+    tris += cylinder(+36.75,0,6.5,4.0,5.0,seg=48)
+    for sx in (-1,1):
+        tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)
+    write_stl("49_fixture_r60_v16.stl",tris)
+
 def part_02h_board_v16():
     """Board 02h (finding #107) — pegless rim like 02f, but the satellite post is
     SHORTENED, not lengthened: with the compact 3mm receiver (bore assembly
@@ -123,7 +141,11 @@ def part_02h_board_v16():
     -> 0.05mm nominal radial clearance. Reprint the board ONLY at xy_contour
     compensation -0.06 (the value the coupon was chosen under), or the fit shifts."""
     tris=[]; t=4.0
-    POST_R = 2.65                                      # finding #113: won the tolerance-ladder coupon (was 2.4/2.55)
+    # finding #135 (full-height ladder, Ron's pick '70'): posts print ~0.06/side small
+    # under xy-comp -0.06 (outer contours shrink, bores don't). LAW: design the post AT
+    # the bore size — the comp shrink IS the running clearance. Was 2.65 (#113, stub-
+    # coupon pick that double-counted the shrink).
+    POST_R = 2.70
     prof,_,_,_=involute_profile(31,MD,add_f=ADD_F)
     tris += polar_prof_solid(prof,0,t,bore=BORE)
     ang=np.deg2rad(STN_M); cx,cy=SUNORB*np.cos(ang),SUNORB*np.sin(ang)
