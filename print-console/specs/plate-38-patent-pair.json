@@ -1,6 +1,6 @@
 {
   "name": "plate-38-patent-pair",
-  "version_tag": "#133c SYMMETRIC patent pair (supersedes 133/133b \u2014 Ron caught asymmetric teeth in the render). Traced teeth mirror-averaged about their true axes: flank asymmetry 0.40/0.24 -> 0.0000 on both wheels (reversibility law restored: forward = reverse). Pair re-carved as mutual conjugates (overlap 0.00), sun re-clocked: VALLEY at the strike line, square to the keyed-post faces (#134). All prior notes apply (Fig.2 traced forms, 57% valley reach, CLR 0.08, GROW +0.25, hub boss, b270). 2 parts, flat, no supports, xy-comp -0.06. | QUIET.",
+  "version_tag": "#133d FINAL patent pair (supersedes 133/b/c). Ron's mesh-zone zoom: the 214 heads are FAT and FLAT-crested on narrower necks, form-fitting the sun valley. Rebuilt: head 3.3 wide flat crest / 2.2 neck (reentrant, as drawn), conjugate-carved against the sun so the head is the valley's perfect match (CLR 0.08); sun valleys re-carved mutually + re-clocked VALLEY-to-strike-line (#134). SEATED-PHASE PLAY 0.00deg (the strike sandwich locks solid); overlap 0.00; symmetric teeth; hub boss; GROW +0.25; engagement ~2.0 printed. 2 parts, flat, no supports, xy-comp -0.06. | QUIET.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -32,14 +32,14 @@
   },
   "parts": [
     {
-      "stl": "../../parts/stl/133c_sun_sym_clocked_v16.stl",
+      "stl": "../../parts/stl/133d_sun_final_v16.stl",
       "position": [
         104,
         128
       ]
     },
     {
-      "stl": "../../parts/stl/133c_month_sym_v16.stl",
+      "stl": "../../parts/stl/133d_month_fathead_v16.stl",
       "position": [
         158,
         128
