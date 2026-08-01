@@ -1,0 +1,77 @@
+{
+  "name": "plate-43-engine-v17",
+  "version_tag": "#139 ENGINE SET v17 \u2014 Ron's winning mesh rolled into the machine. Sun = the 127 ball form UNCARVED, only CLOCKED (valley to the strike line): #138's cleanup carve was a REGRESSION \u2014 it killed the residual graze but cost 1.9deg of seat tightness at the strike (0.83mm lost motion vs 0.38); per the #134 strike law the seat wins, so the carve is dropped and plate-42 is SUPERSEDED \u2014 do not print it. Tower ships as ONE piece printed x3 (band down = no supports, #109), square keyed, stacking to the month/feb/leap altitudes with slim cores at the finger bands. Three receivers carry the 131 wide-square mesh form CLOCKED per #134 (month +18.07deg, feb +6.46, leap +24.85, sim-verified not derived) so a seated phase lands on each strike station; plus hub bosses (bearing 3->6mm), bore 2.70 for the #136 posts, solid finger bars with #117 raised tips. GATES: finger/slim-core clear, mesh engages 3.24mm, bottoming margin 1.26mm, strike lost motion 0.38mm of a 1.12mm window (34%). OPEN GATE: the 23h drive-arm z-span must be confirmed against the month MESH lamina (co-planar they'd clash by 0.20mm; they are not co-planar by design). 4 parts (print the tower piece x3 = 6 total), flat, no supports, xy-comp -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/140_sun_tower_piece_v17.stl",
+      "position": [
+        60,
+        60
+      ]
+    },
+    {
+      "stl": "../../parts/stl/140_sun_tower_piece_v17.stl",
+      "position": [
+        60,
+        90
+      ]
+    },
+    {
+      "stl": "../../parts/stl/140_sun_tower_piece_v17.stl",
+      "position": [
+        60,
+        120
+      ]
+    },
+    {
+      "stl": "../../parts/stl/141_receiver_month_v17.stl",
+      "position": [
+        130,
+        75
+      ]
+    },
+    {
+      "stl": "../../parts/stl/142_receiver_feb_v17.stl",
+      "position": [
+        130,
+        140
+      ]
+    },
+    {
+      "stl": "../../parts/stl/143_receiver_leap_v17.stl",
+      "position": [
+        195,
+        105
+      ]
+    }
+  ]
+}
