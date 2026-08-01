@@ -1,8 +1,6 @@
 {
   "name": "plate-38-patent-pair",
-  "version_tag": [
-    "#133b CLOCKED patent pair (supersedes the 133 sun): Ron's spec \u2014 the sun's VALLEY must face the strike line (world 0deg, square-post-face aligned) so the satellite tooth is SANDWICHED between two sun teeth at the 24h strike (finding #134, sun side). The 133 sun had a tooth peak at 0deg (half pitch off) \u2014 133b rotates the profile 25.7deg relative to the keyed bore; valley confirmed at 0deg (r5.59 vs teeth 9.6). Mesh geometry unchanged. Month gear unchanged (133, hub boss + b270). All prior notes apply (traced Fig.2 forms, conjugate as drawn, CLR 0.08, GROW +0.25, engagement ~2.2 printed). 2 parts, flat, no supports, xy-comp -0.06. | QUIET."
-  ],
+  "version_tag": "#133c SYMMETRIC patent pair (supersedes 133/133b \u2014 Ron caught asymmetric teeth in the render). Traced teeth mirror-averaged about their true axes: flank asymmetry 0.40/0.24 -> 0.0000 on both wheels (reversibility law restored: forward = reverse). Pair re-carved as mutual conjugates (overlap 0.00), sun re-clocked: VALLEY at the strike line, square to the keyed-post faces (#134). All prior notes apply (Fig.2 traced forms, 57% valley reach, CLR 0.08, GROW +0.25, hub boss, b270). 2 parts, flat, no supports, xy-comp -0.06. | QUIET.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -34,14 +32,14 @@
   },
   "parts": [
     {
-      "stl": "../../parts/stl/133b_sun_patentform_clocked_v16.stl",
+      "stl": "../../parts/stl/133c_sun_sym_clocked_v16.stl",
       "position": [
         104,
         128
       ]
     },
     {
-      "stl": "../../parts/stl/133_month_patentform_v16.stl",
+      "stl": "../../parts/stl/133c_month_sym_v16.stl",
       "position": [
         158,
         128
