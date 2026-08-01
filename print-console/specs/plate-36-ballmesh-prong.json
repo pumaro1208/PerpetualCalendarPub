@@ -1,0 +1,49 @@
+{
+  "name": "plate-36-ballmesh-prong",
+  "version_tag": "#130 Ron's refinement of the before/after: the +1.0mm extension is now a STRAIGHT-SIDED RECTANGLE (1.2mm wide prong with a flat end at r17.27) standing on the #128 2.6mm flat shoulder \u2014 a stepped square tooth. Prong fits inside the proven climb corridor; direct roll scan 0.00mm2. Engagement ~2.8mm printed. PAIR: uses the SAME 127_ballsun_slimcore sun (reuse the printed one from plate-35, or this plate reprints it). b270 bore. ENGINE CAVEAT: bench-only length pending drive-arm re-plan. 2 parts, flat, no supports, xy-comp -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/127_ballsun_slimcore_v16.stl",
+      "position": [
+        104,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/130_month_prong_v16.stl",
+      "position": [
+        158,
+        128
+      ]
+    }
+  ]
+}
