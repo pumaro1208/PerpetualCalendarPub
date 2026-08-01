@@ -1,0 +1,42 @@
+{
+  "name": "plate-42-ronpair-sun",
+  "version_tag": "#138 RON'S WINNING PAIR, cleaned + clocked. Bench result: with the #136/#137 tight posts, Ron's CROSS-pair \u2014 131_month_widesquare (wide square teeth) on 127_ballsun_slimcore \u2014 works. Sim explains it: as-modelled that mix grazes 0.126mm2, but BOTH parts shrink 0.06/side when printed, and that 0.12 of built-in backlash absorbs the mismatch (residual 0.028). LAW CORRECTED: pairs must clear AFTER shrink, not as-modelled \u2014 the matched-pair rule was over-strict. This plate prints ONLY the sun, re-carved against Ron's exact month gear (7.3mm2 removed) so the residual graze goes to 0.0000 and the sun's VALLEY is clocked to the strike line (#134). Ron KEEPS his printed 131 month gear \u2014 do not reprint it. Engagement 3.12mm (deepest of any pair), seated play 0.00deg (strike lock), mean 3.6deg. 1 part, flat, no supports, xy-comp -0.06 MANDATORY. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/138_sun_ronpair_clocked_v16.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ]
+}
