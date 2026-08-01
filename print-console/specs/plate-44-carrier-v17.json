@@ -1,0 +1,63 @@
+{
+  "name": "plate-44-carrier-v17",
+  "version_tag": "#140 THREE-STATION CARRIER CHAIN \u2014 gives feb and leap their pivots (board 02h had only the month post, so 2 of the 3 v17 receivers had nowhere to mount). A post rising from the board to the feb station is impossible \u2014 it would spear the rotating month satellite (lamina r17.19 vs 4.81mm station spacing), which is exactly why the patent carries stud 218 ON stud 214. Printable form: the chain is a STACK of flat pieces like the sun tower \u2014 each is a plate + one riser, prints flat, ZERO supports. board 02j (month post extended to assy 14.0 so arm 1 can seat) + arm 1 (12.7-14.0, pressed on the month post, riser at the FEB station) + arm 2 (17.2-18.5, pressed on the feb post, riser at the LEAP station) + a 1.0mm sun spacer. ALTITUDES RESOLVED: the sun tower piece is 4.5mm, so stacking three puts the mesh bands 4.5mm apart -> satellites at assy 9.5/14.0/18.5 (was 9.5/13/16.5). That 4.5 spacing is what makes the crossover possible: 3mm satellites leave a 1.5mm gap = 1.3mm arm + 0.2mm running clearance. GATES PASS: arms clear the rotating fingers below by 0.20mm each; all three finger bands sit inside their sun slim cores; all three mesh laminae land on their sun bands. Press fits: arm bores 2.60 onto design-2.70 posts (prints 2.64) = 0.04 interference \u2014 expect to tap. 4 parts, flat, no supports, xy-comp -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/144_board_02j_v17.stl",
+      "position": [
+        95,
+        95
+      ]
+    },
+    {
+      "stl": "../../parts/stl/145_carrier_feb_v17.stl",
+      "position": [
+        190,
+        60
+      ]
+    },
+    {
+      "stl": "../../parts/stl/146_carrier_leap_v17.stl",
+      "position": [
+        190,
+        110
+      ]
+    },
+    {
+      "stl": "../../parts/stl/147_sun_spacer_1mm_v17.stl",
+      "position": [
+        190,
+        160
+      ]
+    }
+  ]
+}
