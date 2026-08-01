@@ -1,0 +1,42 @@
+{
+  "name": "plate-39-fullheight-fits",
+  "version_tag": "#135 full-height fit ladder (Ron: too much play in board post, sun post, satellite post). ROOT CAUSE refined: xy_contour_compensation -0.06 shrinks OUTER contours only \u2014 bores keep size but every POST/KEY prints ~0.06/side small, doubling the nominal clearances (board post ~0.11 real, sun square key ~0.3 rattle); the #113 coupon hid it via stubby-post leverage. THIS ladder re-picks fits at FULL height: Station A = 3 round posts 8mm tall, DESIGN r 2.70/2.73/2.76 (labels 70/73/76) \u2014 test with the 133d month gear (bore 2.70, hub boss). Station B = 3 square keys 12mm tall, DESIGN across 4.42/4.50/4.58 (K4/K5/K6) \u2014 test with the 133d sun (bore 4.50). Ron picks snug-but-still-moves per station; winners become the baked-in +comp post/key sizes across board 02h, fixture r59, and all posts. 1 part, flat, no supports, xy-comp -0.06 (must match production). | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/135_fullheight_fit_ladder_v16.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ]
+}
