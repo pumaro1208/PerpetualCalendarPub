@@ -28,6 +28,7 @@ from shapely import affinity
 import trimesh
 from generator import cylinder, polar_solid, _poly_prism
 from generator_v13 import write_stl
+from weld import weld, stack
 import generator_v13 as V13
 
 CD = 23.75
@@ -37,7 +38,16 @@ SQ_HW     = 2.25                       # square bore half-width (K4 key 4.42 des
 BORE      = 2.70                       # on the design-r2.70 satellite posts
 SLIM_R    = 4.70                       # slim core at the finger altitudes
 BAND_H    = 1.50                       # ball band height
-PIECE_H   = 4.50                       # one tower piece (band + slim core)
+PIECE_H   = 5.00                       # one tower piece (band 1.5 + slim core 3.5)
+                                       # #141: was 4.50. The piece height IS the band
+                                       # spacing, and 4.5 left only 1.5mm between
+                                       # satellites — not enough for a 1.3mm carrier
+                                       # arm PLUS the 0.5mm pivot pad that keeps the
+                                       # satellite above off the arm's top face.
+                                       # 5.0 is taken in the sun piece itself, NOT as
+                                       # a stack of 0.5mm shims: a 0.5mm shim prints
+                                       # at 2.5 layers (rounds to 0.4/0.6) and that
+                                       # z error would walk the mesh lamina off its band.
 ZM, ZS    = 1.50, 3.00                 # receiver mesh / strike lamina
 TIP_R     = 18.30                      # finger reach
 E1_BASE   = 6.0
@@ -74,31 +84,48 @@ def sun_piece():
     Print x3, stack keyed on the square post -> bands land at the month/feb/leap
     mesh altitudes, slim cores at the finger altitudes."""
     sun = affinity.rotate(_slice("127_ballsun_slimcore_v16.stl", 2.0), SUN_ROT, origin=(0,0))
-    tris  = _extrude(sun, 0.0, BAND_H, [SQ])                          # ball band
-    tris += polar_solid(SLIM_R, BAND_H, PIECE_H, r_inner=0.0, seg=64) # slim core (shrinks upward)
-    # re-cut the square bore through the slim core
-    tris = [t for t in tris]
-    slim = Polygon(Point(0,0).buffer(SLIM_R,64).exterior.coords, [SQ])
-    m = trimesh.creation.extrude_polygon(slim, PIECE_H-BAND_H)
-    tris = _extrude(sun, 0.0, BAND_H, [SQ]) + \
-           [tuple(np.array(v)+np.array([0,0,BAND_H]) for v in m.vertices[f]) for f in m.faces]
-    write_stl("140_sun_tower_piece_v17.stl", tris)
+    key = Polygon(SQ)
+    write_stl("140_sun_tower_piece_v17.stl", stack([
+        (0.0,    BAND_H,  sun.simplify(0.02).difference(key)),          # ball band, on the bed
+        (BAND_H, PIECE_H, Point(0,0).buffer(SLIM_R,64).difference(key)) # slim core
+    ]))
     return sun
 
-def receiver(name, sat_name, n_fingers):
-    """Mesh lamina (winning form, CLOCKED per #134) + hub boss + solid finger bars."""
+def receiver(name, sat_name, n_fingers, boss_h=0.0):
+    """Mesh lamina (winning form, CLOCKED per #134) + solid finger bars.
+
+    #141 — the hub boss is NOT free. It was added to double the bearing (3->6mm),
+    but a receiver seated in a 5.0mm band gap has 3.0mm of satellite + 0.5mm pad +
+    1.3mm arm + clearances: there is no headroom above month or feb, and a 6mm
+    receiver drives 2.8mm straight through the carrier arm above it. Only LEAP has
+    open sky (nothing stacks above it), so only leap carries a boss. Month and feb
+    revert to the 3.0mm bearing — which is exactly what Ron's bench-winning
+    131_month_widesquare already has, running with no bind."""
     mon = affinity.rotate(_slice("131_month_widesquare_v16.stl", 1.5), ALPHA[sat_name], origin=(0,0))
-    tris  = _extrude(mon, 0.0, ZM, [RB])                              # clocked mesh lamina
-    tris += polar_solid(4.0, ZM, ZS, r_inner=BORE, seg=64)            # hub
+    bore = Point(0,0).buffer(BORE, 48)
+    hub  = Point(0,0).buffer(4.0, 64)
+    bars, tips = [], []
     for k in range(n_fingers):                                        # solid finger bars (#110)
-        a = (E1_BASE + k*30.0)*d2r; ad = np.degrees(a)
-        rmid = (4.0+16.0)/2
-        tris += _rbox(rmid*np.cos(a), rmid*np.sin(a), ad, 16.0-4.0, 4.5, ZM, ZS)
-        rmt = (15.5+TIP_R)/2                                          # raised tip (#117)
-        tris += _rbox(rmt*np.cos(a), rmt*np.sin(a), ad, TIP_R-15.5, 4.5, 2.2, ZS)
-    tris += polar_solid(4.5, ZS, ZS+3.0, r_inner=BORE, seg=48)        # hub boss: bearing 3->6mm
-    write_stl(name, tris)
+        a = (E1_BASE + k*30.0)*d2r
+        # bars start INSIDE the hub (2.0, not 4.0). At 4.0 they were tangent to the
+        # r4.0 hub — touching at a single point, so hub and fingers were separate
+        # islands in plane, hanging together only via the lamina below. #110/#117
+        # were both finger-stiffness failures; this fuses them properly.
+        bars.append(_bar(a, 2.0, 16.0, 4.5))
+        tips.append(_bar(a, 15.5, TIP_R, 4.5))                        # raised tip (#117)
+    slabs = [(0.0, ZM,  mon.simplify(0.02).difference(bore)),         # clocked mesh lamina
+             (ZM,  2.2, unary_union([hub]+bars).difference(bore)),
+             (2.2, ZS,  unary_union([hub]+bars+tips).difference(bore))]
+    if boss_h > 0:                                                    # leap only (#141)
+        slabs.append((ZS, ZS+boss_h, Point(0,0).buffer(4.5,48).difference(bore)))
+    write_stl(name, stack(slabs))
     return mon
+
+def _bar(a, r0, r1, w):
+    """Radial finger bar as a plane polygon (the shape the design is actually about)."""
+    u = np.array([np.cos(a), np.sin(a)]); v = np.array([-u[1], u[0]])
+    return Polygon([tuple(r0*u - v*w/2), tuple(r1*u - v*w/2),
+                    tuple(r1*u + v*w/2), tuple(r0*u + v*w/2)])
 
 def _rbox(cx, cy, ang_deg, L, W, z0, z1):
     a = ang_deg*d2r; u = np.array([np.cos(a), np.sin(a)]); v = np.array([-u[1], u[0]])
@@ -110,7 +137,7 @@ if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     sun = sun_piece()
     mons = {}
-    mons["month"] = receiver("141_receiver_month_v17.stl", "month", 5)
-    mons["feb"]   = receiver("142_receiver_feb_v17.stl",   "feb",   1)
-    mons["leap"]  = receiver("143_receiver_leap_v17.stl",  "leap",  1)
+    mons["month"] = receiver("141_receiver_month_v17.stl", "month", 5, boss_h=0.0)
+    mons["feb"]   = receiver("142_receiver_feb_v17.stl",   "feb",   1, boss_h=0.0)
+    mons["leap"]  = receiver("143_receiver_leap_v17.stl",  "leap",  1, boss_h=1.2)
     print("  engine set v17 emitted: 1 tower piece (print x3) + 3 clocked receivers")

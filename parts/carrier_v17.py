@@ -12,21 +12,35 @@ flat pieces, exactly like the sun tower — each is a plate + one riser, prints 
 zero supports:
     board 02j  : month post, extended to assy 14.0 so arm 1 can seat on it
     arm 1      : plate 12.7-14.0 pressed on the month post, riser at the FEB station
-    arm 2      : plate 17.2-18.5 pressed on the feb post, riser at the LEAP station
+    arm 2      : plate 17.7-19.0 pressed on the feb post, riser at the LEAP station
 
-ALTITUDES — the sun tower piece is 4.5mm tall (band 1.5 + slim 3.0), so stacking
-three pieces puts the mesh bands 4.5mm apart. The satellite bands therefore sit at
-assy 9.5 / 14.0 / 18.5 (was 9.5/13/16.5 at 3.5 spacing). That 4.5 spacing is what
-makes the crossover possible: satellites are 3mm tall, leaving a 1.5mm gap for each
-arm (1.3mm plate + 0.2mm running clearance over the satellite below).
+ALTITUDES (#141, corrected) — the sun tower piece is 5.0mm tall (band 1.5 + slim
+3.5), so stacking three puts the mesh bands 5.0mm apart: satellites at assy
+9.5 / 14.5 / 19.5.
+
+The 5.0 came from a real budget, not a round number. Between one satellite's top
+and the next satellite's bottom the arm needs FOUR things, not one:
+    0.20  running clearance over the satellite below (it spins, the arm doesn't)
+    1.30  arm plate
+    0.50  pivot pad at the far station
+    ----
+    2.00  + 3.00 satellite = 5.00 band pitch
+The pad is the piece the first cut forgot. Without it the satellite above seats
+directly on the plate's top face and rubs it across the whole r17 lamina overlap —
+friction at the worst possible radius. With it, the satellite is lifted clear and
+bears only on a r3.5 collar right at its own pivot.
 """
 import numpy as np, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from generator import involute_profile, MD, ADD_F, cylinder, polar_solid, _poly_prism
 from generator_v13 import SUNORB, STN_M, STN_F, STN_L, polar_prof_solid, write_stl
+from shapely.geometry import Point, LineString, Polygon
+from weld import weld, stack
 BORE_PRESS = 2.60          # press onto a design-2.70 post (prints 2.64) -> 0.04 interference
 POST_R     = 2.70          # #136 design-at-bore law
 SEAT_R     = 3.50
+PAD_H      = 0.50          # pivot pad / thrust collar under each satellite
+BAND       = (9.5, 14.5, 19.5)   # month / feb / leap mesh-band altitudes (#141)
 def stn_xy(s): 
     a=np.deg2rad(s); return SUNORB*np.cos(a), SUNORB*np.sin(a)
 
@@ -34,35 +48,54 @@ def part_02j_board():
     """Board 02j = 02h with the month post EXTENDED to assy 14.0 (local 9.0) so the
     feb carrier arm can seat on it at 12.7. Safe now: the feb satellite has moved up
     to 14.0, so the taller post no longer fouls it (that was the #107 constraint)."""
-    tris=[]; t=4.0
+    t=4.0
     prof,_,_,_=involute_profile(31,MD,add_f=ADD_F)
-    tris += polar_prof_solid(prof,0,t,bore=5.45)
+    th=np.linspace(0,2*np.pi,len(prof),endpoint=False)
+    gear=Polygon(np.stack([prof*np.cos(th),prof*np.sin(th)],1)).difference(Point(0,0).buffer(5.45/2,64))
     cx,cy=stn_xy(STN_M)
-    tris += cylinder(cx,cy,SEAT_R,t,t+0.5,seg=32)      # month seat shoulder (assy 9.0-9.5)
-    tris += cylinder(cx,cy,POST_R,t,9.0,seg=48)        # post to assy 14.0
-    write_stl("144_board_02j_v17.stl",tris)
+    write_stl("144_board_02j_v17.stl", stack([
+        (0.0,  t,        gear),
+        (t,    t+PAD_H,  Point(cx,cy).buffer(SEAT_R,32)),   # month pivot pad (assy 9.0-9.5)
+        (t+PAD_H, 9.0,   Point(cx,cy).buffer(POST_R,48)),   # post to assy 14.0
+    ]))
 
 def carrier_arm(name, from_stn, to_stn, z_bot, z_top, riser_top):
     """Plate spanning two stations + a riser at the far one. z are ASSEMBLY heights;
-    the part prints from 0 (plate bottom on the bed)."""
+    the part prints from 0 (plate bottom on the bed). The pivot PAD sits on top of
+    the plate at the far station: it is what the next satellite up actually rests
+    on, so that satellite's mesh lamina lands at z_top+PAD_H — which must equal its
+    sun band. Verified by the assembly gate, not by eye."""
     fx,fy=stn_xy(from_stn); tx,ty=stn_xy(to_stn)
     h=z_top-z_bot
-    tris=[]
-    # plate: rounded slot joining the two bosses
-    n=24
-    for i in range(n):
-        u=i/(n-1); x=fx+(tx-fx)*u; y=fy+(ty-fy)*u
-        tris += cylinder(x,y,4.6,0.0,h,seg=20)
-    # bore for the post below (press fit), through the plate
-    tris += polar_solid(4.6,0.0,h,r_inner=BORE_PRESS,cx=fx,cy=fy,seg=48)
-    # riser at the far station: seat shoulder then post
-    tris += cylinder(tx,ty,SEAT_R,h,h+0.5,seg=32)
-    tris += cylinder(tx,ty,POST_R,h,h+(riser_top-z_top),seg=48)
-    write_stl(name,tris)
+    # plate = capsule between the stations, MINUS the press-fit bore.
+    # It was previously 24 overlapping solid cylinders swept along the line plus a
+    # separate annulus at the from-station — but the sweep's first cylinder is solid
+    # and sits exactly there, so the union filled the bore back in and the arm had
+    # no hole to press onto the post at all. Authoring the plate as one plane
+    # polygon with a real interior ring is what makes that impossible to repeat.
+    plate = LineString([(fx,fy),(tx,ty)]).buffer(4.6, 32) \
+                .difference(Point(fx,fy).buffer(BORE_PRESS, 48))
+    write_stl(name, stack([
+        (0.0,   h,             plate),
+        (h,     h+PAD_H,       Point(tx,ty).buffer(SEAT_R, 32)),   # pivot pad
+        (h+PAD_H, h+(riser_top-z_top), Point(tx,ty).buffer(POST_R, 48)),
+    ]))
+
+def sun_spacer(h=1.0, r=6.0, sq_hw=2.25, name="147_sun_spacer_1mm_v17.stl"):
+    """Base shim under the sun tower: sets the FIRST ball band to the month altitude.
+    Square-bored so it keys on the same K4 post as the tower pieces (a round-bored
+    shim could rotate and is one more thing to lose clock on). Emitted from the
+    generator now — it was hand-built for plate-44 and had no source, which means
+    nobody could have regenerated it after this altitude change."""
+    sq=[(sq_hw,sq_hw),(-sq_hw,sq_hw),(-sq_hw,-sq_hw),(sq_hw,-sq_hw)]
+    p=Polygon(Point(0,0).buffer(r,64).exterior.coords,[sq])
+    write_stl(name, stack([(0.0, h, Point(0,0).buffer(r,64).difference(Polygon(sq)))]))
 
 if __name__=="__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     part_02j_board()
-    carrier_arm("145_carrier_feb_v17.stl",  STN_M, STN_F, 12.7, 14.0, 18.5)
-    carrier_arm("146_carrier_leap_v17.stl", STN_F, STN_L, 17.2, 18.5, 23.0)
-    print("  carrier chain: board 02j + feb arm + leap arm")
+    #                                          plate_bot plate_top riser_top
+    carrier_arm("145_carrier_feb_v17.stl",  STN_M, STN_F, 12.7, 14.0, 19.0)
+    carrier_arm("146_carrier_leap_v17.stl", STN_F, STN_L, 17.7, 19.0, 24.0)
+    sun_spacer()
+    print("  carrier chain: board 02j + feb arm + leap arm + base spacer")
