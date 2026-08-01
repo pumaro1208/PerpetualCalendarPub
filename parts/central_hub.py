@@ -212,3 +212,40 @@ if __name__=="__main__":
     print("  tube rides post:", 4.35>4.15, "(ID r4.35 vs post r4.15, 0.2 bearing)")
     print("  tube wall:", round(TUBE_OD-TUBE_ID,2), "mm (printable)")
     print("  disc clears post:", TUBE_OD>4.15)
+
+def part_50e_star_hub_v16():
+    """Star hub r5 (finding #137, Ron: "tighter board wheel"). THREE faults fixed:
+    (1) the #114 sleeve-ladder winner (bore 4.17, 'id17') was never baked into the
+        real hub — it still carried 4.35, giving 0.26mm radial play on the ~4.09
+        printed post. Now TUBE_ID 4.17 (design-at-bore law, #136).
+    (2) the hub->board "press fit" was actually 0.06 LOOSE: OD design 5.45 prints
+        ~5.39 into a 5.45 bore. OD design raised to 5.53 -> prints ~5.47 = 0.02
+        INTERFERENCE, a real light press. This one mattered doubly: hub slop in the
+        board bore shifts the CENTER DISTANCE, straight into the mesh.
+    (3) bearing was only 3.7mm tall against a 42mm board rim (11:1 lever). Tube
+        extended to 5.0mm (the most that clears the fixture key start at z8.5),
+        cutting rim wobble ~6x with (1).
+    Disc/scallop geometry unchanged from 50d."""
+    tris=[]
+    TID, TOD, TUBE_H = 4.17, 5.53, 5.0
+    th,r=_star_r4_profile(1240)
+    tris += polar_prof_solid(r,0.0,1.7,bore=TOD)                 # scallop disc (bore = tube OD)
+    tris += polar_solid(TOD,0.0,TUBE_H,r_inner=TID,seg=64)       # taller, tighter press-tube
+    write_stl("50e_star_hub_v16.stl",tris)
+
+def part_49_fixture_r61_v16():
+    """Fixture r61 (finding #137): r60 + the ROUND program post grown to the
+    design-at-bore size (#136 law). Post design r4.17 -> prints ~4.11 into the new
+    star-hub bore 4.17 = 0.06 running clearance (was 4.15 design -> 4.09 printed
+    into a 4.35 bore = 0.26). K4 square key (4.42) and everything else = r60."""
+    tris=[]; pr=4.17
+    tris += box(0,0,132,76,0.0,2.5)
+    tris += box(36.65,0,58.7,76,2.5,4.0)
+    tris += cylinder(-36.75,0,pr,2.5,8.5,seg=64)                 # #137: design AT the 4.17 bore
+    tris += box(-36.75,0,4.42,4.42,8.5,18.0)                     # K4 key (Ron's pick)
+    tris += polar_solid(13.0,2.5,3.3,r_inner=6.5,cx=-36.75,cy=0,seg=64)
+    tris += cylinder(+36.75,0,pr,4.0,24.0,seg=48)
+    tris += cylinder(+36.75,0,6.5,4.0,5.0,seg=48)
+    for sx in (-1,1):
+        tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)
+    write_stl("49_fixture_r61_v16.stl",tris)

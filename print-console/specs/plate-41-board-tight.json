@@ -1,0 +1,49 @@
+{
+  "name": "plate-41-board-tight",
+  "version_tag": "#137 tighter board wheel (Ron). THREE compounding faults found in the board's fit chain, all fixed: (1) the #114 sleeve-ladder winner (bore 4.17 'id17') was NEVER baked into the real star hub \u2014 it still carried 4.35, so on the ~4.09 printed post the board had 0.26mm radial play; hub bore now 4.17 + fixture round post designed AT bore (4.17 -> prints ~4.11) = 0.06. (2) the hub->board PRESS fit was actually 0.06 LOOSE (OD 5.45 design prints 5.39 into a 5.45 bore) \u2014 and hub slop in the board bore shifts CENTER DISTANCE straight into the mesh; OD design raised to 5.53 -> prints ~5.47 = 0.02 real interference. (3) bearing was 3.7mm tall against a 42mm rim (11:1 lever); tube extended to 5.0mm (max that clears the key start z8.5). Net rim wobble 2.95mm -> 0.50mm (6x). Fixture r61 also keeps Ron's K4 key (4.42). Board 02h UNCHANGED (plate-40 print is still good \u2014 its bore is a bore). NOTE: hub is now a real press fit \u2014 expect to tap it into the board. 2 parts, flat, no supports, xy-comp -0.06 MANDATORY. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/50e_star_hub_v16.stl",
+      "position": [
+        90,
+        180
+      ]
+    },
+    {
+      "stl": "../../parts/stl/49_fixture_r61_v16.stl",
+      "position": [
+        128,
+        80
+      ]
+    }
+  ]
+}
