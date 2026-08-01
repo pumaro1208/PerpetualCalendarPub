@@ -273,7 +273,17 @@ def cmd_start(args):
         if state in ACTIVE_STATES:
             sys.exit(f"Printer is busy (state {state}) — not starting.")
 
+        if args.ams_mapping:
+            try:
+                mapping = [int(x) for x in args.ams_mapping.split(",")]
+            except ValueError:
+                sys.exit(f"--ams-mapping must be comma-separated integers, "
+                         f"got {args.ams_mapping!r}")
+        else:
+            mapping = [args.ams_slot]
+
         print(f"About to START PRINT: {filename} (plate {args.plate})")
+        print(f"  ams_mapping = {mapping}  (T-index -> AMS tray)")
         if not args.yes:
             answer = input("Type 'yes' to start: ").strip().lower()
             if answer != "yes":
@@ -294,7 +304,7 @@ def cmd_start(args):
             "vibration_cali": True,
             "layer_inspect": False,
             "use_ams": not args.no_ams,
-            "ams_mapping": [args.ams_slot],
+            "ams_mapping": mapping,
         }})
         if ok:
             tag = args.version_tag or "(no version tag)"
@@ -710,6 +720,11 @@ def main():
     p.add_argument("--plate", type=int, default=1)
     p.add_argument("--version-tag", help='part version for the log, e.g. "v16b"')
     p.add_argument("--ams-slot", type=int, default=0)
+    p.add_argument("--ams-mapping",
+                   help="explicit AMS tray mapping for multi-filament plates: "
+                        "comma-separated 0-based tray indices ordered by gcode "
+                        "filament (T0,T1,...), e.g. '2,0' routes T0->tray2, "
+                        "T1->tray0. Overrides --ams-slot.")
     p.add_argument("--no-ams", action="store_true")
     p.add_argument("--no-flow-cali", action="store_true")
     p.add_argument("--yes", action="store_true",
