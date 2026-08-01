@@ -1,0 +1,54 @@
+{
+  "name": "plate-45-board-daynums",
+  "version_tag": "#143 BOARD DAY NUMBERS \u2014 1-31 white-in-black, TWO COLOUR. Ron: white date numbers so he can see how to set the mechanism. REQUIRES the two-filament change to compose_plate.py (same commit): the config the composer hands the slicer stores per-extruder values as slot-indexed lists, and canonical_config leaves every one of them at length 1 \u2014 declare a second colour without widening them and the slicer silently prints the whole plate in slot 1. _add_second_filament widens them and sets slot 2's identity; a new gate refuses any plate that declares two filaments but whose GCODE only ever loads one slot (that failure looks correct in preview). AMS: slot 1 black, slot 2 WHITE \u2014 check the ams_mapping in the start payload before confirming, this is the first plate where tray order matters. GEOMETRY: the date convention is taken from the simulator's underside pin crown, not invented \u2014 date = (steps mod 31)+1, so date d sits at board-frame 90deg - (d-1)x11.613deg with digits' up radially outward, and the number at the reading index (world 90, 12 o'clock) is the current date. A witness notch outboard of date 1 confirms the ring's clocking at a glance. Numbers are cut into BOTH faces (0.8mm deep, 2.4mm solid core between): the three satellites are carried BY the board so their shadow is fixed in board frame and covers dates 3-9 at ANY radius \u2014 the mirrored underside ring is the only way to read those seven. Recessed rather than cut through because a through-cut strands the counters of 0/4/6/8/9 as floating islands (the gate found 26). Measured: tightest adjacent-number gap 1.46mm, outermost glyph r35.52 vs gear root 37.05 (1.53mm margin), no overlaps. REGISTRATION: compose centres each object on its own bbox, and these two differ \u2014 the white part's position carries a deliberate [-0.051, +0.389] offset. Do not 'tidy' it to match the board. 2 parts, flat, no supports, xy-comp -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/149_board_02k_numbered_v17.stl",
+      "position": [
+        110,
+        110
+      ]
+    },
+    {
+      "stl": "../../parts/stl/150_board_daynums_white_v17.stl",
+      "position": [
+        109.949,
+        110.389
+      ],
+      "extruder": 2,
+      "allow_midair": true
+    }
+  ],
+  "filament_2": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_2_colour": "#FFFFFF",
+  "ams_tray_type_2": "PLA"
+}

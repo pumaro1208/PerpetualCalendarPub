@@ -1,6 +1,6 @@
 {
   "name": "plate-44-carrier-v17",
-  "version_tag": "#142 CARRIER + DATUM CHAIN v17 rev C \u2014 Ron spotted from the hardware that the satellite sits elevated while the sun sits low, and chasing that down the stack found three faults nothing above the board could see. (1) THE FIXTURE KEY WAS TOO SHORT: the sun tower bottoms on the fixture's round-post top face at z8.5 and now reaches z24.5, but the K4 key stopped at 18.0 \u2014 the top TWO sun pieces had nothing to key against, free to rotate, which does not merely loosen the mesh, it destroys the #134 clocking the whole strike sequence depends on. Wrong at rev A's 4.5 pitch too (23.0 vs 18.0); the taller stack only widened it. NEW PART 148_fixture_r62_v17: r61 with the key extended to 25.0, everything else identical \u2014 PRINT THIS INSTEAD OF 49_fixture_r61. (2) the 1.0mm sun shim is confirmed correct and is what answers Ron's observation: without it band 1 sits at 8.5-10.0 against a mesh lamina at 9.5-11.0, overlapping by only 0.5 of 1.5mm. But its OD was r6.00 and it spans z8.5-9.5 while the board runs to 9.0 with a r5.45 bore \u2014 it buried 0.5mm of itself in the board. Now r5.30. (3) the #141 board rewrite halved the bore (r5.45 is a RADIUS; polar_prof_solid takes a radius) so 144 would not have gone over the star hub's r5.53 tube at all \u2014 restored, and the gate now checks it, since a radius/diameter slip is otherwise silent. assembly_gate_v17 now walks the datum chain BELOW the board too: that was the blind spot \u2014 satellite altitude hangs off the board, sun altitude hangs off the fixture, and nothing checked they arrive together. LAYOUT PRE-CHECKED (the last two plates both needed reflow at the printer): fixture r62 is 132x76 and was blind-placed at [95,190], which ran 36mm off the back edge. New positions fixture [95,45] Y[7,83], board [95,138] Y[96,180], shim [178,100], arms [178,126]/[178,152] \u2014 all inside X<=200 Y<=192, zero pairwise overlap, 13mm between fixture and board. If Ron kept the two carrier arms off the stopped rev B plate, drop 145/146 and print 3. Flat, no supports, xy-comp -0.06. | QUIET.",
+  "version_tag": "#143 CARRIER + FIXTURE v17 rev D \u2014 SINGLE COLOUR, print this as-is. The board has left this plate: Ron asked for white day numbers on it, so 144_board_02j is superseded by 149_board_02k_numbered and moves to plate-45, which is a two-colour plate and should not hold the carrier chain hostage. Everything else is #142 rev C unchanged: 148_fixture_r62_v17 (K4 square key extended 18.0 -> 25.0; the old 18.0 key left the top TWO sun tower pieces unkeyed and free to rotate, which destroys the #134 valley-to-strike clocking \u2014 148 REPLACES 49_fixture_r61 in the machine), 147_sun_spacer (OD r5.30, was r6.00 and buried 0.5mm of itself in the board), and the two carrier arms IF Ron did not recover them intact from the stopped rev B run (drop 145/146 from the compose if he did). Flat, no supports, xy-comp -0.06. | QUIET.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -32,31 +32,24 @@
   },
   "parts": [
     {
-      "stl": "../../parts/stl/144_board_02j_v17.stl",
-      "position": [
-        95,
-        138
-      ]
-    },
-    {
       "stl": "../../parts/stl/145_carrier_feb_v17.stl",
       "position": [
-        178,
-        126
+        135,
+        120
       ]
     },
     {
       "stl": "../../parts/stl/146_carrier_leap_v17.stl",
       "position": [
-        178,
-        152
+        160,
+        120
       ]
     },
     {
       "stl": "../../parts/stl/147_sun_spacer_1mm_v17.stl",
       "position": [
-        178,
-        100
+        95,
+        120
       ]
     },
     {

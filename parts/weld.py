@@ -23,7 +23,7 @@ def to_mesh(tris):
 def to_tris(m):
     return [tuple(np.array(v) for v in m.vertices[f]) for f in m.faces]
 
-def stack(slabs):
+def stack(slabs, allow_multi=False):
     """[(z0, z1, shapely polygon)] -> one watertight solid.
 
     Preferred over welding a soup of primitives: each slab is authored as a single
@@ -50,9 +50,14 @@ def stack(slabs):
             m = trimesh.creation.extrude_polygon(p, z1-z0)
             m.apply_translation((0, 0, z0))
             ms.append(m)
-    if len(ms) == 1:
+    if len(ms) == 1 and not allow_multi:
         ms[0].fix_normals(); return to_tris(ms[0])
-    return to_tris(_solid(trimesh.boolean.union(ms)))
+    u = trimesh.boolean.union(ms) if len(ms) > 1 else ms[0]
+    if allow_multi:
+        # a two-colour filler is legitimately many separate glyphs — the
+        # one-solid rule is about parts, not about ink
+        u = _clean(u); u.fix_normals(); return to_tris(u)
+    return to_tris(_solid(u))
 
 def _clean(m):
     """Drop zero-area (collinear) faces. manifold hands a few back on coincident

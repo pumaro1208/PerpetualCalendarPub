@@ -215,7 +215,48 @@ def build_project_settings(spec: dict) -> dict:
         want = v if isinstance(v, str) else str(v)
         # preserve the canonical type for this key
         cfg[k] = [want] if isinstance(cfg.get(k), list) else want
+    if spec.get("filament_2"):
+        _add_second_filament(cfg, spec)
     return cfg
+
+
+def _add_second_filament(cfg: dict, spec: dict) -> None:
+    """Widen a single-filament config to two slots (#143, two-colour inlay).
+
+    Bambu stores per-extruder values as lists indexed by filament slot, so
+    "add a filament" means "every one of those lists grows an entry". The
+    config we hand the slicer is flattened by canonical_config, which leaves
+    every such list at length 1 — declare a second colour without widening
+    them and the slicer silently prints the whole plate in slot 1.
+
+    Every length-1 list is widened by duplication (that is what Studio does:
+    the new filament inherits the first's process values), then slot 2's
+    identity keys are overwritten from the spec. Only identity differs —
+    speeds, temps and accelerations stay as gated.
+    """
+    for k, v in list(cfg.items()):
+        if isinstance(v, list) and len(v) == 1:
+            cfg[k] = [v[0], v[0]]
+    f2 = spec["filament_2"]
+    id2 = spec.get("filament_2_id") or _flatten_chain(
+        "filament", f2).get("filament_id", "")
+    cfg["filament_settings_id"] = [spec["filament"], f2]
+    cfg["filament_ids"] = [
+        spec.get("filament_id") or _flatten_chain(
+            "filament", spec["filament"]).get("filament_id", ""), id2]
+    cfg["filament_colour"] = [spec.get("filament_colour", "#000000"),
+                              spec.get("filament_2_colour", "#FFFFFF")]
+    cfg["filament_type"] = [spec.get("ams_tray_type", "PLA"),
+                            spec.get("ams_tray_type_2",
+                                     spec.get("ams_tray_type", "PLA"))]
+    # purge volumes: a 2x2 matrix, diagonal zero. Without it the slicer has no
+    # figure for how much to flush on a tool change and can emit none at all,
+    # which shows up as the previous colour bleeding into the first few mm of
+    # the new one — exactly where the day numbers are.
+    cfg.setdefault("flush_volumes_matrix",
+                   ["0", str(spec.get("flush_volume", 280)),
+                    str(spec.get("flush_volume", 280)), "0"])
+    cfg.setdefault("flush_multiplier", "1")
 
 
 # -------------------------------------------------------------------- mesh
@@ -618,8 +659,14 @@ def finalize_sliced(sliced: Path, spec: dict) -> None:
     with zipfile.ZipFile(sliced) as z:
         members = {n: z.read(n) for n in z.namelist()}
     cfg = json.loads(members["Metadata/project_settings.config"])
-    cfg["filament_settings_id"] = [spec["filament"]]
-    cfg["filament_ids"] = [fil_id]
+    if spec.get("filament_2"):
+        id2 = spec.get("filament_2_id") or _flatten_chain(
+            "filament", spec["filament_2"]).get("filament_id", "")
+        cfg["filament_settings_id"] = [spec["filament"], spec["filament_2"]]
+        cfg["filament_ids"] = [fil_id, id2]
+    else:
+        cfg["filament_settings_id"] = [spec["filament"]]
+        cfg["filament_ids"] = [fil_id]
     members["Metadata/project_settings.config"] = json.dumps(
         cfg, indent=4, sort_keys=True).encode()
     si = members["Metadata/slice_info.config"].decode()
@@ -652,6 +699,18 @@ def audit_sliced(sliced: Path, spec: dict) -> list:
     if not _re.search(r"^M620 S\d+A", gcode, _re.M):
         problems.append("gcode never issues an AMS filament switch "
                         "(M620 S<n>A) — no filament would be loaded")
+    if spec.get("filament_2"):
+        # a two-colour plate that never swaps tools prints entirely in slot 1
+        # and looks fine in preview — gate on the gcode, not on the config
+        slots = set(_re.findall(r"^M620 S(\d+)A", gcode, _re.M))
+        if len(slots) < 2:
+            problems.append(
+                f"spec declares two filaments but the gcode only ever loads "
+                f"slot(s) {sorted(slots) or 'none'} — the second colour never "
+                "prints. Check that some part carries \"extruder\": 2.")
+        if not _re.search(r"^T1\b", gcode, _re.M):
+            problems.append("no T1 tool select in gcode — nothing is assigned "
+                            "to the second filament")
 
     # brim: Bambu's slicer silently emits no brim when supports are on
     # (support bases take its place); only gate when supports are off
@@ -724,6 +783,12 @@ def audit_sliced(sliced: Path, spec: dict) -> list:
     expect("plate type", cfg.get("curr_bed_type"), spec["bed_type"])
     fils = cfg.get("filament_settings_id", [])
     expect("filament preset", fils[0] if fils else None, spec["filament"])
+    if spec.get("filament_2"):
+        expect("filament 2 preset", fils[1] if len(fils) > 1 else None,
+               spec["filament_2"])
+        cols2 = cfg.get("filament_colour", [])
+        expect("filament 2 colour", cols2[1] if len(cols2) > 1 else None,
+               spec.get("filament_2_colour", "#FFFFFF"))
     types = cfg.get("filament_type", [])
     expect("filament type", types[0] if types else None,
            spec.get("ams_tray_type", "PLA"))
