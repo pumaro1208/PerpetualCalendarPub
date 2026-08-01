@@ -1,6 +1,8 @@
 {
   "name": "plate-38-patent-pair",
-  "version_tag": "#133 THE PATENT PAIR \u2014 both tooth forms traced from Fig.2 and mutually conjugate AS DRAWN (zero shave in the climb-sweep): sun = 203's smooth-wave star (7 teeth, root 5.5), month = 210's wave teeth (12t, tip 16.40 -> reach 57% into the sun valley, Ron's read of the drawing). Tight fit: mesh CLR 0.08; bearings at their proven tightest-that-still-moves (post 2.65/bore 2.70, sleeve id17); NEW anti-tilt HUB BOSS on the month gear (bearing length 3->6mm). Engagement ~2.2mm printed, overlap 0.00mm2. MATCHED PAIR. Square-key sun (hw2.25, 4mm) + b270 month. ENGINE CAVEAT: month tip 16.40 -> 23h drive-arm clearance ~0.6mm, re-verify at engine adoption. 2 parts, flat, no supports, xy-comp -0.06. | QUIET.",
+  "version_tag": [
+    "#133b CLOCKED patent pair (supersedes the 133 sun): Ron's spec \u2014 the sun's VALLEY must face the strike line (world 0deg, square-post-face aligned) so the satellite tooth is SANDWICHED between two sun teeth at the 24h strike (finding #134, sun side). The 133 sun had a tooth peak at 0deg (half pitch off) \u2014 133b rotates the profile 25.7deg relative to the keyed bore; valley confirmed at 0deg (r5.59 vs teeth 9.6). Mesh geometry unchanged. Month gear unchanged (133, hub boss + b270). All prior notes apply (traced Fig.2 forms, conjugate as drawn, CLR 0.08, GROW +0.25, engagement ~2.2 printed). 2 parts, flat, no supports, xy-comp -0.06. | QUIET."
+  ],
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -32,7 +34,7 @@
   },
   "parts": [
     {
-      "stl": "../../parts/stl/133_sun_patentform_v16.stl",
+      "stl": "../../parts/stl/133b_sun_patentform_clocked_v16.stl",
       "position": [
         104,
         128
