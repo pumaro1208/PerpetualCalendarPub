@@ -1,0 +1,39 @@
+{
+  "name": "plate-46-swoopy-chute",
+  "version_tag": "Swoopy Poop Chute for X1/P1P/P1S (third-party, MakerWorld 93198) \u2014 purge catcher, timed for plate-45 which is the first two-colour plate and will make a real pile of poops. NOT a mechanism part, so two of our standing settings are deliberately OFF: (1) xy_contour_compensation is 0, NOT -0.06. Our -0.06 exists to make posts and keys print at their mate bore size (#136); a third-party model was drawn for nominal, and shrinking every outer contour 0.06/side would tighten its chassis mounting for no reason. (2) walls 2 and infill 10% instead of 3/25% \u2014 the designer's 165g/3.9h figure is at standard settings and this is a hollow box that catches waste, not a part under load. Quiet slicing overrides kept as always. No supports (the designer states none needed). PARTS LIST IS PROVISIONAL: the download may be one STL or several, or a 3mf. Confirm what actually landed in parts/stl/ before composing and fix the list. Position is 'center' rather than a coordinate because the design office has not seen the model's bounding box. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "2",
+    "sparse_infill_density": "10%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "0",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/swoopy_poop_chute.stl",
+      "position": "center"
+    }
+  ]
+}
