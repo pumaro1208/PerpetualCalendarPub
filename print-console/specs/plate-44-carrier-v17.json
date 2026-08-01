@@ -1,6 +1,6 @@
 {
   "name": "plate-44-carrier-v17",
-  "version_tag": "#141 CARRIER CHAIN v17 rev B \u2014 altitudes corrected. Satellites now sit at assy 9.5 / 14.5 / 19.5 (was 9.5/14.0/18.5) on the 5.0mm band pitch. rev A had a second, quieter fault beyond the boss collision: the arm's riser shoulder sat ON TOP of the plate, so the satellite above seated 0.5mm HIGHER than its sun ball band \u2014 the mesh lamina and the band would have been on different levels. The pad is now budgeted into the pitch: 0.20 clearance over the spinning satellite below + 1.30 plate + 0.50 pivot pad + 3.00 satellite = 5.00. Without a pad the satellite rubs the plate's whole top face across its r17 lamina \u2014 friction at the worst radius; with it, it bears on a r3.5 collar at its own pivot. ALSO FIXED: the arm plate was 24 overlapping SOLID cylinders swept between the stations plus a separate bore annulus at the from-station \u2014 the sweep's first cylinder sits exactly there, so the union filled the bore back in and the arm had NO HOLE to press onto the post. Plate is now one plane polygon with a real interior ring. The 1.0mm sun spacer is emitted from the generator now; it was hand-built for rev A with no source, so nobody could have regenerated it for this change. Press fits unchanged: arm bores 2.60 onto design-2.70 posts (prints 2.64) = 0.04 interference, expect to tap. Gates: arms clear the rotating satellite below by 0.20mm each, both satellites seat exactly on their bands, arm2 grips 1.30mm of arm1's post, fingers clear the sun slim core by 0.61mm radially. 4 parts, flat, no supports, xy-comp -0.06. | QUIET.",
+  "version_tag": "#142 CARRIER + DATUM CHAIN v17 rev C \u2014 Ron spotted from the hardware that the satellite sits elevated while the sun sits low, and chasing that down the stack found three faults nothing above the board could see. (1) THE FIXTURE KEY WAS TOO SHORT: the sun tower bottoms on the fixture's round-post top face at z8.5 and now reaches z24.5, but the K4 key stopped at 18.0 \u2014 the top TWO sun pieces had nothing to key against, free to rotate, which does not merely loosen the mesh, it destroys the #134 clocking the whole strike sequence depends on. Wrong at rev A's 4.5 pitch too (23.0 vs 18.0); the taller stack only widened it. NEW PART 148_fixture_r62_v17: r61 with the key extended to 25.0, everything else identical \u2014 PRINT THIS INSTEAD OF 49_fixture_r61. (2) the 1.0mm sun shim is confirmed correct and is what answers Ron's observation: without it band 1 sits at 8.5-10.0 against a mesh lamina at 9.5-11.0, overlapping by only 0.5 of 1.5mm. But its OD was r6.00 and it spans z8.5-9.5 while the board runs to 9.0 with a r5.45 bore \u2014 it buried 0.5mm of itself in the board. Now r5.30. (3) the #141 board rewrite halved the bore (r5.45 is a RADIUS; polar_prof_solid takes a radius) so 144 would not have gone over the star hub's r5.53 tube at all \u2014 restored, and the gate now checks it, since a radius/diameter slip is otherwise silent. assembly_gate_v17 now walks the datum chain BELOW the board too: that was the blind spot \u2014 satellite altitude hangs off the board, sun altitude hangs off the fixture, and nothing checked they arrive together. 5 parts (board 02j, 2 arms, shim, fixture r62), flat, no supports, xy-comp -0.06. | QUIET.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -57,6 +57,13 @@
       "position": [
         190,
         160
+      ]
+    },
+    {
+      "stl": "../../parts/stl/148_fixture_r62_v17.stl",
+      "position": [
+        95,
+        190
       ]
     }
   ]

@@ -149,5 +149,39 @@ for i in range(len(solids)):
         gate(ov <= 0 or d > 2*17.19,
              f"{ka}/{kb} do not share altitude (z overlap {ov:+.2f}, centres {d:.2f}mm apart)")
 
+# ---- 7. THE DATUM CHAIN BELOW THE BOARD (#142, from Ron's "the sun gear is low") ----
+# Everything above was measured relative to the board. That is exactly the blind spot
+# he spotted: the satellite hangs off the board's pivot pad, but the SUN hangs off the
+# fixture, and nothing was checking that the two chains arrive at the same altitude.
+print()
+POST_TOP   = 8.5     # fixture round post r4.17 top — the sun tower bottoms here
+KEY_TOP    = 25.0    # fixture K4 square key top (r62; was 18.0 on r61)
+BOARD      = (5.0, 9.0)
+BOARD_BORE = 5.45
+SHIM_H     = 1.0
+
+shim = bands("147_sun_spacer_1mm_v17.stl")
+shim_h = max(b for _, b, _ in shim); shim_r = max(x[2] for x in shim)
+sun_base = POST_TOP + shim_h
+gate(abs(sun_base - BAND["month"]) < 1e-6,
+     f"sun band 1 lands at {sun_base:.2f} == month lamina {BAND['month']:.2f} "
+     f"(post top {POST_TOP} + {shim_h:.2f} shim). Without the shim the sun sits "
+     f"{BAND['month']-POST_TOP:.2f}mm low and the band only half-overlaps the lamina")
+gate(shim_r <= BOARD_BORE - 0.1,
+     f"shim OD r{shim_r:.2f} nests in the board bore r{BOARD_BORE} "
+     f"(it spans {POST_TOP:.1f}-{sun_base:.1f} and the board runs to {BOARD[1]:.1f})")
+tower_top = sun_base + 3*BAND_PITCH
+gate(KEY_TOP >= tower_top,
+     f"K4 key top {KEY_TOP:.1f} keys the whole tower (top {tower_top:.1f}) — "
+     f"un-keyed sun pieces rotate free and the #134 clocking is lost")
+bb = bands("144_board_02j_v17.stl")
+board_bore = min(x[2] for x in bands("144_board_02j_v17.stl", 0, 0)) if False else None
+import numpy as _np
+V = tris("144_board_02j_v17.stl").reshape(-1,3)
+f0 = V[_np.abs(V[:,2]) < 1e-4]
+gate(abs(_np.hypot(f0[:,0], f0[:,1]).min() - BOARD_BORE) < 1e-2,
+     f"board bore r{_np.hypot(f0[:,0],f0[:,1]).min():.3f} == r{BOARD_BORE} "
+     f"(it presses on the star hub's r5.53 tube; a radius/diameter slip here is silent)")
+
 print("\n" + ("  *** GATE FAILED: " + str(len(FAILS)) + " ***" if FAILS else "  ALL GATES PASS"))
 sys.exit(1 if FAILS else 0)

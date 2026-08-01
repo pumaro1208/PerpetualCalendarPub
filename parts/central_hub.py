@@ -6,6 +6,7 @@ still print flat (tube rises in the star; board just gets a bigger hole).
 Cost: board bore enlarged (re-print) + fixture collar -> thrust pad."""
 import numpy as np
 from generator import involute_profile, MD, ADD_F, PROG_ROOT, cylinder, box, _poly_prism, polar_solid, P
+from weld import weld
 from generator_v13 import PIV_R, SUNORB, STN_M, STN_F, STN_L, dflat_profile, polar_prof_solid, write_stl
 from generator_v16 import _star_r4_profile
 
@@ -249,3 +250,31 @@ def part_49_fixture_r61_v16():
     for sx in (-1,1):
         tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)
     write_stl("49_fixture_r61_v16.stl",tris)
+
+
+def part_49_fixture_r62_v17():
+    """Fixture r62 (#142, from Ron's "the sun gear is low"). r61 with the K4 key
+    EXTENDED 18.0 -> 25.0.
+
+    Chasing his observation down the datum chain turned up the real fault. The sun
+    tower bottoms on the round post's top face at z8.5 (its square bore cannot pass
+    the r4.17 post), so band 1 lands at 8.5-10.0 while the month satellite seats on
+    the board's pivot pad at 9.5 — the 1.0mm the 147 shim exists to close, correctly.
+    But the tower is three 5.0mm pieces on top of that shim, so it reaches z24.5,
+    and the key stopped at 18.0. The top TWO sun pieces had nothing to key against:
+    free to rotate, which does not merely loosen the mesh, it destroys the #134
+    clocking that the whole strike sequence depends on. This was already wrong at
+    rev A's 4.5mm pitch (23.0 vs 18.0) — the taller stack only widened it.
+
+    Key top 25.0 keys the full tower with 0.5 proud. Everything else = r61."""
+    tris=[]; pr=4.17
+    tris += box(0,0,132,76,0.0,2.5)
+    tris += box(36.65,0,58.7,76,2.5,4.0)
+    tris += cylinder(-36.75,0,pr,2.5,8.5,seg=64)                 # design AT the 4.17 hub bore
+    tris += box(-36.75,0,4.42,4.42,8.5,25.0)                     # K4 key, now full tower height
+    tris += polar_solid(13.0,2.5,3.3,r_inner=6.5,cx=-36.75,cy=0,seg=64)
+    tris += cylinder(+36.75,0,pr,4.0,24.0,seg=48)
+    tris += cylinder(+36.75,0,6.5,4.0,5.0,seg=48)
+    for sx in (-1,1):
+        tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)
+    write_stl("148_fixture_r62_v17.stl",weld(tris))

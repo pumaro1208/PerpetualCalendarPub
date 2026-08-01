@@ -40,6 +40,7 @@ BORE_PRESS = 2.60          # press onto a design-2.70 post (prints 2.64) -> 0.04
 POST_R     = 2.70          # #136 design-at-bore law
 SEAT_R     = 3.50
 PAD_H      = 0.50          # pivot pad / thrust collar under each satellite
+BOARD_BORE = 5.45          # RADIUS, on the star hub's r5.53 tube (#137 press)
 BAND       = (9.5, 14.5, 19.5)   # month / feb / leap mesh-band altitudes (#141)
 def stn_xy(s): 
     a=np.deg2rad(s); return SUNORB*np.cos(a), SUNORB*np.sin(a)
@@ -51,7 +52,11 @@ def part_02j_board():
     t=4.0
     prof,_,_,_=involute_profile(31,MD,add_f=ADD_F)
     th=np.linspace(0,2*np.pi,len(prof),endpoint=False)
-    gear=Polygon(np.stack([prof*np.cos(th),prof*np.sin(th)],1)).difference(Point(0,0).buffer(5.45/2,64))
+    # BORE r5.45 — a RADIUS. polar_prof_solid(bore=) takes a radius, and the board
+    # presses onto the star hub's r5.53 tube for the #137 0.08 interference. Writing
+    # 5.45/2 here (as the first cut of this rewrite did) gives r2.725 and the board
+    # will not go over the hub at all.
+    gear=Polygon(np.stack([prof*np.cos(th),prof*np.sin(th)],1)).difference(Point(0,0).buffer(BOARD_BORE,64))
     cx,cy=stn_xy(STN_M)
     write_stl("144_board_02j_v17.stl", stack([
         (0.0,  t,        gear),
@@ -81,12 +86,21 @@ def carrier_arm(name, from_stn, to_stn, z_bot, z_top, riser_top):
         (h+PAD_H, h+(riser_top-z_top), Point(tx,ty).buffer(POST_R, 48)),
     ]))
 
-def sun_spacer(h=1.0, r=6.0, sq_hw=2.25, name="147_sun_spacer_1mm_v17.stl"):
-    """Base shim under the sun tower: sets the FIRST ball band to the month altitude.
-    Square-bored so it keys on the same K4 post as the tower pieces (a round-bored
-    shim could rotate and is one more thing to lose clock on). Emitted from the
-    generator now — it was hand-built for plate-44 and had no source, which means
-    nobody could have regenerated it after this altitude change."""
+def sun_spacer(h=1.0, r=5.30, sq_hw=2.25, name="147_sun_spacer_1mm_v17.stl"):
+    """Base shim under the sun tower — and Ron's "the sun gear is low" in one part.
+
+    The tower bottoms on the fixture's round-post top face at z8.5 (the square bore
+    cannot pass the r4.17 post), so band 1 lands at 8.5-10.0. The month satellite
+    seats on the board's 0.5mm pivot pad at 9.5. Without this shim the sun band and
+    the mesh lamina overlap by only 0.5 of their 1.5mm height. 1.0mm exactly closes it.
+
+    OD 5.30, NOT 6.00 (#142). It spans z8.5-9.5 and the board runs to z9.0 with a
+    r5.45 bore, so a r6.00 shim buries 0.5mm of itself in the board. 5.30 nests in
+    the bore with 0.15 clearance.
+
+    Square-bored so it keys on the same K4 column as the tower pieces — a round-bored
+    shim could rotate, and that is one more way to lose the clock. Emitted from the
+    generator now; it was hand-built for plate-44 rev A with no source at all."""
     sq=[(sq_hw,sq_hw),(-sq_hw,sq_hw),(-sq_hw,-sq_hw),(sq_hw,-sq_hw)]
     p=Polygon(Point(0,0).buffer(r,64).exterior.coords,[sq])
     write_stl(name, stack([(0.0, h, Point(0,0).buffer(r,64).difference(Polygon(sq)))]))

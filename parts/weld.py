@@ -71,7 +71,8 @@ def _solid(u):
     two solid bodies in one part means the part is genuinely in two pieces."""
     parts = u.split(only_watertight=False)
     if len(parts) > 1:
-        real = [p for p in parts if abs(p.volume) > 1e-6]
+        # 1e-3 mm^3 = a 0.1mm cube. Below that it is a boolean artifact, not a part.
+        real = [p for p in parts if abs(p.volume) > 1e-3]
         if len(real) > 1:
             raise ValueError(f"part is {len(real)} disconnected solids, "
                              f"volumes {[round(p.volume,2) for p in real]}")
