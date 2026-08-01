@@ -1,0 +1,49 @@
+{
+  "name": "plate-37-ballmesh-widesquare",
+  "version_tag": "#131 Ron's annotation realized: FULL-WIDTH SQUARE teeth (2.3mm straight sides root-to-tip, flat end r17.19) filling the sun valleys. Enabled by co-design: sun balls shrunk r2.0->r1.6 (centers at 8.20, nearer the 8.75 pitch -> less slide -> corridor 2.46mm at depth). Engagement ~2.74mm printed; roll overlap 0.00. NEW MATCHED PAIR \u2014 both parts on this plate; do NOT mix with any earlier sun/month. Square-key sun (hw2.25, 4mm) + b270 month. ENGINE CAVEAT: bench-only length pending drive-arm re-plan. 2 parts, flat, no supports, xy-comp -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/131_ballsun_r16_v16.stl",
+      "position": [
+        104,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/131_month_widesquare_v16.stl",
+      "position": [
+        158,
+        128
+      ]
+    }
+  ]
+}
