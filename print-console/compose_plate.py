@@ -80,11 +80,20 @@ def _preset_path(kind: str, name: str) -> Path:
     return p
 
 
-def canonical_config(machine: str, process: str, filament: str) -> dict:
+def canonical_config(machine: str, process: str, filament: str,
+                     filament_2: str = None) -> dict:
     """Full merged config for the preset triple, produced by the Bambu
     Studio CLI itself (so every key has the exact type the CLI expects).
-    Cached per triple in cache/."""
-    key = hashlib.sha1(f"{machine}|{process}|{filament}".encode()).hexdigest()[:16]
+    Cached per triple (or quad, with a 2nd filament) in cache/.
+
+    When filament_2 is given, BOTH filaments are loaded so the CLI builds a
+    genuine two-filament config natively — the only way to get the per-extruder
+    keys (extruder_type, nozzle_diameter, …) right on the single-nozzle P1S.
+    Hand-widening a one-filament config could not reproduce Bambu's own
+    filament→extruder mapping and failed with 'extruder_index 2' (#145)."""
+    key = hashlib.sha1(
+        f"{machine}|{process}|{filament}|{filament_2 or ''}".encode()
+    ).hexdigest()[:16]
     cached = CACHE_DIR / f"canonical-{key}.json"
     if cached.is_file():
         return json.loads(cached.read_text())
@@ -92,6 +101,9 @@ def canonical_config(machine: str, process: str, filament: str) -> dict:
     m, pr, f = (_preset_path("machine", machine),
                 _preset_path("process", process),
                 _preset_path("filament", filament))
+    load_filaments = str(f)
+    if filament_2:
+        load_filaments = f"{f};{_preset_path('filament', filament_2)}"
     with tempfile.TemporaryDirectory(prefix="canon-") as td:
         stl = Path(td) / "probe.stl"
         stl.write_bytes(TINY_STL)
@@ -99,7 +111,7 @@ def canonical_config(machine: str, process: str, filament: str) -> dict:
         proc = subprocess.run(
             [BAMBU_STUDIO,
              "--load-settings", f"{m};{pr}",
-             "--load-filaments", str(f),
+             "--load-filaments", load_filaments,
              "--export-3mf", out.name,
              "--outputdir", td,
              str(stl)],
@@ -126,6 +138,8 @@ def canonical_config(machine: str, process: str, filament: str) -> dict:
     # blanket-overlaying machine/process trips the CLI's compatibility
     # check, and the print-critical gap is the filament chain (bed temps —
     # the CLI defaulted textured_plate_temp to 45 instead of PLA's 55).
+    # Broadcast across both slots (both filaments are PLA wanting the same
+    # bed temp); slot-1 identity/colour is set later by _add_second_filament.
     n = _overlay_flattened(cfg, "filament", filament)
     print(f"  (filament inheritance overlay corrected {n} keys)")
     _merge_included_gcode(cfg, machine)
@@ -208,7 +222,7 @@ def _merge_included_gcode(cfg: dict, machine: str) -> None:
 
 def build_project_settings(spec: dict) -> dict:
     cfg = canonical_config(spec["machine"], spec["process"],
-                           spec["filament"])
+                           spec["filament"], spec.get("filament_2"))
     cfg["curr_bed_type"] = spec["bed_type"]
     cfg["filament_colour"] = [spec.get("filament_colour", "#000000")]
     for k, v in spec.get("overrides", {}).items():
@@ -618,6 +632,7 @@ def compose(spec_path: Path, out_path: Path) -> Path:
     # slicer will. build_project_settings is pure (canonical_config is cached).
     cfg = build_project_settings(spec)
     bed_w, bed_d, bed_h, bed_ex = bed_envelope(cfg)
+    host_dz = 0.0
     for p in parts:
         lo, hi = widths[id(p)]
         w = hi[0] - lo[0]
@@ -635,7 +650,17 @@ def compose(spec_path: Path, out_path: Path) -> Path:
         cy = bed_d / 2 if isinstance(pos, str) else float(pos[1])
         dx = cx - (lo[0] + hi[0]) / 2
         dy = cy - (lo[1] + hi[1]) / 2
-        dz = -lo[2] + float(p["spec"].get("z_offset", 0.0))
+        # Z: a two-colour inlay (allow_overlap) keeps its authored height
+        # relative to its host, by sharing the host's z-drop. Dropping it to the
+        # bed on its own bbox un-registers it from the body it sits in — the
+        # white label authored at z[1,3] fell to z[0,2], landing at the bottom
+        # instead of the top face, which the slicer rejects as levitating (#145).
+        # An explicit z_offset opts back into independent placement.
+        if p["spec"].get("allow_overlap") and "z_offset" not in p["spec"]:
+            dz = host_dz
+        else:
+            dz = -lo[2] + float(p["spec"].get("z_offset", 0.0))
+            host_dz = dz
         p["verts"] = [(v[0] + dx, v[1] + dy, v[2] + dz) for v in p["verts"]]
 
     # ---- #144 bounds gate: catch this here, not at the printer ----
