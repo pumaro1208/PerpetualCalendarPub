@@ -323,13 +323,18 @@ def _add_second_filament(cfg: dict, spec: dict) -> None:
     cfg["filament_type"] = [spec.get("ams_tray_type", "PLA"),
                             spec.get("ams_tray_type_2",
                                      spec.get("ams_tray_type", "PLA"))]
-    # purge volumes: a 2x2 matrix, diagonal zero. Without it the slicer has no
-    # figure for how much to flush on a tool change and can emit none at all,
-    # which shows up as the previous colour bleeding into the first few mm of
-    # the new one — exactly where the day numbers are.
-    cfg.setdefault("flush_volumes_matrix",
-                   ["0", str(spec.get("flush_volume", 280)),
-                    str(spec.get("flush_volume", 280)), "0"])
+    # purge volumes: the flush matrix must be n_filaments x n_filaments (diagonal
+    # zero). The native 2-filament config carries the machine's 4x4 default (16
+    # entries for four AMS slots); the slicer rejects it against our two
+    # filaments ("Flush volumes matrix do not match to the correct size"). Resize
+    # to exactly nf^2. Without a real flush the previous colour bleeds into the
+    # first mm of the new one — exactly where the glyphs are.
+    nf = len(cfg.get("filament_settings_id", [None, None]))
+    fv = str(spec.get("flush_volume", 280))
+    cfg["flush_volumes_matrix"] = ["0" if i == j else fv
+                                   for i in range(nf) for j in range(nf)]
+    vec = cfg.get("flush_volumes_vector") or ["140"]
+    cfg["flush_volumes_vector"] = (vec * (2 * nf))[:2 * nf]
     cfg.setdefault("flush_multiplier", "1")
 
 
@@ -700,32 +705,73 @@ def compose(spec_path: Path, out_path: Path) -> Path:
                            "printable_area_mm / printable_height_mm in the spec)")
 
     # 3D/3dmodel.model
+    # Group each two-colour inlay (allow_overlap) with the host it follows into
+    # ONE printable object carrying two volumes (parts), each with its own
+    # extruder. The slicer's levitation check runs per printable object, so an
+    # elevated ink volume rides on its grounded host instead of being flagged as
+    # a floating standalone object (#145). Non-inlay plates get one part per
+    # object exactly as before.
+    IDENT = "1 0 0 0 1 0 0 0 1 0 0 0"
+    groups = []
+    for p in parts:
+        if p["spec"].get("allow_overlap") and groups:
+            groups[-1].append(p)
+        else:
+            groups.append([p])
+
     obj_xml, items, ms_objects, ms_instances, ms_assemble = [], [], [], [], []
-    for i, p in enumerate(parts, start=1):
+    mesh_id = {}
+    next_id = 1
+    for p in parts:                       # one mesh <object> per part
+        mesh_id[id(p)] = next_id
         vs = "".join(f'<vertex x="{v[0]:.5f}" y="{v[1]:.5f}" z="{v[2]:.5f}"/>'
                      for v in p["verts"])
         ts = "".join(f'<triangle v1="{f[0]}" v2="{f[1]}" v3="{f[2]}"/>'
                      for f in p["faces"])
         obj_xml.append(
-            f'<object id="{i}" type="model" name="{escape(p["name"])}">'
+            f'<object id="{next_id}" type="model" name="{escape(p["name"])}">'
             f'<mesh><vertices>{vs}</vertices>'
             f'<triangles>{ts}</triangles></mesh></object>')
-        items.append(f'<item objectid="{i}" '
-                     f'transform="1 0 0 0 1 0 0 0 1 0 0 0" printable="1"/>')
-        slot = p["spec"].get("extruder", 1)
-        ms_objects.append(
-            f'  <object id="{i}"><metadata key="name" '
-            f'value="{escape(p["name"])}"/>'
-            f'<metadata key="extruder" value="{slot}"/></object>')
+        next_id += 1
+
+    for gi, g in enumerate(groups, start=1):
+        if len(g) == 1:                   # singleton: printable object is the mesh
+            p = g[0]
+            oid = mesh_id[id(p)]
+            slot = p["spec"].get("extruder", 1)
+            ms_objects.append(
+                f'  <object id="{oid}"><metadata key="name" '
+                f'value="{escape(p["name"])}"/>'
+                f'<metadata key="extruder" value="{slot}"/></object>')
+        else:                             # inlay group: container of two volumes
+            oid = next_id
+            next_id += 1
+            comps = "".join(
+                f'<component objectid="{mesh_id[id(p)]}" transform="{IDENT}"/>'
+                for p in g)
+            obj_xml.append(
+                f'<object id="{oid}" type="model">'
+                f'<components>{comps}</components></object>')
+            parts_xml = "\n".join(
+                f'    <part id="{mesh_id[id(p)]}" subtype="normal_part">'
+                f'<metadata key="name" value="{escape(p["name"])}"/>'
+                f'<metadata key="extruder" '
+                f'value="{p["spec"].get("extruder", 1)}"/></part>'
+                for p in g)
+            ms_objects.append(
+                f'  <object id="{oid}"><metadata key="name" '
+                f'value="{escape(g[0]["name"])}"/>\n{parts_xml}\n  </object>')
+        items.append(f'<item objectid="{oid}" transform="{IDENT}" '
+                     f'printable="1"/>')
         ms_instances.append(
             f'    <model_instance>\n'
-            f'      <metadata key="object_id" value="{i}"/>\n'
+            f'      <metadata key="object_id" value="{oid}"/>\n'
             f'      <metadata key="instance_id" value="0"/>\n'
-            f'      <metadata key="identify_id" value="{100 + i}"/>\n'
+            f'      <metadata key="identify_id" value="{100 + gi}"/>\n'
             f'    </model_instance>')
         ms_assemble.append(
-            f'   <assemble_item object_id="{i}" instance_id="0" '
-            f'transform="1 0 0 0 1 0 0 0 1 0 0 0" offset="0 0 0" />')
+            f'   <assemble_item object_id="{oid}" instance_id="0" '
+            f'transform="{IDENT}" offset="0 0 0" />')
 
     model = (
         '<?xml version="1.0" encoding="UTF-8"?>'
