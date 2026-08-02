@@ -331,8 +331,12 @@ def _add_second_filament(cfg: dict, spec: dict) -> None:
     # first mm of the new one — exactly where the glyphs are.
     nf = len(cfg.get("filament_settings_id", [None, None]))
     fv = str(spec.get("flush_volume", 280))
-    cfg["flush_volumes_matrix"] = ["0" if i == j else fv
-                                   for i in range(nf) for j in range(nf)]
+    # BambuStudio sizes the flush matrix n_filaments^2 * n_nozzles. On the
+    # multi-part two-colour path it counts 2 "nozzles" from the part extruders,
+    # so the single-nozzle P1S wants 2 * nf^2 (empirically nf=2 -> 8; a plain
+    # nf x nf matrix of size 4 is rejected). Two stacked zero-diagonal blocks.
+    block = ["0" if i == j else fv for i in range(nf) for j in range(nf)]
+    cfg["flush_volumes_matrix"] = block * 2
     vec = cfg.get("flush_volumes_vector") or ["140"]
     cfg["flush_volumes_vector"] = (vec * (2 * nf))[:2 * nf]
     cfg.setdefault("flush_multiplier", "1")
@@ -755,8 +759,16 @@ def compose(spec_path: Path, out_path: Path) -> Path:
             parts_xml = "\n".join(
                 f'    <part id="{mesh_id[id(p)]}" subtype="normal_part">'
                 f'<metadata key="name" value="{escape(p["name"])}"/>'
+                f'<metadata key="matrix" '
+                f'value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>'
+                f'<metadata key="source_file" value="{escape(p["name"])}"/>'
+                f'<metadata key="source_object_id" value="0"/>'
+                f'<metadata key="source_volume_id" value="0"/>'
                 f'<metadata key="extruder" '
-                f'value="{p["spec"].get("extruder", 1)}"/></part>'
+                f'value="{p["spec"].get("extruder", 1)}"/>'
+                f'<mesh_stat edges_fixed="0" degenerate_facets="0" '
+                f'facets_removed="0" facets_reversed="0" '
+                f'backwards_edges="0"/></part>'
                 for p in g)
             ms_objects.append(
                 f'  <object id="{oid}"><metadata key="name" '
@@ -908,6 +920,11 @@ def audit_sliced(sliced: Path, spec: dict) -> list:
         # at x≳200 on a shared plate vanish without any warning)
         sliced_names = {o.get("name") for o in pj.get("bbox_objects", [])}
         for p in spec.get("parts", []):
+            # two-colour inlays (allow_overlap) are merged into their host as a
+            # part volume, so they never appear as a standalone sliced object —
+            # their presence is verified instead by the two-filament T1 gate.
+            if p.get("allow_overlap"):
+                continue
             stem = p["stl"].rsplit("/", 1)[-1]
             if stem not in sliced_names:
                 problems.append(f"object {stem}: spec'd but ABSENT from the "
