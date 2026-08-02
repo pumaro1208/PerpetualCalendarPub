@@ -1,6 +1,6 @@
 {
   "name": "plate-47-satellite-labels",
-  "version_tag": "#145 SATELLITE LABELS \u2014 month names on the month wheel, 1-12 on feb and leap. TWO COLOUR, same AMS mapping as plate-45: slot 1 BLACK, slot 2 WHITE. Supersedes 141/142/143 (printed, unlabelled) \u2014 the mesh is bit-identical, only the top faces are engraved. WHICH TOOTH IS WHICH MONTH was measured from the simulator's calendar engine, not assumed: at 23:00 on date 30 the 23h arm sweeps the wheel and whichever tooth is on the strike line IS that month's tooth, true for all twelve and single-valued over 14 simulated years. The five strike teeth come out JUN NOV APR SEP FEB going round from the strike line \u2014 February plus the four 30-day months, which is the check Ron can make by eye on the printed part. An algebraic shortcut (+7 teeth/month) got this WRONG; the tooth index runs against the spin so the step is -7, and the engine caught it. ENGRAVING THE STRIKE TEETH IS DEFENDED, not assumed safe: the bars take the 24h arm's push, and a 2.6 x 0.5mm groove drops their section modulus to 57% of solid \u2014 but it sits at r10.85 where the bending moment is 37% of the root's, so peak stress there is 58% of the root's and the critical section stays at the root. Moving the label inboard would have inverted that. GLYPHS: '4' and 'A' are drawn OPEN. Their counters are inherently tiny in a stroke font and fill in at any printable stroke and any cap that still fits between hub r4.00 and mesh root r13.87 \u2014 the first cut printed 4, 6, 8, 9, 0 as blobs. Scaling does not rescue them; the letterform had to change. All counters now clear 0.25mm2. Kern 0.75 > stroke 0.45, or adjacent letters fuse (the first cut read as 18 blobs instead of 36 letters). REGISTRATION: each ink body carries its own offset from its receiver because compose centres every object on its own bbox and they differ. Do not tidy them. 6 objects (3 receivers + 3 ink), flat, no supports, xy-comp -0.06. | QUIET.",
+  "version_tag": "#145 SATELLITE LABELS \u2014 month names on the month wheel, 1-12 on feb and leap. TWO COLOUR, same AMS mapping as plate-45: slot 1 BLACK, slot 2 WHITE. Supersedes 141/142/143 (printed, unlabelled) \u2014 the mesh is bit-identical, only the top faces are engraved. WHICH TOOTH IS WHICH MONTH was measured from the simulator's calendar engine, not assumed: at 23:00 on date 30 the 23h arm sweeps the wheel and whichever tooth is on the strike line IS that month's tooth, true for all twelve and single-valued over 14 simulated years. The five strike teeth come out JUN NOV APR SEP FEB going round from the strike line \u2014 February plus the four 30-day months, which is the check Ron can make by eye on the printed part. An algebraic shortcut (+7 teeth/month) got this WRONG; the tooth index runs against the spin so the step is -7, and the engine caught it. ENGRAVING THE STRIKE TEETH IS DEFENDED, not assumed safe: the bars take the 24h arm's push, and a 2.6 x 0.5mm groove drops their section modulus to 57% of solid \u2014 but it sits at r10.85 where the bending moment is 37% of the root's, so peak stress there is 58% of the root's and the critical section stays at the root. Moving the label inboard would have inverted that. GLYPHS: '4' and 'A' are drawn OPEN. Their counters are inherently tiny in a stroke font and fill in at any printable stroke and any cap that still fits between hub r4.00 and mesh root r13.87 \u2014 the first cut printed 4, 6, 8, 9, 0 as blobs. Scaling does not rescue them; the letterform had to change. All counters now clear 0.25mm2. Kern 0.75 > stroke 0.45, or adjacent letters fuse (the first cut read as 18 blobs instead of 36 letters). REGISTRATION: each ink body carries its own offset from its receiver because compose centres every object on its own bbox and they differ. Do not tidy them. ALSO CARRIES THE #146 ARM REPRINT: 145_carrier_feb and 146_carrier_leap ride along in BLACK (extruder 1, no ink). The arms that came off plate-44 rev D are scrap \u2014 their pivot pad overhung the press-fit bore by 1.29mm across 120 deg of its rim, so the lip printed unsupported over the hole and would foul a slightly-long post at assembly. They are two small parts and there was bed to spare, so they do not need a plate of their own. 8 objects (3 receivers + 3 ink + 2 arms), flat, no supports, xy-comp -0.06. | QUIET.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -81,6 +81,20 @@
       "extruder": 2,
       "allow_midair": true,
       "allow_overlap": true
+    },
+    {
+      "stl": "../../parts/stl/145_carrier_feb_v17.stl",
+      "position": [
+        70,
+        175
+      ]
+    },
+    {
+      "stl": "../../parts/stl/146_carrier_leap_v17.stl",
+      "position": [
+        110,
+        175
+      ]
     }
   ],
   "filament_2": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
