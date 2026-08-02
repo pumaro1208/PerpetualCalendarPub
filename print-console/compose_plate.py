@@ -262,6 +262,24 @@ def bed_envelope(cfg: dict):
     return w, d, h, ex
 
 
+_PER_EXTRUDER_KEYS = {
+    "nozzle_diameter", "nozzle_volume", "nozzle_volume_type", "nozzle_type",
+    "nozzle_flush_dataset", "physical_extruder_map", "required_nozzle_HRC",
+    "printer_extruder_id", "printer_extruder_variant",
+    "print_extruder_id", "print_extruder_variant",
+}
+
+
+def _is_per_extruder(k: str) -> bool:
+    """True for machine keys indexed by physical EXTRUDER (length = #extruders),
+    which must NOT grow when a second FILAMENT is added on a single-nozzle P1S.
+    Widening these made the slicer count two extruders and abort with
+    'could not find extruder_index 2' (#145). Per-filament keys — nozzle_temperature,
+    the filament_* family, filament_extruder_variant/nozzle_map — are NOT here and
+    still widen to length 2."""
+    return k.startswith("extruder_") or k in _PER_EXTRUDER_KEYS
+
+
 def _add_second_filament(cfg: dict, spec: dict) -> None:
     """Widen a single-filament config to two slots (#143, two-colour inlay).
 
@@ -277,7 +295,7 @@ def _add_second_filament(cfg: dict, spec: dict) -> None:
     speeds, temps and accelerations stay as gated.
     """
     for k, v in list(cfg.items()):
-        if isinstance(v, list) and len(v) == 1:
+        if isinstance(v, list) and len(v) == 1 and not _is_per_extruder(k):
             cfg[k] = [v[0], v[0]]
     f2 = spec["filament_2"]
     id2 = spec.get("filament_2_id") or _flatten_chain(
