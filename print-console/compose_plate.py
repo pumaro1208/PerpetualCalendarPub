@@ -595,6 +595,10 @@ def compose(spec_path: Path, out_path: Path) -> Path:
     for p in parts:
         lo, hi = bbox(p["verts"])
         widths[id(p)] = (lo, hi)
+    # project settings drive both the bed envelope (below) and the final write;
+    # build once here so the #144 bounds gate can see the same envelope the
+    # slicer will. build_project_settings is pure (canonical_config is cached).
+    cfg = build_project_settings(spec)
     bed_w, bed_d, bed_h, bed_ex = bed_envelope(cfg)
     for p in parts:
         lo, hi = widths[id(p)]
@@ -718,7 +722,7 @@ def compose(spec_path: Path, out_path: Path) -> Path:
         'Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/'
         '3dmodel"/></Relationships>')
 
-    cfg = build_project_settings(spec)
+    # cfg already built above for the bounds gate; reuse it for the write
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(out_path, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("[Content_Types].xml", content_types)
