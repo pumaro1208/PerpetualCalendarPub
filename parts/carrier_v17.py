@@ -39,6 +39,7 @@ from weld import weld, stack
 BORE_PRESS = 2.60          # press onto a design-2.70 post (prints 2.64) -> 0.04 interference
 POST_R     = 2.70          # #136 design-at-bore law
 SEAT_R     = 3.50
+PAD_CLR    = 0.30          # keeps the pivot pad off the press-fit bore (#146)
 PAD_H      = 0.50          # pivot pad / thrust collar under each satellite
 BOARD_BORE = 5.45          # RADIUS, on the star hub's r5.53 tube (#137 press)
 BAND       = (9.5, 14.5, 19.5)   # month / feb / leap mesh-band altitudes (#141)
@@ -80,9 +81,19 @@ def carrier_arm(name, from_stn, to_stn, z_bot, z_top, riser_top):
     # polygon with a real interior ring is what makes that impossible to repeat.
     plate = LineString([(fx,fy),(tx,ty)]).buffer(4.6, 32) \
                 .difference(Point(fx,fy).buffer(BORE_PRESS, 48))
+    # #146, Ron's eye: the pad must be CLIPPED clear of the bore. The stations are
+    # only 4.81mm apart while the pad is r3.50 and the bore r2.60 — 6.10 of feature
+    # in 4.81 of space — so a full-circle pad overhung the bore mouth by 1.29mm
+    # across 120 deg of its rim. Two ways that bites: the lip prints unsupported
+    # over the hole and droops exactly where the satellite bears, and if the post
+    # below comes out even slightly long it fouls the lip and the arm never seats.
+    # Clipping costs some thrust area and keeps ~296 deg of contact at the
+    # satellite's bore edge, which is plenty for a hand-cranked demonstrator.
+    pad = Point(tx,ty).buffer(SEAT_R, 48).difference(
+              Point(fx,fy).buffer(BORE_PRESS + PAD_CLR, 48))
     write_stl(name, stack([
         (0.0,   h,             plate),
-        (h,     h+PAD_H,       Point(tx,ty).buffer(SEAT_R, 32)),   # pivot pad
+        (h,     h+PAD_H,       pad),                               # pivot pad, clipped
         (h+PAD_H, h+(riser_top-z_top), Point(tx,ty).buffer(POST_R, 48)),
     ]))
 

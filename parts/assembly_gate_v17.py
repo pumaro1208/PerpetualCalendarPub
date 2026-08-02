@@ -183,5 +183,25 @@ gate(abs(_np.hypot(f0[:,0], f0[:,1]).min() - BOARD_BORE) < 1e-2,
      f"board bore r{_np.hypot(f0[:,0],f0[:,1]).min():.3f} == r{BOARD_BORE} "
      f"(it presses on the star hub's r5.53 tube; a radius/diameter slip here is silent)")
 
+# ---- 8. WITHIN-PART feature collisions (#146, Ron spotted it on the bench) ----
+# Every gate so far compares one PART against another. The pivot pad overhanging
+# its own arm's press-fit bore was invisible to all of them: one part, two features,
+# 4.81mm apart while they measure 3.50 + 2.60 across. The lip printed unsupported
+# over the hole and would foul a slightly-long post at assembly.
+print()
+from carrier_v17 import stn_xy as _sx, SEAT_R as _SR, BORE_PRESS as _BR, PAD_CLR as _PC
+for _fn, _fs, _ts in (("145_carrier_feb_v17.stl", STN_M, STN_F),
+                      ("146_carrier_leap_v17.stl", STN_F, STN_L)):
+    _fx, _fy = _sx(_fs); _tx, _ty = _sx(_ts)
+    _T = tris(_fn); _z0 = _T[:,:,2].min(1); _z1 = _T[:,:,2].max(1)
+    _w = (_z0 >= 1.30-1e-4) & (_z1 <= 1.80+1e-4) & (_z1-_z0 > 1e-4)   # the pad slab
+    _W = _T[_w].reshape(-1,3)
+    _d = np.hypot(_W[:,0]-_fx, _W[:,1]-_fy).min()
+    gate(_d >= _BR,
+         f"{_fn.split('_')[1]} arm: pivot pad clears its own press-fit bore "
+         f"(nearest pad material {_d:.2f} vs bore r{_BR}) — a full-circle r{_SR} pad "
+         f"at {np.hypot(_tx-_fx,_ty-_fy):.2f}mm spacing overhangs it by "
+         f"{_SR+_BR-np.hypot(_tx-_fx,_ty-_fy):.2f}mm")
+
 print("\n" + ("  *** GATE FAILED: " + str(len(FAILS)) + " ***" if FAILS else "  ALL GATES PASS"))
 sys.exit(1 if FAILS else 0)
