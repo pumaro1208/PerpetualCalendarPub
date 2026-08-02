@@ -1,0 +1,94 @@
+{
+  "name": "plate-47-satellite-labels",
+  "version_tag": "#145 SATELLITE LABELS \u2014 month names on the month wheel, 1-12 on feb and leap. TWO COLOUR, same AMS mapping as plate-45: slot 1 BLACK, slot 2 WHITE. Supersedes 141/142/143 (printed, unlabelled) \u2014 the mesh is bit-identical, only the top faces are engraved. WHICH TOOTH IS WHICH MONTH was measured from the simulator's calendar engine, not assumed: at 23:00 on date 30 the 23h arm sweeps the wheel and whichever tooth is on the strike line IS that month's tooth, true for all twelve and single-valued over 14 simulated years. The five strike teeth come out JUN NOV APR SEP FEB going round from the strike line \u2014 February plus the four 30-day months, which is the check Ron can make by eye on the printed part. An algebraic shortcut (+7 teeth/month) got this WRONG; the tooth index runs against the spin so the step is -7, and the engine caught it. ENGRAVING THE STRIKE TEETH IS DEFENDED, not assumed safe: the bars take the 24h arm's push, and a 2.6 x 0.5mm groove drops their section modulus to 57% of solid \u2014 but it sits at r10.85 where the bending moment is 37% of the root's, so peak stress there is 58% of the root's and the critical section stays at the root. Moving the label inboard would have inverted that. GLYPHS: '4' and 'A' are drawn OPEN. Their counters are inherently tiny in a stroke font and fill in at any printable stroke and any cap that still fits between hub r4.00 and mesh root r13.87 \u2014 the first cut printed 4, 6, 8, 9, 0 as blobs. Scaling does not rescue them; the letterform had to change. All counters now clear 0.25mm2. Kern 0.75 > stroke 0.45, or adjacent letters fuse (the first cut read as 18 blobs instead of 36 letters). REGISTRATION: each ink body carries its own offset from its receiver because compose centres every object on its own bbox and they differ. Do not tidy them. 6 objects (3 receivers + 3 ink), flat, no supports, xy-comp -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/151_receiver_month_lab_v17.stl",
+      "position": [
+        70,
+        120
+      ]
+    },
+    {
+      "stl": "../../parts/stl/154_sat_ink_month_v17.stl",
+      "position": [
+        69.476,
+        119.333
+      ],
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    },
+    {
+      "stl": "../../parts/stl/152_receiver_feb_lab_v17.stl",
+      "position": [
+        128,
+        120
+      ]
+    },
+    {
+      "stl": "../../parts/stl/155_sat_ink_feb_v17.stl",
+      "position": [
+        127.707,
+        119.305
+      ],
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    },
+    {
+      "stl": "../../parts/stl/153_receiver_leap_lab_v17.stl",
+      "position": [
+        186,
+        120
+      ]
+    },
+    {
+      "stl": "../../parts/stl/156_sat_ink_leap_v17.stl",
+      "position": [
+        185.689,
+        119.305
+      ],
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    }
+  ],
+  "filament_2": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_2_colour": "#FFFFFF",
+  "ams_tray_type_2": "PLA",
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}
