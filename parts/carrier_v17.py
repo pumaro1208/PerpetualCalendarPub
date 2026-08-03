@@ -42,7 +42,9 @@ SEAT_R     = 3.50
 PAD_CLR    = 0.30          # keeps the pivot pad off the press-fit bore (#146)
 PAD_H      = 0.50          # pivot pad / thrust collar under each satellite
 BOARD_BORE = 5.45          # RADIUS, on the star hub's r5.53 tube (#137 press)
-BAND       = (9.5, 14.5, 19.5)   # month / feb / leap mesh-band altitudes (#141)
+BAND       = (9.5, 16.0, 22.5)   # month / feb / leap mesh-band altitudes (#147)
+PLATE_H    = 2.80          # arm plate = the grip. 6.50 pitch - 3.00 sat - 0.20 clr - 0.50 pad
+POST_TOP   = 10.5          # board month post, LOCAL z (assy 15.5 = arm 1 plate top)
 def stn_xy(s): 
     a=np.deg2rad(s); return SUNORB*np.cos(a), SUNORB*np.sin(a)
 
@@ -62,7 +64,7 @@ def part_02j_board():
     write_stl("144_board_02j_v17.stl", stack([
         (0.0,  t,        gear),
         (t,    t+PAD_H,  Point(cx,cy).buffer(SEAT_R,32)),   # month pivot pad (assy 9.0-9.5)
-        (t+PAD_H, 9.0,   Point(cx,cy).buffer(POST_R,48)),   # post to assy 14.0
+        (t+PAD_H, POST_TOP, Point(cx,cy).buffer(POST_R,48)),  # post to assy 15.5
     ]))
 
 def carrier_arm(name, from_stn, to_stn, z_bot, z_top, riser_top):
@@ -120,7 +122,7 @@ if __name__=="__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     part_02j_board()
     #                                          plate_bot plate_top riser_top
-    carrier_arm("145_carrier_feb_v17.stl",  STN_M, STN_F, 12.7, 14.0, 19.0)
-    carrier_arm("146_carrier_leap_v17.stl", STN_F, STN_L, 17.7, 19.0, 24.0)
+    carrier_arm("145_carrier_feb_v17.stl",  STN_M, STN_F, 12.7, 15.5, 22.0)
+    carrier_arm("146_carrier_leap_v17.stl", STN_F, STN_L, 19.2, 22.0, 27.0)
     sun_spacer()
     print("  carrier chain: board 02j + feb arm + leap arm + base spacer")

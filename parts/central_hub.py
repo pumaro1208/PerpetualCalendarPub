@@ -278,3 +278,24 @@ def part_49_fixture_r62_v17():
     for sx in (-1,1):
         tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)
     write_stl("148_fixture_r62_v17.stl",weld(tris))
+
+
+def part_49_fixture_r63_v17():
+    """Fixture r63 (#147). r62 with the K4 key extended 25.0 -> 29.5.
+
+    The band pitch went 5.0 -> 6.5 to give the carrier arms a real press fit
+    (plate 1.30 -> 2.80mm, 1.04 post diameters instead of 0.48). That lifts the sun
+    tower top from 24.5 to 29.0, so the key has to follow it or the top two sun
+    pieces are unkeyed again — the exact fault r62 was cut to fix. Everything else
+    identical to r62."""
+    tris=[]; pr=4.17
+    tris += box(0,0,132,76,0.0,2.5)
+    tris += box(36.65,0,58.7,76,2.5,4.0)
+    tris += cylinder(-36.75,0,pr,2.5,8.5,seg=64)
+    tris += box(-36.75,0,4.42,4.42,8.5,29.5)                     # K4 key, full tower height
+    tris += polar_solid(13.0,2.5,3.3,r_inner=6.5,cx=-36.75,cy=0,seg=64)
+    tris += cylinder(+36.75,0,pr,4.0,26.0,seg=48)                # drive post follows the stack
+    tris += cylinder(+36.75,0,6.5,4.0,5.0,seg=48)
+    for sx in (-1,1):
+        tris += cylinder(-36.75+sx*20.0,-30.5,2.0-0.075,2.5,4.15,seg=24)
+    write_stl("157_fixture_r63_v17.stl",weld(tris))

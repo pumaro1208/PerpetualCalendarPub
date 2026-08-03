@@ -1,0 +1,75 @@
+{
+  "name": "plate-48-drive-wheel",
+  "version_tag": "#149 DRIVE WHEEL v17 — the 24h wheel, with the arms that reach 21h / 22h / 23h. Ron: \"I need the correct 24 hr wheel printed that can hit the 21,22,23 hours.\" This is the part that has been blocking everything: there has been nothing to crank. The old 30_drive_v16 is 15mm tall overall and was cut for the 3.5mm band spacing; the v17 stack at 6.5 pitch needs the 21h arm up at 24.70-25.50, which that wheel cannot reach. GEOMETRY IS TAKEN FROM THE SIMULATOR, NOT INVENTED: drive axis 73.50 from the board axis along the strike line, body r29.20, arm tip orbit r32.76. Board tooth tip and satellite strike tip both stand at 41.86, so every arm engages by 41.86-40.74 = 1.12mm — the same drive window every clocking number in this project is quoted against. Body clears the board teeth by 2.44 and the satellites by 3.36. ANGLES: the wheel turns once per day, so an hour is 15 deg; arms sit at 180-off with off = 0/15/30/45, and all four were checked to land on world 180 at their own hour rather than assumed to. ALTITUDES: 24h 5.00-9.00 on the board teeth, 23h 11.70-12.50 on the month strike tip, 22h 18.20-19.00 on feb, 21h 24.70-25.50 on leap — each clearing the MESH lamina 0.70mm below it, because an arm coplanar with a lamina fouls the gear instead of striking it. WHY FOUR STACKED PIECES AND NOT ONE WHEEL: a single body would be a r29.2 cylinder 20.5mm tall with four small tabs whose undersides are all unsupported cantilevers. Split at each arm and every piece prints ARM DOWN ON THE BED — no overhang anywhere, no supports, a quarter of the material. Same idiom as the sun tower, and it is why the tower prints clean. Each piece carries its arm pre-rotated, so a plain square key clocks all four, exactly how the receivers carry their ALPHA. THE SLEEVE IS NOT THE SUN TOWER'S K4: K4 is 4.42 across and the fixture's drive post is r4.17 = 8.34 diameter, bigger than the whole key — the first cut had the bore eat the key and leave four corner slivers, which the weld gate caught as \"4 disconnected solids\". The sleeve wraps the post instead: round r4.17 bore, square 11.50 across outside, 1.58mm wall. ASSEMBLY ORDER on the fixture's drive post: sleeve first (round bore, it must turn — this wheel is the crank), then 24h, 23h, 22h, 21h bottom to top; all four square bores go on the sleeve one way only. All 5 parts are single watertight solids. Flat, no supports, xy-comp -0.06, single colour. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "15%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/158_drive_24h_v17.stl",
+      "position": [
+        75,
+        75
+      ]
+    },
+    {
+      "stl": "../../parts/stl/159_drive_23h_v17.stl",
+      "position": [
+        141,
+        75
+      ]
+    },
+    {
+      "stl": "../../parts/stl/160_drive_22h_v17.stl",
+      "position": [
+        75,
+        141
+      ]
+    },
+    {
+      "stl": "../../parts/stl/161_drive_21h_v17.stl",
+      "position": [
+        141,
+        141
+      ]
+    },
+    {
+      "stl": "../../parts/stl/162_drive_sleeve_v17.stl",
+      "position": [
+        205,
+        75
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}

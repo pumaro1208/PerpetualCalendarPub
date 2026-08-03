@@ -38,19 +38,39 @@ SQ_HW     = 2.25                       # square bore half-width (K4 key 4.42 des
 BORE      = 2.70                       # on the design-r2.70 satellite posts
 SLIM_R    = 4.70                       # slim core at the finger altitudes
 BAND_H    = 1.50                       # ball band height
-PIECE_H   = 5.00                       # one tower piece (band 1.5 + slim core 3.5)
-                                       # #141: was 4.50. The piece height IS the band
-                                       # spacing, and 4.5 left only 1.5mm between
-                                       # satellites — not enough for a 1.3mm carrier
-                                       # arm PLUS the 0.5mm pivot pad that keeps the
-                                       # satellite above off the arm's top face.
+PIECE_H   = 6.50                       # one tower piece (band 1.5 + slim core 5.0)
+                                       # #147 (Ron, bench): the piece height IS the band
+                                       # pitch, and the pitch is what feeds the carrier
+                                       # arm plates. 4.5 (#139) left no room for the pivot
+                                       # pad; 5.0 (#141) fitted the pad but left the plate
+                                       # at 1.30mm — and the plate thickness IS the entire
+                                       # grip the arm has on its post, because the post has
+                                       # to stop under the satellite above. 1.30 on a 2.70
+                                       # post is 0.48 diameters with no shoulder to register
+                                       # against; Ron could not get the arms to hold.
+                                       # 6.50 gives a 2.80 plate = 1.04 post diameters, the
+                                       # textbook figure for a press fit. Budget:
+                                       #   3.00 satellite + 0.20 clearance
+                                       # + 2.80 plate     + 0.50 pad  = 6.50
                                        # 5.0 is taken in the sun piece itself, NOT as
                                        # a stack of 0.5mm shims: a 0.5mm shim prints
                                        # at 2.5 layers (rounds to 0.4/0.6) and that
                                        # z error would walk the mesh lamina off its band.
 ZM, ZS    = 1.50, 3.00                 # receiver mesh / strike lamina
 TIP_R     = 18.30                      # finger reach
-E1_BASE   = 6.0
+# #148 (Ron, bench: "1 is not at the top at the start of the month, 30 is").
+# The strike-bar bearing at phi=0, PER SATELLITE. It was a single round 6.0 for all
+# three since #110 and never checked against the calendar engine — but the three
+# satellites strike on different dates (month 30, feb 29, leap 28), so their strike
+# teeth cannot possibly share a bearing. Derived two independent ways that agree to
+# three decimals: running the engine and recording the bearing each strike demands,
+# and the geometric fact that one month is 31 steps = 570deg = exactly 19 teeth, so
+# satellite phase mod 30 resets monthly and depends only on the date.
+# Check: psi = (19/12)*(d-1)*PITCH + E1_BASE lands on 0 mod 30 at each strike date.
+# The old 6.0 left feb 10.84deg out (3.43mm at the strike face, 306% of the 1.12mm
+# drive window) and leap 7.55deg out (213%) — both would simply have MISSED, so
+# February would never have been shortened and the leap tooth would never have fired.
+E1_BASE   = {"month": 6.774, "feb": 25.161, "leap": 13.548}
 d2r       = np.pi/180
 
 def _slice(fn, zcut):
@@ -106,7 +126,7 @@ def receiver(name, sat_name, n_fingers, boss_h=0.0):
     hub  = Point(0,0).buffer(4.0, 64)
     bars, tips = [], []
     for k in range(n_fingers):                                        # solid finger bars (#110)
-        a = (E1_BASE + k*30.0)*d2r
+        a = (E1_BASE[sat_name] + k*30.0)*d2r
         # bars start INSIDE the hub (2.0, not 4.0). At 4.0 they were tangent to the
         # r4.0 hub — touching at a single point, so hub and fingers were separate
         # islands in plane, hanging together only via the lamina below. #110/#117

@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from generator_v13 import SUNORB, STN_M, STN_F, STN_L
 
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stl_v13")
-BAND_PITCH = 5.0
-BAND       = {"month": 9.5, "feb": 14.5, "leap": 19.5}
+BAND_PITCH = 6.5
+BAND       = {"month": 9.5, "feb": 16.0, "leap": 22.5}
 PAD_H      = 0.5
 
 def tris(fn):
@@ -90,7 +90,7 @@ for k, fn in REC.items():
 
 # ---- 3. carrier arms vs everything that shares their altitude ----
 ARM = [("145_carrier_feb_v17.stl",  STN_M, STN_F, 12.7, "month", "feb"),
-       ("146_carrier_leap_v17.stl", STN_F, STN_L, 17.7, "feb",   "leap")]
+       ("146_carrier_leap_v17.stl", STN_F, STN_L, 19.2, "feb",   "leap")]
 print()
 for fn, fs, ts, zbot, below, above in ARM:
     fx, fy = stn(fs); tx, ty = stn(ts)
@@ -114,12 +114,28 @@ for fn, fs, ts, zbot, below, above in ARM:
     gate(zbot + top >= occ[above][1],
          f"post top {zbot+top:.2f} reaches past the {above} satellite top {occ[above][1]:.2f}")
 
-# ---- 4. arm 2 must have real post to press onto ----
+# ---- 4. GRIP: does each press fit have enough engagement to BE a joint? ----
+# #147, Ron at the bench: "the small posts do not have a tall enough post to grab".
+# He was right, and this gate is why it got through. It used to check only that arm2
+# had "some" post, with a 1.0mm threshold picked out of the air — and it reported the
+# number without judging it. The grip is the PLATE THICKNESS and nothing else, because
+# the post must stop under the satellite above; at the old 5.0 pitch that was 1.30mm on
+# a 2.70 post, 0.48 diameters, with no shoulder to register against. Rule of thumb for a
+# press fit in plastic is ~1 diameter; gate at 0.8 and report in diameters, not mm.
 print()
-b1 = bands("145_carrier_feb_v17.stl", *stn(STN_F))
-post_span = (12.7 + b1[0][1], 12.7 + max(x[1] for x in b1))
-grip = overlap(17.7, 19.0, *post_span)
-gate(grip > 1.0, f"arm2 grips {grip:.2f}mm of arm1's post (press fit needs real length)")
+from carrier_v17 import POST_R as _PR, PLATE_H as _PLATE
+MIN_GRIP_DIA = 0.8
+for _nm, _seat in (("arm 1 on the board's month post", BAND["month"]),
+                   ("arm 2 on arm 1's riser",          BAND["feb"])):
+    _sat_top = _seat + 3.0
+    _exposed = BAND_PITCH - 3.0 - PAD_H          # what the pitch leaves above the satellite
+    _grip = _PLATE
+    _dia  = _grip/(2*_PR)
+    gate(_dia >= MIN_GRIP_DIA,
+         f"{_nm}: grip {_grip:.2f}mm on a {2*_PR:.2f} post = "
+         f"{_grip/(2*_PR):.2f} diameters (need {MIN_GRIP_DIA:.2f}); "
+         f"post exposed {_exposed:.2f} above the satellite, plate {_PLATE:.2f} + "
+         f"{_exposed-_PLATE:.2f} running clearance")
 
 # ---- 5. fingers must sweep inside the sun's SLIM core, never the ball band ----
 print()
@@ -155,7 +171,7 @@ for i in range(len(solids)):
 # fixture, and nothing was checking that the two chains arrive at the same altitude.
 print()
 POST_TOP   = 8.5     # fixture round post r4.17 top — the sun tower bottoms here
-KEY_TOP    = 25.0    # fixture K4 square key top (r62; was 18.0 on r61)
+KEY_TOP    = 29.5    # fixture K4 square key top (r63; 25.0 on r62, 18.0 on r61)
 BOARD      = (5.0, 9.0)
 BOARD_BORE = 5.45
 SHIM_H     = 1.0
@@ -194,7 +210,8 @@ for _fn, _fs, _ts in (("145_carrier_feb_v17.stl", STN_M, STN_F),
                       ("146_carrier_leap_v17.stl", STN_F, STN_L)):
     _fx, _fy = _sx(_fs); _tx, _ty = _sx(_ts)
     _T = tris(_fn); _z0 = _T[:,:,2].min(1); _z1 = _T[:,:,2].max(1)
-    _w = (_z0 >= 1.30-1e-4) & (_z1 <= 1.80+1e-4) & (_z1-_z0 > 1e-4)   # the pad slab
+    from carrier_v17 import PLATE_H as _PH
+    _w = (_z0 >= _PH-1e-4) & (_z1 <= _PH+PAD_H+1e-4) & (_z1-_z0 > 1e-4)   # the pad slab
     _W = _T[_w].reshape(-1,3)
     _d = np.hypot(_W[:,0]-_fx, _W[:,1]-_fy).min()
     gate(_d >= _BR,
@@ -202,6 +219,62 @@ for _fn, _fs, _ts in (("145_carrier_feb_v17.stl", STN_M, STN_F),
          f"(nearest pad material {_d:.2f} vs bore r{_BR}) — a full-circle r{_SR} pad "
          f"at {np.hypot(_tx-_fx,_ty-_fy):.2f}mm spacing overhangs it by "
          f"{_SR+_BR-np.hypot(_tx-_fx,_ty-_fy):.2f}mm")
+
+# ---- 9. STRIKE CLOCKING (#148, Ron: "30 is at the top, not 1") ----
+# The gate that was missing. #134 verified the MESH seating and nothing ever tied
+# the STRIKE-tooth bearings to the calendar engine, so a single round E1_BASE = 6.0
+# served all three satellites for six findings. They strike on different dates, so
+# they cannot share a bearing: feb was 10.84 deg out (306% of the drive window) and
+# leap 7.55 deg (213%) — both would simply have missed, and February would never
+# have been shortened. This asserts, per satellite, that its strike bar lands on the
+# strike line at its OWN strike date.
+print()
+from generator_engine_v17 import E1_BASE as _E1
+_PITCH = 360/31
+STRIKE_DATE = {"month": 30, "feb": 29, "leap": 28}     # from evalHour in the simulator
+DRIVE_WINDOW = 1.12
+for _k, _d in STRIKE_DATE.items():
+    _psi = ((19/12)*(_d-1)*_PITCH + _E1[_k]) % 30.0
+    _off = min(_psi, 30.0-_psi)
+    _mm  = np.deg2rad(_off)*18.11
+    gate(_mm < 0.15*DRIVE_WINDOW,
+         f"{_k} strike bar lands {_off:.3f} deg from the strike line on date {_d} "
+         f"= {_mm:.3f}mm of a {DRIVE_WINDOW}mm drive window "
+         f"({100*_mm/DRIVE_WINDOW:.0f}%)")
+
+# ---- 10. DRIVE WHEEL (#149) — measured off the emitted pieces ----
+print()
+import drive_v17 as DV
+_BOARD_TIP = 41.86
+_targets = {"24h": ("board teeth", 5.00, 9.00, None),
+            "23h": ("month", BAND["month"]+2.2, BAND["month"]+3.0, BAND["month"]+1.5),
+            "22h": ("feb",   BAND["feb"]+2.2,   BAND["feb"]+3.0,   BAND["feb"]+1.5),
+            "21h": ("leap",  BAND["leap"]+2.2,  BAND["leap"]+3.0,  BAND["leap"]+1.5)}
+for _i, (_nm, _off, _z0, _z1, _t) in enumerate(DV.ARMS):
+    _fn = f"{158+_i}_drive_{_nm}_v17.stl"
+    _T = tris(_fn); _V = _T.reshape(-1,3)
+    _r = np.hypot(_V[:,0], _V[:,1]).max()
+    _tgt, _tz0, _tz1, _mesh = _targets[_nm]
+    gate(abs(_r - DV.DTIP) < 0.05,
+         f"{_nm} arm tip reaches r{_r:.2f} (DTIP {DV.DTIP}) -> engages the "
+         f"{_tgt} at {_BOARD_TIP-(DV.DDR-_r):.2f}mm of the 1.12mm window")
+    gate(abs(_z0-_tz0) < 1e-6 and abs(_z1-_tz1) < 1e-6,
+         f"{_nm} arm sits {_z0:.2f}..{_z1:.2f} == the {_tgt} strike tip "
+         f"{_tz0:.2f}..{_tz1:.2f}")
+    if _mesh is not None:
+        gate(_z0 - _mesh > 0.3,
+             f"{_nm} arm clears the {_tgt} MESH lamina below it by {_z0-_mesh:.2f}mm "
+             f"(they must not be coplanar or the arm fouls the gear)")
+    _world = (180.0-_off) - (int(_nm[:2])/24)*360
+    gate(abs((_world % 360) - 180.0) < 1e-6,
+         f"{_nm} arm points at the board (world {_world%360:.1f}) at {_nm[:2]}:00")
+gate(DV.DDR - DV.DBODY - _BOARD_TIP > 1.0,
+     f"drive body clears the board teeth by {DV.DDR-DV.DBODY-_BOARD_TIP:.2f}mm")
+gate(DV.DDR - DV.DBODY - 40.94 > 1.0,
+     f"drive body clears the satellites by {DV.DDR-DV.DBODY-40.94:.2f}mm")
+gate(DV.SQ_HW - DV.POST_R > 1.0,
+     f"drive sleeve wall {DV.SQ_HW-DV.POST_R:.2f}mm — the square key must ENCLOSE the "
+     f"r{DV.POST_R} post, which the sun tower's K4 (4.42 across) cannot")
 
 print("\n" + ("  *** GATE FAILED: " + str(len(FAILS)) + " ***" if FAILS else "  ALL GATES PASS"))
 sys.exit(1 if FAILS else 0)
