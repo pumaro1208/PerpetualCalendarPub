@@ -265,6 +265,80 @@ def log_entry(line):
         f.write(f"- {stamp} · {line}\n")
 
 
+def derive_ams_mapping(sliced: Path, print_data: dict):
+    """Work out ams_mapping by asking the gcode what it needs and the AMS
+    where it is. Returns (mapping | None, explanation, reqs).
+
+    The sliced 3MF carries filament_type / filament_colour / the
+    filament_settings_id chain as slot-indexed lists — one entry per
+    T-index in the gcode. Each is resolved to a physical tray with the
+    same find_ams_slot() the compose pre-flight uses, so 'the filament
+    exists' and 'the payload points at it' can no longer disagree.
+    """
+    import compose_plate          # local, matching cmd_compose's pattern
+
+    try:
+        with zipfile.ZipFile(sliced) as z:
+            cfg = json.loads(z.read("Metadata/project_settings.config"))
+    except Exception as exc:                       # unreadable / not a 3MF
+        return None, f"could not read embedded config ({exc})", []
+
+    def as_list(key):
+        v = cfg.get(key, [])
+        return v if isinstance(v, list) else [v]
+
+    types, cols = as_list("filament_type"), as_list("filament_colour")
+    ids = as_list("filament_settings_id")
+    if not types or not cols:
+        return None, "embedded config declares no filaments", []
+
+    mapping, notes, reqs = [], [], []
+    for i, (ftype, col) in enumerate(zip(types, cols)):
+        # sub-brand lives in the preset name: "Bambu PLA Matte @BBL P1S..."
+        name = ids[i] if i < len(ids) else ""
+        sub = "Matte" if "matte" in name.lower() else (
+              "Basic" if "basic" in name.lower() else "")
+        hit = compose_plate.find_ams_slot(print_data, ftype, sub, col)
+        if hit is None:
+            return None, (f"T{i} wants {ftype} {sub} {col} — not loaded in "
+                          f"any AMS tray"), []
+        mapping.append(hit[1])
+        reqs.append((ftype, sub, col))
+        notes.append(f"T{i}={ftype} {sub} {col}→tray {hit[1]}")
+    return mapping, "; ".join(notes), reqs
+
+
+def mapping_is_valid(print_data: dict, mapping: list, reqs: list):
+    """Does each mapped tray actually HOLD the filament that T-index needs?
+
+    Deliberately looser than 'equals the derived mapping'. find_ams_slot
+    returns the FIRST tray matching a filament, but duplicates are normal
+    and useful — trays 2 and 3 both hold PLA Matte #000000 (same GFA01,
+    different spools), so pointing a plate at the fuller of the two is a
+    legitimate choice, not an error. Requiring exact equality with the
+    first match would refuse it. What must never pass is a tray holding
+    the WRONG filament, which is what printed cal-07 in white.
+    """
+    if len(mapping) != len(reqs):
+        return False, (f"payload maps {len(mapping)} filament(s) but the "
+                       f"gcode needs {len(reqs)}")
+    trays = {int(t.get("id", -1)): t
+             for u in print_data.get("ams", {}).get("ams", [])
+             for t in u.get("tray", [])}
+    for i, (slot, (ftype, sub, col)) in enumerate(zip(mapping, reqs)):
+        t = trays.get(slot)
+        if t is None:
+            return False, f"T{i} mapped to tray {slot}, which is not loaded"
+        got_col = (t.get("tray_color") or "").upper()
+        if (t.get("tray_type") != ftype
+                or sub.lower() not in (t.get("tray_sub_brands") or "").lower()
+                or not got_col.startswith(col.lstrip("#").upper())):
+            return False, (f"T{i} needs {ftype} {sub} {col} but tray {slot} "
+                           f"holds {t.get('tray_type')} "
+                           f"{t.get('tray_sub_brands')} #{got_col[:6]}")
+    return True, "every mapped tray holds the filament its T-index needs"
+
+
 def cmd_start(args):
     filename = Path(args.file).name
     link = connect()
@@ -273,17 +347,43 @@ def cmd_start(args):
         if state in ACTIVE_STATES:
             sys.exit(f"Printer is busy (state {state}) — not starting.")
 
+        derived, why, reqs = derive_ams_mapping(Path(args.file),
+                                                link.print_data())
+
         if args.ams_mapping:
             try:
                 mapping = [int(x) for x in args.ams_mapping.split(",")]
             except ValueError:
                 sys.exit(f"--ams-mapping must be comma-separated integers, "
                          f"got {args.ams_mapping!r}")
-        else:
+        elif args.ams_slot is not None:
             mapping = [args.ams_slot]
+        elif derived:
+            mapping = derived
+        else:
+            sys.exit("Cannot determine ams_mapping: " + (why or "unknown") +
+                     "\nPass --ams-mapping explicitly if you are sure.")
+
+        # The gcode says which filaments it needs; the AMS says where they
+        # are. A hand-typed mapping that disagrees prints in the wrong
+        # colour and nothing downstream notices — the compose pre-flight
+        # only checks the filament EXISTS, never that the start payload
+        # points at it (that is how cal-07 printed white on a black spec:
+        # --ams-slot defaulted to 0).
+        if reqs:
+            ok, verdict = mapping_is_valid(link.print_data(), mapping, reqs)
+            if not ok:
+                print(f"  REFUSING: {verdict}")
+                sys.exit(f"The gcode needs [{why}]. Derived mapping is "
+                         f"{derived}; re-run without "
+                         f"--ams-mapping/--ams-slot to use it.")
+            if mapping != derived:
+                print(f"  note: {mapping} differs from the derived {derived}, "
+                      f"but {verdict} — allowed (duplicate spools).")
 
         print(f"About to START PRINT: {filename} (plate {args.plate})")
-        print(f"  ams_mapping = {mapping}  (T-index -> AMS tray)")
+        print(f"  ams_mapping = {mapping}  (T-index -> AMS tray)"
+              + (f"  [{why}]" if derived else ""))
         if not args.yes:
             answer = input("Type 'yes' to start: ").strip().lower()
             if answer != "yes":
@@ -719,7 +819,10 @@ def main():
     p.add_argument("file", help="filename already on printer storage")
     p.add_argument("--plate", type=int, default=1)
     p.add_argument("--version-tag", help='part version for the log, e.g. "v16b"')
-    p.add_argument("--ams-slot", type=int, default=0)
+    # default is None, NOT 0: 0 is a real tray, so a default of 0 silently
+    # printed a black-specced plate in white (cal-07). Unset now means
+    # "derive it from the gcode + AMS".
+    p.add_argument("--ams-slot", type=int, default=None)
     p.add_argument("--ams-mapping",
                    help="explicit AMS tray mapping for multi-filament plates: "
                         "comma-separated 0-based tray indices ordered by gcode "

@@ -23,10 +23,21 @@ The venv is already built (`.venv/`, Python 3.12).
 1. **No print ever starts without an explicit "yes" from Ron in that
    conversation.** `start` prompts interactively; `--yes` exists only for
    after that confirmation has been given.
-2. Every job is appended to `print-log.md` (timestamp · filename ·
+2. **Read the AMS and show what is in every tray BEFORE asking for that
+   yes — every print, without being asked.** Print the tray listing
+   (type, sub-brand, colour) alongside the mapping the plate resolves to,
+   so the confirmation in rule 1 is given against real filament rather
+   than an assumption. `start` derives and validates the mapping itself
+   (see `derive_ams_mapping`), but that happens *after* the go-ahead and
+   is not visible in advance — the check exists to inform the decision,
+   not just to guard the payload. This rule is written because cal-07
+   printed a black-specced plate entirely in white: `--ams-slot` defaulted
+   to `0`, tray 0 held white PLA Basic, and nothing surfaced the mismatch
+   until the parts came off the bed.
+3. Every job is appended to `print-log.md` (timestamp · filename ·
    part version · outcome). `watch` records finished/failed outcomes.
-3. The access code lives only in `.env` (git-ignored).
-4. If the printer is unreachable, commands fail plainly — no silent retries.
+4. The access code lives only in `.env` (git-ignored).
+5. If the printer is unreachable, commands fail plainly — no silent retries.
 
 ## Remote start: firmware unlock (do not re-debug this)
 

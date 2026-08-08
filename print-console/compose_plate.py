@@ -18,15 +18,24 @@ Spec format (paths relative to the spec file):
   "filament_colour": "#000000",
   "bed_type": "Textured PEI Plate",
   "overrides": {"wall_loops": "3", "sparse_infill_density": "25%"},
+  "scale": 0.75,
   "parts": [
     {"stl": "...", "position": "center-right"},
     {"stl": "...", "rotate_x": 180, "z_offset": -0.45,
-     "position": "center-left"}
+     "position": "center-left", "scale": [1, 1, 0.5]}
   ]
 }
 position: "center-left" | "center-right" | "center" | [x, y] (mm, plate
 coords, 256x256 bed). Parts are dropped so min-Z sits on the bed, then
 z_offset is applied.
+
+scale: uniform factor or [sx, sy, sz], top-level (all parts) with an
+optional per-part override. Applied in model coords *before* rotation, so
+a non-uniform scale means axes as the STL was authored, not as it lands on
+the plate. Everything expressed in plate millimetres stays unscaled --
+position, z_offset, and the drop_components_* thresholds are compared
+against the already-scaled mesh. So when scaling a multi-colour pair, the
+registration z_offset must be pre-multiplied by the same factor.
 """
 
 import hashlib
@@ -544,6 +553,17 @@ def compose(spec_path: Path, out_path: Path) -> Path:
     for part in spec["parts"]:
         stl = (base / part["stl"]).resolve()
         verts, faces = load_stl(stl)
+        sc = part.get("scale", spec.get("scale"))
+        if sc is not None:
+            sx, sy, sz = (sc, sc, sc) if isinstance(sc, (int, float)) else sc
+            if min(sx, sy, sz) <= 0:
+                raise SystemExit(
+                    f"scale must be positive (a mirror would invert facet "
+                    f"winding): {stl.name} got {sc}")
+            if (sx, sy, sz) != (1, 1, 1):
+                verts = [(v[0] * sx, v[1] * sy, v[2] * sz) for v in verts]
+                print(f"  scaled {stl.name} by "
+                      f"{sx:g}/{sy:g}/{sz:g}")
         m = rot_matrix(part.get("rotate_x", 0), part.get("rotate_y", 0),
                        part.get("rotate_z", 0))
         verts = [apply_m(m, v) for v in verts]
