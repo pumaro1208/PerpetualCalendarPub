@@ -42,7 +42,8 @@ from shapely import affinity
 from generator import involute_profile, MD, ADD_F
 from generator_v13 import SUNORB, STN_M, write_stl
 from weld import stack
-from carrier_v17 import stn_xy, SEAT_R, POST_R, PAD_H, BOARD_BORE, POST_TOP
+from carrier_v17 import (stn_xy, SEAT_R, POST_R, PAD_H, BOARD_BORE, POST_TOP,
+                         SPIG_R, POST_STEP)
 
 PITCH   = 360/31
 R_NUM   = 33.5          # digit-centre ring: clear of the root circle 37.05 and of
@@ -123,8 +124,9 @@ def build():
         (0.0,     REC,     gear.difference(bot)),      # underside recesses
         (REC,     T-REC,   gear),                      # 2.4mm solid core
         (T-REC,   T,       gear.difference(top)),      # top-face recesses
-        (T,       T+PAD_H, Point(cx, cy).buffer(SEAT_R, 32)),
-        (T+PAD_H, POST_TOP, Point(cx, cy).buffer(POST_R, 48)),   # #147: assy 15.5
+        (T,       T+PAD_H,   Point(cx, cy).buffer(SEAT_R, 32)),
+        (T+PAD_H, POST_STEP, Point(cx, cy).buffer(POST_R, 48)),  # full 5.40 under the satellite
+        (POST_STEP, POST_TOP, Point(cx, cy).buffer(SPIG_R, 48)), # #152 spigot + shoulder
     ]))
     write_stl("150_board_daynums_white_v17.stl", stack([
         (0.0,   REC, bot),

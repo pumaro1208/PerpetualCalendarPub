@@ -38,6 +38,30 @@ from shapely.geometry import Point, LineString, Polygon
 from weld import weld, stack
 BORE_PRESS = 2.60          # press onto a design-2.70 post (prints 2.64) -> 0.04 interference
 POST_R     = 2.70          # #136 design-at-bore law
+# ---- #152 STEPPED POST (Ron's call) ----------------------------------------
+# The arm's problem was never grip length. It was that the arm SEATED ON THE ROTATING
+# SATELLITE'S TOP FACE across a 0.20 running clearance — so it had no datum at all, and
+# that is the float Ron felt at the bench ("the small posts do not have a tall enough
+# post to grab"). Adding length would not have fixed it; nothing was holding height.
+#
+# The post now steps. It stays full 5.40 through the satellite that rides it, then a
+# SHOULDER, then a 4.20 spigot the arm bottoms against. The shoulder is a stationary,
+# precisely-located face on the post itself, so the arm's height and squareness come
+# from the post instead of from a gear that is turning under it.
+#
+#   grip        2.80 / 4.20 = 0.67 diameters   (was 0.52 on the plain 5.40)
+#   shoulder    (5.40-4.20)/2 = 0.60 mm wide annulus
+#   spigot      Z = pi*4.20^3/32 = 7.27 mm^3, 47% of the full post's 15.5
+#   bonus       the #146 pad clip shrinks from 1.29 to 0.79mm of overhang
+#
+# WHY NOT SMALLER: 3.60 would give 0.78 diameters and a 0.90 shoulder, but drops the
+# spigot to 30% of section — and this post carries the entire upper stack plus the
+# strike impulse. WHY NOT THE COUNTERBORE that was considered first: a skirt dropping
+# around the satellite's r4.0 hub adds NO grip on the post and centres the arm through
+# post -> satellite bore -> hub OD -> skirt, two clearances instead of one. It is worse
+# concentricity than the bore it was meant to help. Costed and rejected.
+SPIG_R     = 2.10          # stepped spigot, design-at-bore
+BORE_SPIG  = 2.00          # arm bore on the spigot (same 0.10 nominal as BORE_PRESS)
 SEAT_R     = 3.50
 PAD_CLR    = 0.30          # keeps the pivot pad off the press-fit bore (#146)
 PAD_H      = 0.50          # pivot pad / thrust collar under each satellite
@@ -45,6 +69,10 @@ BOARD_BORE = 5.45          # RADIUS, on the star hub's r5.53 tube (#137 press)
 BAND       = (9.5, 16.0, 22.5)   # month / feb / leap mesh-band altitudes (#147)
 PLATE_H    = 2.80          # arm plate = the grip. 6.50 pitch - 3.00 sat - 0.20 clr - 0.50 pad
 POST_TOP   = 10.5          # board month post, LOCAL z (assy 15.5 = arm 1 plate top)
+POST_STEP  = 7.7           # LOCAL z of the shoulder (assy 12.7 = arm 1 plate BOTTOM).
+                           # Set by the satellite below: it occupies 9.5-12.5 and the arm
+                           # needs 0.20 over it, so the shoulder IS that 12.7 datum — the
+                           # clearance is now guaranteed by a face, not by hope.
 def stn_xy(s): 
     a=np.deg2rad(s); return SUNORB*np.cos(a), SUNORB*np.sin(a)
 
@@ -64,10 +92,11 @@ def part_02j_board():
     write_stl("144_board_02j_v17.stl", stack([
         (0.0,  t,        gear),
         (t,    t+PAD_H,  Point(cx,cy).buffer(SEAT_R,32)),   # month pivot pad (assy 9.0-9.5)
-        (t+PAD_H, POST_TOP, Point(cx,cy).buffer(POST_R,48)),  # post to assy 15.5
+        (t+PAD_H, POST_STEP, Point(cx,cy).buffer(POST_R,48)),  # full 5.40 through the satellite
+        (POST_STEP, POST_TOP, Point(cx,cy).buffer(SPIG_R,48)), # #152 spigot, arm bottoms here
     ]))
 
-def carrier_arm(name, from_stn, to_stn, z_bot, z_top, riser_top):
+def carrier_arm(name, from_stn, to_stn, z_bot, z_top, riser_top, step_z=None):
     """Plate spanning two stations + a riser at the far one. z are ASSEMBLY heights;
     the part prints from 0 (plate bottom on the bed). The pivot PAD sits on top of
     the plate at the far station: it is what the next satellite up actually rests
@@ -82,7 +111,7 @@ def carrier_arm(name, from_stn, to_stn, z_bot, z_top, riser_top):
     # no hole to press onto the post at all. Authoring the plate as one plane
     # polygon with a real interior ring is what makes that impossible to repeat.
     plate = LineString([(fx,fy),(tx,ty)]).buffer(4.6, 32) \
-                .difference(Point(fx,fy).buffer(BORE_PRESS, 48))
+                .difference(Point(fx,fy).buffer(BORE_SPIG, 48))   # #152: on the spigot
     # #146, Ron's eye: the pad must be CLIPPED clear of the bore. The stations are
     # only 4.81mm apart while the pad is r3.50 and the bore r2.60 — 6.10 of feature
     # in 4.81 of space — so a full-circle pad overhung the bore mouth by 1.29mm
@@ -92,12 +121,16 @@ def carrier_arm(name, from_stn, to_stn, z_bot, z_top, riser_top):
     # Clipping costs some thrust area and keeps ~296 deg of contact at the
     # satellite's bore edge, which is plenty for a hand-cranked demonstrator.
     pad = Point(tx,ty).buffer(SEAT_R, 48).difference(
-              Point(fx,fy).buffer(BORE_PRESS + PAD_CLR, 48))
-    write_stl(name, stack([
-        (0.0,   h,             plate),
-        (h,     h+PAD_H,       pad),                               # pivot pad, clipped
-        (h+PAD_H, h+(riser_top-z_top), Point(tx,ty).buffer(POST_R, 48)),
-    ]))
+              Point(fx,fy).buffer(BORE_SPIG + PAD_CLR, 48))
+    slabs = [(0.0, h,       plate),
+             (h,   h+PAD_H, pad)]                                  # pivot pad, clipped
+    if step_z is None:                                             # nothing stacks above
+        slabs.append((h+PAD_H, h+(riser_top-z_top), Point(tx,ty).buffer(POST_R, 48)))
+    else:                                                          # #152 stepped riser
+        s = step_z - z_bot                                         # shoulder, local
+        slabs.append((h+PAD_H, s, Point(tx,ty).buffer(POST_R,  48)))  # full through the sat
+        slabs.append((s, h+(riser_top-z_top), Point(tx,ty).buffer(SPIG_R, 48)))
+    write_stl(name, stack(slabs))
 
 def sun_spacer(h=1.0, r=5.30, sq_hw=2.25, name="147_sun_spacer_1mm_v17.stl"):
     """Base shim under the sun tower — and Ron's "the sun gear is low" in one part.
@@ -122,7 +155,9 @@ if __name__=="__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     part_02j_board()
     #                                          plate_bot plate_top riser_top
-    carrier_arm("145_carrier_feb_v17.stl",  STN_M, STN_F, 12.7, 15.5, 22.0)
+    # arm 1's riser steps at 19.2 (arm 2's plate bottom). arm 2's riser does NOT step:
+    # nothing stacks on the leap post, so it keeps full section for strength.
+    carrier_arm("145_carrier_feb_v17.stl",  STN_M, STN_F, 12.7, 15.5, 22.0, step_z=19.2)
     carrier_arm("146_carrier_leap_v17.stl", STN_F, STN_L, 19.2, 22.0, 27.0)
     sun_spacer()
     print("  carrier chain: board 02j + feb arm + leap arm + base spacer")

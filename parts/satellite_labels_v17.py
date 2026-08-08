@@ -44,16 +44,27 @@ from generator_v13 import write_stl
 from weld import stack
 import generator_engine_v17 as E
 
-CAP, STROKE, CH_W, KERN = 2.60, 0.45, 1.45, 0.75
+CAP, STROKE, CH_W, KERN = 2.60, 0.42, 1.45, 0.75
+# #153 STROKE 0.45 -> 0.42: one whole outer-wall bead at a 0.4 nozzle. Between 1 and 2
+# beads the slicer must choose either a single fat bead or two starved ones, and it can
+# switch between them along a curve — that inconsistency is most of what makes a stroke
+# font look ragged. 0.42 is exactly one bead; the next clean value up is 0.84.
 # KERN must exceed STROKE or adjacent letters fuse: the gap between one glyph's
 # right stroke edge and the next's left edge is KERN - STROKE, and at 0.40 vs 0.55
 # that is negative. The first cut read as 18 blobs instead of 36 letters.
 R_MID   = 10.85          # label centre radius — see the section note above
-REC     = 0.50           # engraving depth
+REC     = 0.40           # engraving depth — #153. 0.50 is TWO AND A HALF layers at 0.20,
+                         # so it rounded to 0.4 or 0.6 unpredictably and the letter depth
+                         # varied across the wheel. Went DOWN to 0.40 (two whole layers)
+                         # rather than up to 0.60, on strength: the groove sits in a
+                         # 1.5mm bar that takes the drive impulse, and 0.60 would have
+                         # left 0.90 of section where 0.40 leaves 1.10 — about 19% more
+                         # bending capacity for no loss of legibility, because the
+                         # contrast here comes from the WHITE FILAMENT, not from depth.
 Z_BAR   = 3.00           # top of a finger bar
 Z_LAM   = 1.50           # top of the mesh lamina
 ID_R    = 6.00           # identity ring: inside the label ring (8.05) and outside the hub
-ID_CAP, ID_STK, ID_W, ID_K = 2.00, 0.45, 1.10, 0.70
+ID_CAP, ID_STK, ID_W, ID_K = 2.00, 0.42, 1.10, 0.70   # #153: one bead
 WHEEL   = {"month": ("1", "MONTH"), "feb": ("2", "FEB"), "leap": ("3", "LEAP")}
 
 TOOTH_MONTH = {0:'AUG', 1:'JAN', 2:'JUN', 3:'NOV', 4:'APR', 5:'SEP',

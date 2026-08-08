@@ -1,0 +1,84 @@
+{
+  "name": "plate-50-engine-reprint-1c",
+  "version_tag": "#152 ENGINE REPRINT, SINGLE COLOUR \u2014 fixture r63, three sun tower pieces, both carrier arms. Companion to plate-49; split off so the two-colour parts are not hostage to the 34cm3 fixture. 157_fixture_r63 REPLACES 148_fixture_r62: the key now reaches 29.5 and carries the drive post to 26.0, because at 6.5 pitch the old key stopped short and left the top sun pieces free to rotate, which destroys the #134 clocking. Sun tower piece is now 6.50 tall (band 1.5 + slim core 5.0) \u2014 PRINT THREE. The 5.0 is taken in the piece itself and NOT as a stack of 0.5mm shims: a 0.5mm shim prints at 2.5 layers, rounds to 0.4 or 0.6, and that z error walks the mesh lamina off its band. Carrier arms carry the #152 stepped bore (4.00 on the 4.20 spigot) and arm 1's riser steps at 19.2 for arm 2; arm 2's riser does NOT step \u2014 nothing stacks on the leap post, so it keeps full section. 147_sun_spacer is byte-identical to what is already printed \u2014 DO NOT reprint it. 6 objects, flat, no supports, xy-comp -0.06, seam aligned. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "40",
+    "small_perimeter_speed": "25",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "30",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/157_fixture_r63_v17.stl",
+      "position": [
+        128,
+        64
+      ]
+    },
+    {
+      "stl": "../../parts/stl/140_sun_tower_piece_v17.stl",
+      "position": [
+        60,
+        150
+      ]
+    },
+    {
+      "stl": "../../parts/stl/140_sun_tower_piece_v17.stl",
+      "position": [
+        90,
+        150
+      ]
+    },
+    {
+      "stl": "../../parts/stl/140_sun_tower_piece_v17.stl",
+      "position": [
+        120,
+        150
+      ]
+    },
+    {
+      "stl": "../../parts/stl/145_carrier_feb_v17.stl",
+      "position": [
+        165,
+        150
+      ]
+    },
+    {
+      "stl": "../../parts/stl/146_carrier_leap_v17.stl",
+      "position": [
+        195,
+        150
+      ]
+    }
+  ]
+}

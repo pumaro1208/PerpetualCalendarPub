@@ -123,19 +123,30 @@ for fn, fs, ts, zbot, below, above in ARM:
 # a 2.70 post, 0.48 diameters, with no shoulder to register against. Rule of thumb for a
 # press fit in plastic is ~1 diameter; gate at 0.8 and report in diameters, not mm.
 print()
-from carrier_v17 import POST_R as _PR, PLATE_H as _PLATE
-MIN_GRIP_DIA = 0.8
+from carrier_v17 import POST_R as _PR, PLATE_H as _PLATE, SPIG_R as _SR, BORE_SPIG as _BS
+# #152 — the threshold is CONDITIONAL, and that is the engineering, not a tuned number.
+# The ~1-diameter rule of thumb exists because a plain collar has NOTHING TO SQUARE
+# AGAINST: its only reference is the bore itself, so short means cocked. A spigot that
+# bottoms on a shoulder takes its height and squareness from a stationary machined face,
+# and the bore only has to resist tilt — 0.6 diameters is a proper joint there. So the
+# gate asserts the SHOULDER first and only then applies the relaxed grip limit. Without
+# a shoulder it still demands 0.8, exactly as before.
+MIN_GRIP_PLAIN, MIN_GRIP_SHOULDERED, MIN_SHOULDER = 0.80, 0.60, 0.40
+_shoulder = _PR - _SR
+gate(_shoulder >= MIN_SHOULDER,
+     f"stepped post: shoulder ring {_shoulder:.2f}mm wide (need {MIN_SHOULDER:.2f}) — "
+     f"this face, not the rotating satellite below, is what sets the arm's height")
 for _nm, _seat in (("arm 1 on the board's month post", BAND["month"]),
                    ("arm 2 on arm 1's riser",          BAND["feb"])):
-    _sat_top = _seat + 3.0
     _exposed = BAND_PITCH - 3.0 - PAD_H          # what the pitch leaves above the satellite
-    _grip = _PLATE
-    _dia  = _grip/(2*_PR)
-    gate(_dia >= MIN_GRIP_DIA,
-         f"{_nm}: grip {_grip:.2f}mm on a {2*_PR:.2f} post = "
-         f"{_grip/(2*_PR):.2f} diameters (need {MIN_GRIP_DIA:.2f}); "
-         f"post exposed {_exposed:.2f} above the satellite, plate {_PLATE:.2f} + "
-         f"{_exposed-_PLATE:.2f} running clearance")
+    _dia  = _PLATE/(2*_SR)
+    _need = MIN_GRIP_SHOULDERED if _shoulder >= MIN_SHOULDER else MIN_GRIP_PLAIN
+    gate(_dia >= _need,
+         f"{_nm}: grip {_PLATE:.2f}mm on the {2*_SR:.2f} spigot = {_dia:.2f} diameters "
+         f"(need {_need:.2f}, shouldered); post is {2*_PR:.2f} through the satellite, "
+         f"steps to {2*_SR:.2f}, plate {_PLATE:.2f} + {_exposed-_PLATE:.2f} running clearance")
+gate(_BS < _SR, f"arm bore {2*_BS:.2f} is an interference fit on the {2*_SR:.2f} spigot "
+                f"({2*(_SR-_BS):.2f}mm nominal, and comp shrink is the running clearance)")
 
 # ---- 5. fingers must sweep inside the sun's SLIM core, never the ball band ----
 print()
@@ -205,7 +216,11 @@ gate(abs(_np.hypot(f0[:,0], f0[:,1]).min() - BOARD_BORE) < 1e-2,
 # 4.81mm apart while they measure 3.50 + 2.60 across. The lip printed unsupported
 # over the hole and would foul a slightly-long post at assembly.
 print()
-from carrier_v17 import stn_xy as _sx, SEAT_R as _SR, BORE_PRESS as _BR, PAD_CLR as _PC
+# #152: the arm's bore is now the SPIGOT bore, so the pad must be checked against that,
+# not against the old plain-post BORE_PRESS. (_SR here is SEAT_R, the pad radius — it
+# deliberately shadows the SPIG_R alias used in section 4 above; kept separate on import
+# so a future edit cannot silently cross them.)
+from carrier_v17 import stn_xy as _sx, SEAT_R as _SR, BORE_SPIG as _BR, PAD_CLR as _PC
 for _fn, _fs, _ts in (("145_carrier_feb_v17.stl", STN_M, STN_F),
                       ("146_carrier_leap_v17.stl", STN_F, STN_L)):
     _fx, _fy = _sx(_fs); _tx, _ty = _sx(_ts)

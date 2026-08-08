@@ -1,0 +1,111 @@
+{
+  "name": "plate-49-engine-reprint-2c",
+  "version_tag": "#152 + #153 ENGINE REPRINT, TWO COLOUR \u2014 board + day numbers and all three labelled receivers + their ink. SUPERSEDES everything from plate-43/45/47: those parts were correct when printed but the spec moved under them twice. #147 raised the band pitch 5.0 -> 6.5, which makes the board's month post taller; #148 replaced the single shared strike-bar bearing (E1_BASE 6.0, unchanged since #110) with a per-satellite one, because the three satellites strike on different dates (month 30, feb 29, leap 28) and cannot share a phase \u2014 feb was 306% and leap 213% of the 1.12mm drive window out of position, so February would never have been shortened and the leap tooth would never have fired. #152 STEPPED POST: the board's month post now runs full 5.40 through the satellite that rides it, then a 0.60mm SHOULDER, then a 4.20 spigot the carrier arm bottoms against. That shoulder is the point \u2014 the arm used to seat on the ROTATING satellite's top face across a 0.20 running clearance, so it had no datum at all, which is the float Ron felt at the bench. Grip goes 0.52 -> 0.67 diameters and the #146 pad overhang shrinks 1.29 -> 0.79. #153 TEXT: satellite stroke 0.45 -> 0.42 (exactly one outer-wall bead at a 0.4 nozzle \u2014 between 1 and 2 beads the slicer alternates between one fat bead and two starved ones along a curve, which is most of what makes a stroke font look ragged), and the engraving depth 0.50 -> 0.40, two WHOLE layers at 0.20 instead of two and a half, which had been rounding unpredictably and varying the letter depth across the wheel. Depth went DOWN not up on strength: the groove sits in a 1.5mm bar that takes the drive impulse. Legibility does not suffer because the contrast comes from the white filament, not the depth. Board text left ALONE at stroke 0.70 \u2014 it is proven on hardware and not worth regressing for a marginal gain. Seam set ALIGNED (on a letter counter the loop is a few mm round, so a scattered seam blob is a large fraction of it), precise_outer_wall on, outer wall 40 and top surface 30, flush multiplier 1.3 to stop black bleeding into the white inlay. NO IRONING \u2014 it smears one filament across the other on a two-colour top surface. AMS slot 1 BLACK, slot 2 WHITE. Each ink body carries its OWN registration offset from its host because compose centres every object on its own bbox and those centres differ \u2014 do not tidy them. 8 objects, flat, no supports, xy-comp -0.06. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "40",
+    "small_perimeter_speed": "25",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "30",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1",
+    "flush_multiplier": "1.3"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/149_board_02k_numbered_v17.stl",
+      "position": [
+        80,
+        105
+      ]
+    },
+    {
+      "stl": "../../parts/stl/150_board_daynums_white_v17.stl",
+      "position": [
+        79.949,
+        105.389
+      ],
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    },
+    {
+      "stl": "../../parts/stl/151_receiver_month_lab_v17.stl",
+      "position": [
+        190,
+        68
+      ]
+    },
+    {
+      "stl": "../../parts/stl/154_sat_ink_month_v17.stl",
+      "position": [
+        189.467,
+        67.322
+      ],
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    },
+    {
+      "stl": "../../parts/stl/152_receiver_feb_lab_v17.stl",
+      "position": [
+        190,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/155_sat_ink_feb_v17.stl",
+      "position": [
+        190.404,
+        127.819
+      ],
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    },
+    {
+      "stl": "../../parts/stl/153_receiver_leap_lab_v17.stl",
+      "position": [
+        190,
+        188
+      ]
+    },
+    {
+      "stl": "../../parts/stl/156_sat_ink_leap_v17.stl",
+      "position": [
+        189.982,
+        187.42
+      ],
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    }
+  ]
+}
