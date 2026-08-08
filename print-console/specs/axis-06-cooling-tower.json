@@ -1,0 +1,61 @@
+{
+  "name": "axis-06-cooling-tower",
+  "version_tag": "MECHANICAL CALENDAR AXIS \u2014 axis-05 BOSL2 parts + a SACRIFICIAL COOLING TOWER (Ron idea: reproduce why the bottom thread came out perfect \u2014 it shared every layer with the other objects, giving ~5.5s/layer for the fan to set the crests; the top printed ALONE above z28 and collapsed to the speed floor). cooling_tower.stl = solid dia10 x 97mm white pillar at [105,82], ~30mm from the bolt, 8mm brim, SNAP OFF AND DISCARD after. It gives the bolt top a travel-away destination AND enough per-layer path that slow_down_layer_time is actually reachable above slow_down_min_speed 12 (the real axis-05 flaw: a lone bolt-top ring hit the 12mm/s floor and finished in ~3s, so the 20s target was never met). With the tower the layer reaches the target above the floor, so slow_down_layer_time is dialed 20 -> 12 (still 2x the proven-good 5.5s bottom) and runtime drops accordingly. Everything else identical to axis-05: BOSL2 threads (pitch 2.5, 1.35mm radial, verified in mesh), SUPPORTS OFF (non-negotiable \u2014 supports pack the nut bore), outer wall 120 / accel 2000, 8mm brim, 4 walls. Tower brim (y69-95) clears bolt brim (y108-148). Discard the tower; keep bolt + 2 nuts.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_colour": "#FFFFFF",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Basic",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "4",
+    "sparse_infill_density": "35%",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "8",
+    "brim_object_gap": "0",
+    "slow_down_layer_time": "12",
+    "slow_down_min_speed": "12",
+    "outer_wall_speed": "120",
+    "outer_wall_acceleration": "2000",
+    "default_acceleration": "4000"
+  },
+  "parts": [
+    {
+      "stl": "../../../mainaxis_extended_1.stl",
+      "position": [
+        105,
+        128
+      ]
+    },
+    {
+      "stl": "../../../mainaxis_nut_1.stl",
+      "position": [
+        160,
+        105
+      ]
+    },
+    {
+      "stl": "../../../mainaxis_jamnut.stl",
+      "position": [
+        160,
+        155
+      ]
+    },
+    {
+      "stl": "../../../cooling_tower.stl",
+      "position": [
+        105,
+        82
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}
