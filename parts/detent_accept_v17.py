@@ -111,10 +111,20 @@ gate(True, "star z 3.40..5.00: flush under the board, 0.90 over the fixture plat
 mS=trimesh.load("stl_v13/164_detent_star_v17.stl")
 gate(mS.bounds[1][0]<31 and abs(mS.bounds[0][1])<31,
      f"star OD {max(abs(mS.bounds[0][0]),mS.bounds[1][0]):.1f} — day numbers (r31.9..35.1) stay readable")
+from detent_v17 import PLATE_W_EDGE
 for hf,tag,sgn in (("163_detent_holder_v17","south",-1),("166_detent_holder_north_v17","north",+1)):
-    hb=trimesh.load(f"stl_v13/{hf}.stl").bounds
-    edge = hb[1][1] if sgn<0 else hb[0][1]
-    gate(sgn*edge>=38.55, f"{tag} holder butt face y{edge:+.1f} clear of the plate edge (±38.0)")
+    m2=trimesh.load(f"stl_v13/{hf}.stl")
+    sec=m2.section(plane_origin=[0,0,1.0],plane_normal=[0,0,1])
+    V=np.array(sec.vertices)[:,:2]
+    east=V[V[:,0]>0]                       # body region, east of the lip
+    butt=(east[:,1].max() if sgn<0 else east[:,1].min())
+    gate(abs(abs(butt)-38.0)<0.05,
+         f"{tag} holder butt face y{butt:+.2f} AT the plate edge ({'-' if sgn<0 else '+'}38.0) — locates y")
+    west=V[V[:,0]<-20]                     # lip region
+    lipx=west[:,0].max()
+    gate(abs(lipx-PLATE_W_EDGE)<0.05,
+         f"{tag} lip inner face x{lipx:+.2f} AT the plate west edge ({PLATE_W_EDGE}) — locates x; "
+         f"residual comp slop 0.12mm = 0.22 deg station error = 6% of the strike window")
 mSp=trimesh.load("stl_v13/165_detent_spring_med_v17.stl")
 sb=mSp.bounds
 gate(abs(sb[1][2]-sb[0][2]-2.0)<0.02, f"spring is one flat 2.0mm piece (h {sb[1][2]-sb[0][2]:.2f}) — prints in minutes, consumable")

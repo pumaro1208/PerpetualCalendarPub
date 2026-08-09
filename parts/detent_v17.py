@@ -110,7 +110,13 @@ def board_sockets():
 
 # ---- holder (rev B: pocket, no slots) + printed springs -------------------
 HX0, HX1   = 8.0, 56.0
-HY_S, HY_N = -52.0, -38.6     # north face butts the fixture plate edge (-38)
+HY_S, HY_N = -52.0, -38.0     # butt face AT the plate edge (design-at-bore: prints
+                              # 0.06 clear). #157b: positioning is not optional — a
+                              # 1mm holder placement error is 1.87 deg of station
+                              # error (1.87deg/mm at the r30.6 seat), half the strike
+                              # window. So the holder REGISTERS on the fixture:
+PLATE_W_EDGE = -29.25         # the plate's west edge, board frame (measured off 157)
+LIP_X0       = -33.0          # corner-wrap lip: hugs the west edge, z0..2.5
 BASE_T     = 2.5
 POCKET_X   = 44.0             # pocket centre (anchor of the leaf)
 TAB        = (10.0, 8.3)      # spring tab x,y  (pocket y = 8.0 -> 0.06 press)
@@ -135,7 +141,12 @@ def _seat_y(nr=NOSE_R):
     return -good   # kept sign convention: south seat has negative y-ish magnitude
 
 def holder(name="163_detent_holder_v17.stl"):
-    base = Polygon([(HX0,HY_S),(HX1,HY_S),(HX1,HY_N),(HX0,HY_N)])
+    # base extended west to wrap the plate's SW corner: the north face butts the
+    # south edge (locates y) and the lip's inner face butts the west edge
+    # (locates x). Position comes from the fixture, not from tape.
+    base = Polygon([(LIP_X0,HY_S),(HX1,HY_S),(HX1,HY_N),(LIP_X0,HY_N)])
+    lip  = Polygon([(LIP_X0,HY_N),(PLATE_W_EDGE,HY_N),(PLATE_W_EDGE,-34.0),(LIP_X0,-34.0)])
+    base = unary_union([base, lip])
     # block CLIPPED at the butt face: a full square at the pocket straddled the
     # plate edge and collided with the fixture plate (gate caught it at y-37)
     blk  = Polygon([(POCKET_X-7,HY_S),(POCKET_X+7,HY_S),(POCKET_X+7,HY_N),(POCKET_X-7,HY_N)])
@@ -177,7 +188,9 @@ def spring(width, tag):
 def holder_north(name="166_detent_holder_north_v17.stl"):
     """#157: the second bridge. Mirror of 163 about the x-axis — butts the NORTH
     plate edge (+38). Takes the same springs, flipped over."""
-    base = Polygon([(HX0,-HY_S),(HX1,-HY_S),(HX1,-HY_N),(HX0,-HY_N)])
+    base = Polygon([(LIP_X0,-HY_S),(HX1,-HY_S),(HX1,-HY_N),(LIP_X0,-HY_N)])
+    lip  = Polygon([(LIP_X0,-HY_N),(PLATE_W_EDGE,-HY_N),(PLATE_W_EDGE,34.0),(LIP_X0,34.0)])
+    base = unary_union([base, lip])
     blk  = Polygon([(POCKET_X-7,-HY_S),(POCKET_X+7,-HY_S),(POCKET_X+7,-HY_N),(POCKET_X-7,-HY_N)])
     pocket = Polygon([(POCKET_X-TAB[0]/2, -WIRE_Y-4.0),
                       (POCKET_X+TAB[0]/2, -WIRE_Y-4.0),
