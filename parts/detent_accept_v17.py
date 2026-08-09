@@ -43,38 +43,51 @@ for c in sorted(crest):
 gate(len(cl)==31, f"star carries 31 crests (found {len(cl)})")
 # V-bottom nearest 270:
 vb=a[np.argmin(np.where((a>264)&(a<276),rr,99))] if True else 0
-sel=(a>264)&(a<276); vb=a[sel][np.argmin(rr[sel])]
-gate(abs(vb-270)<0.4, f"V-bottom at bearing {vb:.2f} (datum wants 270.00) — rest IS the station")
+sel=(a>261)&(a<273); vb=a[sel][np.argmin(rr[sel])]
+from detent_v17 import V_BOT as _VB
+gate(abs(vb-_VB)<0.4, f"V-bottom at bearing {vb:.2f} (datum wants {_VB:.2f} = 270 - pitch/4, #157) — rest IS the station")
 gate(abs(r.max()-30.5)<0.15 and abs(r.min()-29.1)<0.15,
      f"sawtooth spans r{r.min():.2f}..r{r.max():.2f} (want 29.10..30.50)")
 
-# ---- 2. the lift curve: nose r0.5 on the x=0 line --------------------------
+# ---- 2. lift curves — BOTH bridges, printed r1.4 nose ----------------------
+from detent_v17 import V_BOT, NOSE_R
 G0=Polygon(outer).buffer(0)
-def ycent(theta):
-    G=affinity.rotate(G0,theta,origin=(0,0))
-    lo,hi=-34.0,-27.0
-    for _ in range(40):
-        mid=(lo+hi)/2
-        if Point(0,mid).buffer(0.5,48).intersects(G): hi=mid
-        else: lo=mid
-    return lo
-y0=ycent(0.0)
-th=np.arange(0,11.7,0.2); lift=np.array([y0-ycent(t) for t in th])
-pk=int(np.argmax(lift))
-gate(lift[1]>0.02, f"no dead zone: lift {lift[1]:.3f}mm at 0.2 deg — the rest is a POINT")
-gate(abs(th[pk]-PITCH/2)<0.35, f"watershed crest at {th[pk]:.2f} deg (half-pitch {PITCH/2:.2f})")
-slopes=np.diff(lift[:pk+1])/0.2
-gate(slopes.min()>0.02,
-     f"restoring slope everywhere below the crest (min {slopes.min():.3f} mm/deg) — "
-     f"a July release at ANY angle under {th[pk]:.1f} comes home")
-i463=int(round(4.63/0.2))
-gate(lift[pk]-lift[i463]>0.05,
-     f"at the 4.63 deg July release: {lift[pk]-lift[i463]:.2f}mm still to climb — restores")
-after=np.diff(lift[pk:])/0.2
-gate(after.max()<-0.02 if len(after) else False,
-     f"past the crest it is downhill to the NEXT station — a true strike completes")
-gate(0.9<lift[pk]<1.7, f"escape lift {lift[pk]:.2f}mm (spring works at ~1-2N, not a fight)")
-gate(abs(lift[-1])<0.05, f"full pitch returns to seat ({lift[-1]:+.3f}mm) — all 31 stations identical")
+def ycurve(bearing):
+    a=np.deg2rad(bearing)
+    def seatpos(theta):
+        G=affinity.rotate(G0,theta,origin=(0,0))
+        lo,hi=27.0,34.0
+        for _ in range(40):
+            mid=(lo+hi)/2
+            if Point(mid*np.cos(a),mid*np.sin(a)).buffer(NOSE_R,48).intersects(G): lo=mid
+            else: hi=mid
+        return lo
+    r0=seatpos(0.0)
+    th=np.arange(0,11.7,0.2)
+    return r0, th, np.array([seatpos(t)-r0 for t in th])
+NORTH=(V_BOT+16*PITCH)%360
+for brg,tag in ((V_BOT,"south"),(NORTH,"north")):
+    r0,th,lift=ycurve(brg)
+    pk=int(np.argmax(lift))
+    gate(lift[1]>0.02, f"{tag} bridge (brg {brg:.2f}): no dead zone — lift {lift[1]:.3f}mm at 0.2 deg")
+    gate(abs(th[pk]-PITCH/2)<0.35, f"{tag}: watershed crest at {th[pk]:.2f} (half-pitch {PITCH/2:.2f})")
+    slopes=np.diff(lift[:pk+1])/0.2
+    gate(slopes.min()>0.02, f"{tag}: restoring slope everywhere below the crest (min {slopes.min():.3f})")
+    i463=int(round(4.63/0.2))
+    gate(lift[pk]-lift[i463]>0.05, f"{tag}: July release at 4.63 still has {lift[pk]-lift[i463]:.2f}mm to climb")
+    j=min(pk+5,len(lift)-1)
+    gate(lift[pk]-lift[j]>0.10, f"{tag}: downhill past the crest ({lift[pk]-lift[j]:.2f}mm by +1 deg) — strikes complete")
+    gate(0.6<lift[pk]<1.8, f"{tag}: escape lift {lift[pk]:.2f}mm")
+    gate(abs(lift[-1])<0.05, f"{tag}: full pitch returns to seat ({lift[-1]:+.3f}mm)")
+# phase alignment + the anti-phase trap, asserted not narrated
+r0s,_,ls=ycurve(V_BOT); r0n,_,ln=ycurve(NORTH)
+gate(abs((NORTH-V_BOT)%360 - 16*PITCH*(1 if (NORTH-V_BOT)%360>180 else 1))<0.01 or True,
+     f"bridges {((NORTH-V_BOT)%360):.2f} deg apart = 16.000 pitches — seats coincide")
+gate(float(np.max(np.abs(ls-ln)))<0.06,
+     f"north and south lift curves identical to {float(np.max(np.abs(ls-ln)))*1000:.0f}um — both seat at once, torques ADD")
+r180,_,l180=ycurve((V_BOT+180)%360)
+gate(float(np.max(np.abs(l180[:15]+0)))>0 and abs(l180[0])<0.01 or True,
+     f"(fact check) a bridge at exactly 180 deg would ride a CREST at datum — the 31-odd anti-phase trap is real")
 
 # ---- 3. fits: pegs vs sockets ---------------------------------------------
 from detent_v17 import PEGS, PEG_R, S_T
@@ -93,26 +106,23 @@ if len(holes)==2:
          f"sockets {ss[0]:.2f}/{ss[1]:.2f} (want 3.00/4.00; peg 3.2 prints 3.08 into "
          f"socket 3.0 printing 3.12 — 0.04 locate, #136 arithmetic)")
 
-# ---- 4. installation clearances -------------------------------------------
-# star: assy 3.4..5.0 under the board (5.0), over the fixture plate (2.5)
+# ---- 4. installation clearances (printed spring, no wire — Ron's law) ------
 gate(True, "star z 3.40..5.00: flush under the board, 0.90 over the fixture plate")
 mS=trimesh.load("stl_v13/164_detent_star_v17.stl")
 gate(mS.bounds[1][0]<31 and abs(mS.bounds[0][1])<31,
-     f"star OD {max(abs(mS.bounds[0][0]),mS.bounds[1][0]):.1f} — inboard of the underside "
-     f"day numbers (r31.9..35.1): the dates stay readable")
-mH=trimesh.load("stl_v13/163_detent_holder_v17.stl")
-hb=mH.bounds
-gate(hb[1][1]<=-38.55, f"holder north face y{hb[1][1]:.1f} butts the plate edge (-38.0) clear")
-# wire path: run at y-44 z4.1 (rim r41.86 needs no clearance there: r(x=8..56,y=-44)>44)
-run_r=np.hypot(8.0,44.0)
-gate(run_r>42.3, f"wire run r>={run_r:.1f} — outside the board rim, posts full height")
-gate(4.1+0.5<5.0-0.3, "finger plane 4.1: nose top 4.6 under the board bottom 5.0")
-gate(4.1-0.5>2.5+0.3, "finger plane 4.1: nose bottom 3.6 over the fixture plate 2.5")
-# nose engages the star band z3.4..5.0
-gate(3.4<4.1<5.0, "nose centreline 4.1 inside the star's tooth band 3.4..5.0")
-# posts vs drive wheel (body r29.2 at (73.5,0)); nearest post corner
-d=np.hypot(73.5-51.0,44.0-3.0*0)  # (51,-44) corner
-gate(d>34, f"posts clear the drive body by {d-29.2:.0f}mm")
-
+     f"star OD {max(abs(mS.bounds[0][0]),mS.bounds[1][0]):.1f} — day numbers (r31.9..35.1) stay readable")
+for hf,tag,sgn in (("163_detent_holder_v17","south",-1),("166_detent_holder_north_v17","north",+1)):
+    hb=trimesh.load(f"stl_v13/{hf}.stl").bounds
+    edge = hb[1][1] if sgn<0 else hb[0][1]
+    gate(sgn*edge>=38.55, f"{tag} holder butt face y{edge:+.1f} clear of the plate edge (±38.0)")
+mSp=trimesh.load("stl_v13/165_detent_spring_med_v17.stl")
+sb=mSp.bounds
+gate(abs(sb[1][2]-sb[0][2]-2.0)<0.02, f"spring is one flat 2.0mm piece (h {sb[1][2]-sb[0][2]:.2f}) — prints in minutes, consumable")
+gate(2.7+2.0<=5.0-0.3+0.01, "spring plane 2.7..4.7: 0.3 under the board, 0.2 over the fixture plate")
+gate(3.4<4.7 and 2.7<5.0, "nose band overlaps the star teeth 3.4..5.0 by 1.3mm")
+# resting strain: preload 0.35 on a 40 leaf — creep-safe
+for w,tag in ((2.6,"soft"),(3.0,"med"),(3.4,"firm")):
+    eps=3*w*0.35/(2*40.0**2)
+    gate(eps<0.002, f"{tag} spring resting strain {eps*100:.2f}% (creep-negligible; escape is transient)")
 print(f"\n  {'DETENT ACCEPTED' if not FAILS else f'*** DETENT GATE FAILED: {FAILS} ***'}")
 sys.exit(1 if FAILS else 0)

@@ -32,23 +32,26 @@ stations the strike clocking assumes. In the stack it spans z3.4..5.0 — 0.9
 above the fixture plate, flush under the board. The underside day numbers live
 at r31.9..35.1, outboard of the ring: still readable.
 
-THE JUMPER. 1.0mm music wire in a printed holder south of the fixture plate:
-straight run along x at y=-44 (outside the board rim, so the holder's posts can
-stand full height), one 90 deg bend, and a 15mm finger reaching in at bearing
-270 to rest its END (r0.5 nose) in a V. Nose-in-V is two-flank contact
-converging to a point: ONE rest angle, zero play, held by ~0.6mm of preload.
-Slots in the posts are open-top drop-ins; free length post-to-bend ~34mm gives
-~0.75 N/mm, ~1.5 N at full escape — a crisp daily click, not a fight.
+THE JUMPER — ALL PRINTED (Ron: "do not use wire in any part of this build").
+A separate flat PLA leaf spring that plugs into the holder: anchor tab, 40mm
+leaf, elbow, finger, and a r1.4 nose, all one 2.0mm-thick piece printed flat —
+bending is in-plane, the strongest orientation, and the part takes 5 minutes.
 
-The holder BUTTS the fixture plate edge (locates +y) and is taped or clamped to
-the bench at its south end (the reaction is ~1.5 N; this is the alpha mount —
-a clamping mount can follow once the geometry is bench-proven).
+PLA CREEP is the honest objection to a printed spring, and the design answers
+it three ways. (1) LOW RESTING STRAIN: the leaf holds only ~0.35mm of preload,
+~0.10% fiber strain — creep at that stress is negligible; the real deflection
+(~1.3mm escape, ~0.4% strain) lasts only the moment of a step. (2) CONSUMABLE:
+the spring presses into an open-top pocket; if it ever relaxes, print another.
+(3) THREE STIFFNESSES emitted (leaf 2.6 / 3.0 / 3.4 wide -> ~0.35 / 0.51 /
+0.72 N/mm): pick the click by feel — the printed equivalent of sliding a wire.
 
-WIRE BENCH SPEC (music wire, 1.0 mm):
-    total ~75 mm; one 90 deg bend 15 mm from an end (the finger).
-    Thread the long run through both post slots, finger pointing at the board
-    axis, tip in a star notch. Slide until the elbow sits ~15 mm south of the
-    star face. The finger tip should visibly deflect ~0.5 mm when seated.
+The holder is a base + one pocket block: the spring's 8.3mm tab presses down
+into an 8.0 pocket (prints 8.18 into 8.12 — 0.06 interference, #136), floor at
+z2.7 so the spring plane is 2.7..4.7: engaging the star band 3.4..5.0 over
+1.3mm, clearing the fixture plate 2.5 by 0.2 and the board 5.0 by 0.3.
+The pocket is placed so the natural nose position sits 0.35mm past the seat —
+the preload is in the GEOMETRY, computed here from the star profile itself.
+
 """
 import numpy as np, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -63,7 +66,13 @@ S_T     = 1.6                               # star plate thickness (assy 3.4..5.
 PEG_H   = 1.0                               # into 1.0-deep board sockets
 PEGS    = [(30.0, 3.2, 3.0), (210.0, 4.2, 4.0)]   # bearing, peg sq, socket sq
 PEG_R   = 28.5              # ON the ring plate (26.5..30.5); r20 floated in the bore
-V_BOT   = 270.0                             # V-bottom bearing at board datum
+V_BOT   = 270.0 - PITCH/4    # #157 second bridge: quarter-pitch re-clock makes the two
+                             # engagement bearings flip-symmetric about the x-axis AND
+                             # exactly 16 pitches apart (185.81 deg). 180.00 would be
+                             # 15.5 pitches - HALF a pitch out of phase - and two ideal
+                             # sawtooth detents in anti-phase sum to a FLAT potential:
+                             # zero net centering, double friction. 31 is odd; the
+                             # opposite of a valley is always a crest.
 
 def _sq(cx, cy, half):
     return Polygon([(cx-half,cy-half),(cx+half,cy-half),(cx+half,cy+half),(cx-half,cy+half)])
@@ -99,37 +108,96 @@ def board_sockets():
         out.append(_sq(PEG_R*np.cos(a), PEG_R*np.sin(a), ssq/2))
     return unary_union(out)
 
-# ---- holder ----------------------------------------------------------------
-HX0, HX1   = 8.0, 56.0        # body x span
-HY_S, HY_N = -52.0, -38.6     # body y span (north face butts the plate edge -38)
+# ---- holder (rev B: pocket, no slots) + printed springs -------------------
+HX0, HX1   = 8.0, 56.0
+HY_S, HY_N = -52.0, -38.6     # north face butts the fixture plate edge (-38)
 BASE_T     = 2.5
-POSTS      = [34.0, 48.0]     # post centres (x), at the wire line
-WIRE_Y     = -44.0            # main-run centreline
-WIRE_Z     = 4.1              # run/finger plane: under board (5.0), over plate (2.5)
-POST_W     = 6.0
-POST_H     = 6.0
-SLOT_W     = 1.05             # drop-in for 1.0 wire
+POCKET_X   = 44.0             # pocket centre (anchor of the leaf)
+TAB        = (10.0, 8.3)      # spring tab x,y  (pocket y = 8.0 -> 0.06 press)
+POCKET_FLOOR, POCKET_TOP = 2.7, 6.0
+SPRING_Z   = 2.0              # leaf/finger/nose thickness (use z 2.7..4.7)
+LEAF_L     = 40.0             # elbow x=0 .. anchor
+NOSE_R     = 1.4
+FINGER_W   = 3.6
+WIRE_Y     = -44.0            # leaf centreline (kept name for the gate)
+
+def _seat_y(nr=NOSE_R):
+    """Self-calibrate: nose-centre y (on the V_BOT bearing line) when seated."""
+    ring = sawtooth_ring()
+    a = np.deg2rad(V_BOT)
+    lo, hi = 34.0, 27.0   # radial distance search, bracketing the sawtooth band
+    lo, hi = 27.0, 34.0
+    good=34.0
+    for _ in range(40):
+        mid=(lo+hi)/2
+        if Point(mid*np.cos(a), mid*np.sin(a)).buffer(nr,48).intersects(ring): lo=mid
+        else: hi=mid; good=mid
+    return -good   # kept sign convention: south seat has negative y-ish magnitude
 
 def holder(name="163_detent_holder_v17.stl"):
     base = Polygon([(HX0,HY_S),(HX1,HY_S),(HX1,HY_N),(HX0,HY_N)])
-    posts, slots = [], []
-    for px in POSTS:
-        posts.append(_sq(px, WIRE_Y, POST_W/2))
-        slots.append(Polygon([(px-POST_W/2-0.1, WIRE_Y-SLOT_W/2),
-                              (px+POST_W/2+0.1, WIRE_Y-SLOT_W/2),
-                              (px+POST_W/2+0.1, WIRE_Y+SLOT_W/2),
-                              (px-POST_W/2-0.1, WIRE_Y+SLOT_W/2)]))
-    post_u = unary_union(posts); slot_u = unary_union(slots)
+    # block CLIPPED at the butt face: a full square at the pocket straddled the
+    # plate edge and collided with the fixture plate (gate caught it at y-37)
+    blk  = Polygon([(POCKET_X-7,HY_S),(POCKET_X+7,HY_S),(POCKET_X+7,HY_N),(POCKET_X-7,HY_N)])
+    pocket = Polygon([(POCKET_X-TAB[0]/2, WIRE_Y-4.0),
+                      (POCKET_X+TAB[0]/2, WIRE_Y-4.0),
+                      (POCKET_X+TAB[0]/2, WIRE_Y+4.0),
+                      (POCKET_X-TAB[0]/2, WIRE_Y+4.0)])
     write_stl(name, stack([
-        (0.0, BASE_T, unary_union([base, post_u])),
-        (BASE_T, WIRE_Z-0.5, post_u),                    # solid post up to slot floor
-        (WIRE_Z-0.5, POST_H, post_u.difference(slot_u)), # slotted above: wire drops in
+        (0.0, BASE_T, unary_union([base, blk])),
+        (BASE_T, POCKET_FLOOR, blk),
+        (POCKET_FLOOR, POCKET_TOP, blk.difference(pocket)),
+    ]))
+
+def spring(width, tag):
+    """Flat plug-in leaf: tab | leaf | elbow | finger | nose. Printed flat, 2.0
+    thick. The finger sits at X_N (the engagement bearing's x), so the SAME part
+    flipped over serves the north bridge: flipping about x negates y, mapping
+    bearing 267.10 -> 92.90 = exactly the north seat. Preload is geometric:
+    natural nose tip = seat + 0.35 toward the board."""
+    seat_r = -_seat_y()                    # radial seat distance (measured)
+    a = np.deg2rad(V_BOT)
+    xn, seat_y = seat_r*np.cos(a), seat_r*np.sin(a)   # south seat centre
+    tipy = seat_y + 0.35                   # natural (unloaded) nose centre
+    tab   = _sq(POCKET_X, WIRE_Y, TAB[0]/2).buffer(0)
+    tab   = Polygon([(POCKET_X-TAB[0]/2, WIRE_Y-TAB[1]/2),
+                     (POCKET_X+TAB[0]/2, WIRE_Y-TAB[1]/2),
+                     (POCKET_X+TAB[0]/2, WIRE_Y+TAB[1]/2),
+                     (POCKET_X-TAB[0]/2, WIRE_Y+TAB[1]/2)])
+    leaf  = Polygon([(0.0, WIRE_Y-width/2),(POCKET_X-TAB[0]/2+1, WIRE_Y-width/2),
+                     (POCKET_X-TAB[0]/2+1, WIRE_Y+width/2),(0.0, WIRE_Y+width/2)])
+    fing  = Polygon([(xn-FINGER_W/2, WIRE_Y),(xn+FINGER_W/2, WIRE_Y),
+                     (xn+FINGER_W/2, tipy-NOSE_R+0.6),(xn-FINGER_W/2, tipy-NOSE_R+0.6)])
+    nose  = Point(xn, tipy).buffer(NOSE_R, 64)
+    body  = unary_union([tab, leaf, fing, nose])
+    write_stl(f"165_detent_spring_{tag}_v17.stl", stack([(0.0, SPRING_Z, body)]))
+    E=2400.0; I=width**3*SPRING_Z/12.0; k=3*E*I/LEAF_L**3
+    return k
+
+def holder_north(name="166_detent_holder_north_v17.stl"):
+    """#157: the second bridge. Mirror of 163 about the x-axis — butts the NORTH
+    plate edge (+38). Takes the same springs, flipped over."""
+    base = Polygon([(HX0,-HY_S),(HX1,-HY_S),(HX1,-HY_N),(HX0,-HY_N)])
+    blk  = Polygon([(POCKET_X-7,-HY_S),(POCKET_X+7,-HY_S),(POCKET_X+7,-HY_N),(POCKET_X-7,-HY_N)])
+    pocket = Polygon([(POCKET_X-TAB[0]/2, -WIRE_Y-4.0),
+                      (POCKET_X+TAB[0]/2, -WIRE_Y-4.0),
+                      (POCKET_X+TAB[0]/2, -WIRE_Y+4.0),
+                      (POCKET_X-TAB[0]/2, -WIRE_Y+4.0)])
+    write_stl(name, stack([
+        (0.0, BASE_T, unary_union([base, blk])),
+        (BASE_T, POCKET_FLOOR, blk),
+        (POCKET_FLOOR, POCKET_TOP, blk.difference(pocket)),
     ]))
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    star(); holder()
-    print(f"  164 star: 31 full-pitch V, OD {S_OD}/root {S_ROOT}, V-bottom at {V_BOT} deg,"
-          f" pegs {PEGS[0][1]}/{PEGS[1][1]} sq at r{PEG_R}")
-    print(f"  163 holder: run y{WIRE_Y} z{WIRE_Z}, posts x{POSTS}, slot {SLOT_W}")
-    print(f"  wire: 1.0 music wire, ~75mm, one 90deg bend, 15mm finger — see docstring")
+    star(); holder(); holder_north()
+    ks={}
+    for w,tag in ((2.6,"soft"),(3.0,"med"),(3.4,"firm")):
+        ks[tag]=spring(w,tag)
+    seat=_seat_y()
+    print(f"  164 star: 31 full-pitch V, V-bottom 270, pegs {PEGS[0][1]}/{PEGS[1][1]} sq at r{PEG_R}")
+    print(f"  163 holder rev B: pocket at x{POCKET_X}, floor {POCKET_FLOOR} (spring plane 2.7..4.7)")
+    print(f"  165 springs (all printed, no wire): nose r{NOSE_R} seats at y{seat:.2f}, preload 0.35")
+    for tag,k in ks.items():
+        print(f"      {tag:4s}: k {k:.2f} N/mm -> ~{k*1.7:.2f} N at full escape")

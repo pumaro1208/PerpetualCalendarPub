@@ -1,6 +1,6 @@
 {
   "name": "plate-50-engine-reprint-1c",
-  "version_tag": "#152 ENGINE REPRINT, SINGLE COLOUR \u2014 fixture r63, three sun tower pieces, both carrier arms. Companion to plate-49; split off so the two-colour parts are not hostage to the 34cm3 fixture. 157_fixture_r63 REPLACES 148_fixture_r62: the key now reaches 29.5 and carries the drive post to 26.0, because at 6.5 pitch the old key stopped short and left the top sun pieces free to rotate, which destroys the #134 clocking. Sun tower piece is now 6.50 tall (band 1.5 + slim core 5.0) \u2014 PRINT THREE. The 5.0 is taken in the piece itself and NOT as a stack of 0.5mm shims: a 0.5mm shim prints at 2.5 layers, rounds to 0.4 or 0.6, and that z error walks the mesh lamina off its band. Carrier arms carry the #152 stepped bore (4.00 on the 4.20 spigot) and arm 1's riser steps at 19.2 for arm 2; arm 2's riser does NOT step \u2014 nothing stacks on the leap post, so it keeps full section. 147_sun_spacer is byte-identical to what is already printed \u2014 DO NOT reprint it. 6 objects, flat, no supports, xy-comp -0.06, seam aligned. | QUIET. | +#156 DETENT: 164_detent_star (31 full-pitch V sawtooth ring, pegs into the board's new underside sockets, V-bottom at the datum so REST IS THE STATION) and 163_detent_holder (south of the fixture plate; 1.0mm music wire ~75mm, one 90deg bend, 15mm finger, nose in a V \u2014 two-flank point rest, zero backlash; restores any sub-half-step release incl. the 4.63deg July graze; watershed at 5.80 measured off the emitted star). NOTE: board 149 in plate-49 now carries the peg sockets \u2014 plates 49 and 50 are a matched set from this commit.",
+  "version_tag": "#152 ENGINE REPRINT, SINGLE COLOUR \u2014 fixture r63, three sun tower pieces, both carrier arms. Companion to plate-49; split off so the two-colour parts are not hostage to the 34cm3 fixture. 157_fixture_r63 REPLACES 148_fixture_r62: the key now reaches 29.5 and carries the drive post to 26.0, because at 6.5 pitch the old key stopped short and left the top sun pieces free to rotate, which destroys the #134 clocking. Sun tower piece is now 6.50 tall (band 1.5 + slim core 5.0) \u2014 PRINT THREE. The 5.0 is taken in the piece itself and NOT as a stack of 0.5mm shims: a 0.5mm shim prints at 2.5 layers, rounds to 0.4 or 0.6, and that z error walks the mesh lamina off its band. Carrier arms carry the #152 stepped bore (4.00 on the 4.20 spigot) and arm 1's riser steps at 19.2 for arm 2; arm 2's riser does NOT step \u2014 nothing stacks on the leap post, so it keeps full section. 147_sun_spacer is byte-identical to what is already printed \u2014 DO NOT reprint it. 6 objects, flat, no supports, xy-comp -0.06, seam aligned. | QUIET. | +#156/#157 DETENT, ALL PRINTED (Ron's law: no wire anywhere in the build). 164 star: 31 full-pitch V sawtooth ring under the board, pegs into the board's new underside sockets, V-bottom at 267.10 = 270 - pitch/4. TWO BRIDGES (#157, Ron's idea): 163 south + 166 north holders, 185.81 deg apart = EXACTLY 16 pitches. NOT 180.00: with 31 notches the point opposite a valley is a crest, and two sawtooth detents in perfect anti-phase sum to a FLAT potential - zero centering, double friction. At 16 pitches both noses seat at once, torques add, radial loads cancel to 1%. The quarter-pitch re-clock makes the bearings flip-symmetric, so ONE spring design serves both bridges - flip it over for the north. 165 springs x4 (soft/med/med/firm, leaf 2.6/3.0/3.4): flat 2.0mm plug-in leaves, 5-minute consumable prints, resting strain ~0.1% (creep-negligible; escape ~0.4% is transient). Press the 8.3 tab into the 8.0 pocket, nose in a V, holder butts the plate edge, tape the far end. Start with a matched MED pair. Gate: no dead zone, restoring slope everywhere below the 5.80 crest, July 4.63 release comes home on both bridges, curves identical north/south to <1um. NOTE plates 49+50 are a matched set: the plate-49 board carries the peg sockets.",
   "machine": "Bambu Lab P1S 0.4 nozzle",
   "process": "0.20mm Standard @BBL X1C",
   "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
@@ -92,6 +92,41 @@
       "position": [
         160,
         214
+      ]
+    },
+    {
+      "stl": "../../parts/stl/166_detent_holder_north_v17.stl",
+      "position": [
+        160,
+        240
+      ]
+    },
+    {
+      "stl": "../../parts/stl/165_detent_spring_soft_v17.stl",
+      "position": [
+        222,
+        40
+      ]
+    },
+    {
+      "stl": "../../parts/stl/165_detent_spring_med_v17.stl",
+      "position": [
+        222,
+        65
+      ]
+    },
+    {
+      "stl": "../../parts/stl/165_detent_spring_med_v17.stl",
+      "position": [
+        222,
+        90
+      ]
+    },
+    {
+      "stl": "../../parts/stl/165_detent_spring_firm_v17.stl",
+      "position": [
+        222,
+        115
       ]
     }
   ]
