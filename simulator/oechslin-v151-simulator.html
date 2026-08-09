@@ -40,7 +40,7 @@
 <body>
 <header>
   <h1>Oechslin program wheel — <em>v1.5.1 engine · v1.6 skip train (arch A’) LIVE IN SIM</em>, live</h1>
-  <div class="sub">EP1351104 Fig.2/3 architecture: board 204 + fixed sun 203 (7t) + satellites 210/211/212 on the stud chain; strike teeth 241–243 ride the 24h wheel 13 ahead of the daily long tooth 208. Drive v1.7 (#149–#152, PRINTED): the 21/22/23h strikers are RIGID ARMS on four stacked wheel pieces — no sliders anywhere. Discrimination is by ALTITUDE (band pitch 6.5: arms at 5.0–9.0 board / 11.70–12.50 month / 18.20–19.00 feb / 24.70–25.50 leap, each 0.70 clear of the mesh lamina below) and by PRESENCE (a satellite carries strike teeth only where it fires — month 5, feb 1, leap 1 — so a non-strike evening sweeps an empty station). The v1.6 cam-gated sliders are retired: the S7 adjacency pass clears by tooth absence, not retraction. <b>sim build b51</b> · changelog = audit report addenda.</div>
+  <div class="sub">EP1351104 Fig.2/3 architecture: board 204 + fixed sun 203 (7t) + satellites 210/211/212 on the stud chain; strike teeth 241–243 ride the 24h wheel 13 ahead of the daily long tooth 208. Drive v1.7 (#149–#152, PRINTED): the 21/22/23h strikers are RIGID ARMS on four stacked wheel pieces — no sliders anywhere. Discrimination is by ALTITUDE (band pitch 6.5: arms at 5.0–9.0 board / 11.70–12.50 month / 18.20–19.00 feb / 24.70–25.50 leap, each 0.70 clear of the mesh lamina below) and by PRESENCE (a satellite carries strike teeth only where it fires — month 5, feb 1, leap 1 — so a non-strike evening sweeps an empty station). The v1.6 cam-gated sliders are retired: the S7 adjacency pass clears by tooth absence, not retraction. <b>sim build b52</b> · changelog = audit report addenda.</div>
 </header>
 <div class="hud">
   <div class="card"><div class="k">Date</div><div class="v" id="hud-date">Feb 26</div></div>
@@ -269,10 +269,32 @@ function _dense(poly,step){const out=[];
   const n=Math.max(1,Math.ceil(Math.hypot(B[0]-A[0],B[1]-A[1])/step));
   for(let t=0;t<n;t++)out.push([A[0]+(B[0]-A[0])*t/n,A[1]+(B[1]-A[1])*t/n]);}
  return out;}
-function _toothPoly(phi,stn,OFF,kdeg){
+// ---- b52 LASH TAKE-UP (Ron, bench: "the 23h makes contact and does not move the
+// board"). The 3.817deg lean below is the satellite hanging in its MESH LASH — the
+// presentation. v1.6 never met the leaned tooth because the slider stayed retracted
+// until D=-0.60. A RIGID arm does meet it (~D-0.66), and this solver has only the
+// board DOF, so it reported the scrub as a grind. On the metal the early contact is
+// absorbed by the lash itself: the arm spins the satellite through the play FIRST
+// (board stationary — the #134 anvil law), and only the seated mesh loads the board.
+// So the lean RELAXES as the arm arrives: full lean while free, swept to seated
+// across D=[-0.80,-0.45] (measured off the printed parts: leaned first-touch -0.66,
+// seated onset -0.44), held seated through the strike, restored after departure.
+function _leanRelax(d){
+ // Ramp spans the whole live window entry: the sim's tooth form first touches the
+ // leaned presentation at d~-0.77 (earlier than the printed bars' -0.66 - its base
+ // is fatter), so the yield must already be under way there. Once pushed, lash
+ // stays where it was pushed (drag hysteresis) - a monotone ramp is the model.
+ if(d<-0.95||d>0.95)return 1;          // free: full lash presentation
+ if(d<-0.60)return (-0.60-d)/0.35;     // the arm sweeps the lash closed; seated at
+                                       // -0.60 where every calibrated curve assumes it
+                                       // (that is where the v1.6 cam dwell began)
+ if(d<0.85)return 0;                   // seated on the anvil through the strike
+ return (d-0.85)/0.10;}                // departing: lash reopens
+function _toothPoly(phi,stn,OFF,kdeg,lean){
  const spin=(19/12)*phi, aM=(stn+phi)*Math.PI/180;
  const mc=[SUNORB*Math.cos(aM),SUNORB*Math.sin(aM)];
- const a=(spin+OFF+kdeg+3.817*dirSmooth)*Math.PI/180;
+ const lf=(lean===undefined?1:lean);
+ const a=(spin+OFF+kdeg+3.817*dirSmooth*lf)*Math.PI/180;
  const L=LTIP, rr=L-4.8;
  const P=[[8,-0.030],[rr,-0.058],[L-1.5,-0.036],[L,-0.015],[L,0.015],[L-1.5,0.036],[rr,0.058],[8,0.030]];
  return P.map(([r,dw])=>[mc[0]+r*Math.cos(a+dw),mc[1]+r*Math.sin(a+dw)]);}
@@ -298,11 +320,13 @@ function _deepIn(pts,poly,tol){
 function _overlap(phi,stn,OFF,ks,offDeg){
  const TOL=0.12;  // drawing resolution: sub-pixel at display scale
  const F=_fingerPoly(offDeg),Fd=_dense(F,0.25);
+ const hh=offDeg===0?24:24-offDeg/15;
+ const lf=_leanRelax(st.h-hh);          // b52: the arm sweeps the lash closed
  for(const k of ks){
-  const T=_toothPoly(phi,stn,OFF,k),Td=_dense(T,0.25);
+  const T=_toothPoly(phi,stn,OFF,k,lf),Td=_dense(T,0.25);
   if(_deepIn(Td,F,TOL)||_deepIn(Fd,T,TOL))return true;}
  return false;}
-const SIM_BUILD='b51';   // increments with EVERY simulator change;
+const SIM_BUILD='b52';   // increments with EVERY simulator change;
                          // design version (v1.5.1) tracks geometry only
 let jamInfo=null, grindInfo=null, _prevBase=null, _gapMem={f:null,b:null}, _tgtMem=null, _tgtPend=null;
 // ---- v1.7 RIGID STACKED ARMS (#149, b51) — the v1.6 cam-slider law is RETIRED ----
@@ -593,6 +617,12 @@ function _finish(phi,fix,anyOv,live){
    const _hh=who.indexOf('month')>=0?23:(who.indexOf('feb')>=0?22:(who.indexOf('leap')>=0?21:null));
    if(_hh!==null&&dirState<0&&st.h>_hh+0.25&&st.h<_hh+0.65)
     entry.note='characterized: drawn-approximation limit; physical clearance harness-proven (>=1.13P all trains)';
+   // b52: the forward APPROACH scrub is the same class. The sim's stylized tooth
+   // form pinches against the calibrated correction curves for ~0.04h just before
+   // the curves take over at D=-0.60; the PRINTED bars are measured CLEAR by
+   // 0.9-1.7mm through this exact span (strike-approach sweep, finding #153).
+   if(_hh!==null&&dirState>0&&st.h-_hh>-0.72&&st.h-_hh<-0.50)
+    entry.note='characterized (b52): rigid-arm approach, drawn-approximation only; printed bars measured clear by 0.9-1.7mm here';
    jamLog.push(entry); if(jamLog.length>50)jamLog.shift();
    _con('info','GRIND',entry);
    const el=document.getElementById('jamlog');
