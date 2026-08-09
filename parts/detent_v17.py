@@ -19,8 +19,9 @@ tips carry a wide flat land — the lift curve has a ZERO-SLOPE PLATEAU from 3.4
 July release would strand the board mid-tooth with no restoring force at all.
 The gear is a gear; it cannot also be the star.
 
-THE STAR. A separate ring under the board: sawtooth on its outer cylindrical
-face, 31 notches of FULL-PITCH V — adjacent V's share crests, no flat anywhere,
+THE STAR. A separate ring under the board: a symmetric TRIANGLE-WAVE profile on
+its outer cylindrical face — NOT a sawtooth: a sawtooth is a ratchet, one-way,
+and would break design law 1. 31 notches of FULL-PITCH V — adjacent V's share crests, no flat anywhere,
 so d(lift)/d(theta) != 0 everywhere except the crest, and the crest (the
 watershed) is at half-pitch 5.806 deg BY CONSTRUCTION, not by tuning.
     OD 30.5 / root 29.1 (V depth 1.4) / ID 26.5 / plate 1.6 thick.
@@ -78,7 +79,7 @@ def _sq(cx, cy, half):
     return Polygon([(cx-half,cy-half),(cx+half,cy-half),(cx+half,cy+half),(cx-half,cy+half)])
 
 def sawtooth_ring():
-    """Full-pitch triangle wave on the OD: r(th) = ROOT + depth*tri(th), tri=0 at
+    """Full-pitch SYMMETRIC triangle wave on the OD (both flanks equal — law 1): r(th) = ROOT + depth*tri(th), tri=0 at
     each V-bottom, 1 at each crest; V-bottoms every PITCH starting at V_BOT."""
     th = np.linspace(0, 2*np.pi, 31*40, endpoint=False)
     deg = np.degrees(th)

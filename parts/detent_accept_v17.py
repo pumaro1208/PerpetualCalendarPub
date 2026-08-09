@@ -64,10 +64,10 @@ def ycurve(bearing):
         return lo
     r0=seatpos(0.0)
     th=np.arange(0,11.7,0.2)
-    return r0, th, np.array([seatpos(t)-r0 for t in th])
+    return r0, th, np.array([seatpos(t)-r0 for t in th]), seatpos
 NORTH=(V_BOT+16*PITCH)%360
 for brg,tag in ((V_BOT,"south"),(NORTH,"north")):
-    r0,th,lift=ycurve(brg)
+    r0,th,lift,seatpos=ycurve(brg)
     pk=int(np.argmax(lift))
     gate(lift[1]>0.02, f"{tag} bridge (brg {brg:.2f}): no dead zone — lift {lift[1]:.3f}mm at 0.2 deg")
     gate(abs(th[pk]-PITCH/2)<0.35, f"{tag}: watershed crest at {th[pk]:.2f} (half-pitch {PITCH/2:.2f})")
@@ -79,13 +79,21 @@ for brg,tag in ((V_BOT,"south"),(NORTH,"north")):
     gate(lift[pk]-lift[j]>0.10, f"{tag}: downhill past the crest ({lift[pk]-lift[j]:.2f}mm by +1 deg) — strikes complete")
     gate(0.6<lift[pk]<1.8, f"{tag}: escape lift {lift[pk]:.2f}mm")
     gate(abs(lift[-1])<0.05, f"{tag}: full pitch returns to seat ({lift[-1]:+.3f}mm)")
+    # Ron: "the type of detent you built only works in one direction which defeats
+    # the reverse." The word 'sawtooth' earned that worry — a sawtooth IS a ratchet.
+    # This star is a symmetric TRIANGLE wave, and design law 1 demands proof, not
+    # naming: sweep the same bearing BACKWARD and demand the mirror.
+    revlift=np.array([seatpos(-t) for t in th])-r0
+    dd=float(np.max(np.abs(lift-revlift)))
+    gate(dd<0.03, f"{tag}: REVERSE sweep identical to forward within {dd*1000:.1f}um — "
+                  f"centres, rejects and yields the same both ways (law 1)")
 # phase alignment + the anti-phase trap, asserted not narrated
-r0s,_,ls=ycurve(V_BOT); r0n,_,ln=ycurve(NORTH)
+r0s,_,ls,_f1=ycurve(V_BOT); r0n,_,ln,_f2=ycurve(NORTH)
 gate(abs((NORTH-V_BOT)%360 - 16*PITCH*(1 if (NORTH-V_BOT)%360>180 else 1))<0.01 or True,
      f"bridges {((NORTH-V_BOT)%360):.2f} deg apart = 16.000 pitches — seats coincide")
 gate(float(np.max(np.abs(ls-ln)))<0.06,
      f"north and south lift curves identical to {float(np.max(np.abs(ls-ln)))*1000:.0f}um — both seat at once, torques ADD")
-r180,_,l180=ycurve((V_BOT+180)%360)
+r180,_,l180,_f3=ycurve((V_BOT+180)%360)
 gate(float(np.max(np.abs(l180[:15]+0)))>0 and abs(l180[0])<0.01 or True,
      f"(fact check) a bridge at exactly 180 deg would ride a CREST at datum — the 31-odd anti-phase trap is real")
 
