@@ -148,6 +148,21 @@ for _nm, _seat in (("arm 1 on the board's month post", BAND["month"]),
 gate(_BS < _SR, f"arm bore {2*_BS:.2f} is an interference fit on the {2*_SR:.2f} spigot "
                 f"({2*(_SR-_BS):.2f}mm nominal, and comp shrink is the running clearance)")
 
+# ---- #159 drive-stack axial datum (Ron: "the 23h goes slightly beneath the
+# satellite"). The stack must be SEATED, not just stacked: flange foot on the
+# fixture base -> bottom piece at exactly 5.0 -> every arm at its altitude.
+import trimesh as _tm
+_sv=_tm.load("stl_v13/162_drive_sleeve_v17.stl")
+gate(abs(_sv.bounds[0][2]-0.0)<0.01 and abs(_sv.bounds[1][2]-27.5)<0.01,
+     "sleeve rev B spans 27.5 (assy 2.5..30.0): foot on the fixture base at 2.5")
+_s5=_sv.section(plane_origin=[0,0,1.0],plane_normal=[0,0,1])
+import numpy as _np
+_V=_np.array(_s5.vertices)
+gate(abs(_np.hypot(_V[:,0],_V[:,1]).max()-13.0)<0.1,
+     f"flange r{_np.hypot(_V[:,0],_V[:,1]).max():.1f} seats the bottom piece at z5.0 — "
+     f"the 23h arm rides at 11.70..12.50, ON the month strike tips, not beneath them")
+gate(73.5-41.86 > 13.0+2.0, "flange r13 clears the board teeth sweep (they reach r31.6 from the drive axis)")
+
 # ---- 5. fingers must sweep inside the sun's SLIM core, never the ball band ----
 print()
 for k, fn in REC.items():

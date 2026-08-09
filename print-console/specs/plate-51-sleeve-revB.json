@@ -1,0 +1,49 @@
+{
+  "name": "plate-51-sleeve-revB",
+  "version_tag": "#159 SLEEVE REV B, SOLO \u2014 Ron, bench: 'the 23h goes slightly beneath the satellite.' Root cause is a DESIGN HOLE in #149: the drive stack had no axial seat. The sleeve slid down the post until it sat on the fixture base at z2.5, dropping every arm 2.5mm \u2014 the 23h arm ran at ~9.2-10.0, under the month strike tips (11.70-12.50) and into the mesh lamina zone. The 24h arm's tall 4mm band kept the daily train alive, which is why the video looked healthy while the strike train was low. Rev B adds a FLANGE FOOT: r13 disc from 2.5 to 5.0 standing on the fixture base, seating the bottom piece at exactly z5.0. Flange clears the board tooth sweep (r31.6 from the drive axis) and sits under the 24h band. Round r4.17 bore throughout (the wheel is the crank); square 11.50 key from 5.0 up. REPLACES the plate-48 sleeve - the old one is scrap. Solo plate so Ron's bench gets the fix in ~20 min without waiting for plate-50. Dab of grease under the flange if the thrust face sings. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/162_drive_sleeve_v17.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}

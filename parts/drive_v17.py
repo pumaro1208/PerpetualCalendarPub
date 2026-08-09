@@ -84,13 +84,28 @@ def piece(nm, off, z0, z1, top, no):
     ]))
     return h
 
-def sleeve(no="162_drive_sleeve_v17.stl", z0=5.0, z1=30.0):
-    """Round bore on the fixture's r4.17 drive post, square outside to clock the
-    four pieces. The post cannot be square — the wheel is the crank and has to turn."""
+def sleeve(no="162_drive_sleeve_v17.stl", z0=2.5, z1=30.0):
+    """Rev B — Ron, bench: "the 23h goes slightly beneath the satellite."
+    Root cause: the stack had NO AXIAL SEAT. Nothing held it at z5.0 — the sleeve
+    slid down the post until it sat on the fixture base at 2.5, dropping every
+    arm 2.5mm: the 23h ran at ~9.2-10.0, under the month strike tips (11.7-12.5)
+    and into the mesh lamina zone. The 24h arm's tall 4mm band kept the daily
+    train working, which is why the fault hid behind a healthy-looking crank.
+
+    The sleeve now carries a FLANGE FOOT: r13 disc from 2.5 to 5.0 that stands on
+    the fixture base and seats the bottom piece at exactly z5.0. The square key
+    starts at 5.0 as before; round r4.17 bore throughout (this wheel is the
+    crank). The flange bottom is the thrust face - a dab of grease if it sings.
+    Flange r13 clears the board teeth (they reach within 31.6 of the drive axis)
+    and sits entirely under the 24h arm band."""
     sq = Polygon([(SQ_HW,SQ_HW),(-SQ_HW,SQ_HW),(-SQ_HW,-SQ_HW),(SQ_HW,-SQ_HW)])
+    bore = Point(0,0).buffer(POST_R, 64)
     wall = SQ_HW - POST_R
     assert wall > 1.0, f"sleeve wall only {wall:.2f}mm"
-    write_stl(no, stack([(0.0, z1-z0, sq.difference(Point(0,0).buffer(POST_R, 64)))]))
+    write_stl(no, stack([
+        (0.0, 2.5,   Point(0,0).buffer(13.0, 96).difference(bore)),  # flange foot
+        (2.5, z1-z0, sq.difference(bore)),                           # keyed shaft
+    ]))
     return wall
 
 if __name__ == "__main__":
@@ -100,5 +115,5 @@ if __name__ == "__main__":
         print(f"  {nm}: arm {180-off:5.1f}deg, z {z0:5.2f}-{z1:5.2f} -> {tgt:17s} "
               f"piece {h:5.2f} tall, prints arm-down")
     w = sleeve()
-    print(f"  + sleeve: bore r{POST_R} on the drive post, square {2*SQ_HW:.2f} across "
-          f"outside, wall {w:.2f}mm — clocks all four pieces")
+    print(f"  + sleeve rev B: flange foot 2.5-5.0 SEATS the stack at z5.0 (the missing "
+          f"axial datum); square {2*SQ_HW:.2f} across, wall {w:.2f}mm")
