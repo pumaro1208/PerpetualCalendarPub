@@ -1,0 +1,28 @@
+{
+  "name": "cal-10-click-springs",
+  "version_tag": "CALENDAR (shiura 7035937 Ver.2) — click springs, REPRINT IN BLACK. The originals came off cal-07, which printed entirely in white because `pc start`'s --ams-slot defaulted to tray 0; the axis, bearing and axis-L from that plate are buried in the assembly and were left white, but the click-stop springs may be partly visible, so these get redone in the right colour. WHAT THIS PART IS: click-spring-4copies.stl is ONE connected body 55.28 x 9.03 x 11.24mm, not four loose pieces — four springs joined in a curved crescent bar that must be snapped or cut apart after printing. It reads as a single half-moon on the plate preview, which is why the four springs are easy to go looking for and not find. BRIM 8mm, not the 5mm used on the drums: contact-area-over-height is 20 here (221mm2 holding up 11.2mm), which sits below the 79 of the month drum that detached on cal-03 and in the same band as main-axis and axis-L, both of which needed 8mm. auto_brim would give this zero. Single colour, no purge. Black resolves to TRAY 3 — tray 2 ran empty during cal-06 and the AMS read picks up the survivor automatically. Springs are the part most likely to break in service or on separation; a second copy costs about 2g and no extra heat-up if spares are ever wanted.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "8",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/click-spring-4copies.stl",
+      "position": [128, 128]
+    }
+  ],
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

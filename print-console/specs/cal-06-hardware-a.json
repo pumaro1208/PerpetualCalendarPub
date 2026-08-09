@@ -1,0 +1,40 @@
+{
+  "name": "cal-06-hardware-a",
+  "version_tag": "CALENDAR (shiura 7035937 Ver.2) — flat hardware: foot, cap, separator, nut. FULL SIZE, single colour black, no purge. Split from the tall hardware (cal-07) purely by footprint, not function. VARIANT CHOICES: plain 'foot' not 'foot-short' (114mm vs 84mm; short appears to be the compact-stand option), and see cal-07 for the axis tight/loose call. SUPPORTS: shiura says a few parts in the set need them and does not say which. enable_support is 0 here, so compose's grounded-check will REFUSE this plate rather than print it badly if any of these four has mid-air geometry — that refusal is the diagnostic, not a failure to work around. If it fires, re-spec only the offending part with supports rather than turning them on plate-wide. Layout leaves >=30mm between bodies: foot [70,80] x36-104 y23-137, cap [180,80] x140-220 y40-120, separator [180,190] x140-220 y150-230, nut [60,190] x43-77 y174-206. SPEEDS: stock 0.20mm Standard.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "5",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/foot.stl",
+      "position": [70, 80]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/cap.stl",
+      "position": [180, 80]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/separator.stl",
+      "position": [180, 190]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/nut.stl",
+      "position": [60, 190]
+    }
+  ],
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

@@ -1,0 +1,48 @@
+{
+  "name": "cal-05-stands",
+  "version_tag": "CALENDAR (shiura 7035937 Ver.2) — stand-L and stand-R with their white paint marks, FULL SIZE. Both stands share one plate deliberately: each -paint file is a tiny 3.1x2.8mm edge marker whose band sits 0-5.4mm above the bed on BOTH stands, so a single ~27-layer flush band covers both (~9g of purge). Split across two plates it would cost that twice for two 3mm dots — poor value. If purge is being counted, these marks are the first thing to drop; the stands work without them. REGISTRATION: the paint delta is [+52.928, +9.588] on BOTH stands — a genuine near-rim offset, not an error, since the marker sits at r~53 of a 54.6 radius part. z_offset is 0 for both (stand-L base and paint share min-z 11.30; stand-R shares -16.70). LAYOUT: the first attempt put stand-L at [70,70] and was refused — at 109.2mm wide its bbox reached x15.4/y15.4 and clipped the P1S front-left exclusion zone X[0,18] Y[0,28]. Both stands now sit at y140, which clears the zone on Y regardless of X, side by side at x67 and x188 for an 11.8mm gap. Do not drift these back toward the origin. SPEEDS: stock 0.20mm Standard. FILAMENT: slot 1 black PLA MATTE, slot 2 white PLA BASIC, ams_mapping 2,0.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/stand-L.stl",
+      "position": [67, 140]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/stand-L-paint.stl",
+      "position": [119.928, 149.588],
+      "z_offset": 0,
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/stand-R.stl",
+      "position": [188, 140]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/stand-R-paint.stl",
+      "position": [240.928, 149.588],
+      "z_offset": 0,
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    }
+  ],
+  "filament_2": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_2_colour": "#FFFFFF",
+  "ams_tray_type_2": "PLA",
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

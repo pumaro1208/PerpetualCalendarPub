@@ -1,0 +1,32 @@
+{
+  "name": "axis-01-white-plate",
+  "version_tag": "MECHANICAL CALENDAR AXIS — white plate: bolt + 2 nuts + washer, WHITE PLA BASIC (tray 0). Loaded as ONE object deliberately: PRINT_PLATE_white.stl is pre-arranged (bolt at 0,0; nuts at 34,-8 and 34,16; washer at 60,-8) and compose centres each object on its own bbox, so splitting it would destroy that layout. The brief asked for a split so support settings could be per-part — not possible here (this pipeline sets process options per PLATE, not per object) and not necessary: normal(auto) supports only generate material where an overhang actually demands it, so parts that need none get none. SUPPORTS ARE ON, and the measured overhangs justify it beyond the bolt: bolt 1925mm2, nuts 153mm2 EACH, washer 172mm2. The brief's claim that the nuts and washer are flat is wrong — they are chamfered. BRIM 8mm ADDED, NOT IN THE BRIEF, AND IT IS NOT OPTIONAL. The bolt is 97mm tall on 380mm2 of contact, ratio 4 — worse than main-axis (5) and far worse than the month drum (79) which detached at layer 4 on cal-03 and was dragged into a spaghetti mess. The washer is worse still: chamfered both faces, so its true bed contact is 0.6mm2 (z=0) with the real 171.8mm2 face floating at z=0.59. Without a brim it does not stick, full stop. 4 walls and 35% infill per the brief (the calendar plates used 3 walls). Layer 0.20mm, stock 0.20mm Standard speeds — no quiet/fast preset.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_colour": "#FFFFFF",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Basic",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "4",
+    "sparse_infill_density": "35%",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "1",
+    "support_type": "normal(auto)",
+    "support_threshold_angle": "45",
+    "support_on_build_plate_only": "0",
+    "brim_type": "outer_only",
+    "brim_width": "8",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../PRINT_PLATE_white.stl",
+      "position": [128, 128]
+    }
+  ],
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

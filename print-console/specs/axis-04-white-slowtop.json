@@ -1,0 +1,40 @@
+{
+  "name": "axis-04-white-slowtop",
+  "version_tag": "MECHANICAL CALENDAR AXIS \u2014 white plate, SUPPORTS STILL OFF, retuned for the TOP thread. axis-03 printed with clean threads at the bottom and broken threads at the top; the cause is layer time, not supports. Above z~28 the nuts and washer are finished, so the bolt prints ALONE as a dia-11 column and each layer collapses to 4.0s \u2014 exactly the slow_down_layer_time floor. Measured: bottom thread (dia 24, z0.2-21.7) median 5.5s/layer and printed fine; top thread (dia 11, z74-96.9) median 4.0s/layer and failed. A 1.16mm thread crest cannot solidify in 4s, and it is being driven at outer wall 200mm/s with 5000 accel 97mm up a slender shaft, so vibration compounds it. FIX: slow_down_layer_time 4 -> 18 forces the slicer to stretch small-cross-section layers, which targets the top of the bolt and leaves the fat lower sections alone; outer wall 200 -> 120 and accel 5000 -> 2000 cut ringing on the tall column. This is a deliberate, targeted departure from stock Standard speed \u2014 the part is a slender 97mm tower, not a chunky drum. Do NOT respond to broken top threads by re-enabling supports: that packs the thread valleys and was the original failure.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_colour": "#FFFFFF",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Basic",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "4",
+    "sparse_infill_density": "35%",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "8",
+    "brim_object_gap": "0",
+    "slow_down_layer_time": "18",
+    "slow_down_min_speed": "12",
+    "outer_wall_speed": "120",
+    "outer_wall_acceleration": "2000",
+    "default_acceleration": "4000"
+  },
+  "parts": [
+    {
+      "stl": "../../../PRINT_PLATE_white.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}

@@ -1,0 +1,39 @@
+{
+  "name": "cal-04-date1",
+  "version_tag": "CALENDAR (shiura 7035937 Ver.2) — units-of-date drum + white numeral inlay, FULL SIZE. Solo plate only because its natural partner, date10, was consumed as the cal-02 proof print; if that plate is ever reprinted, pair the two (bands overlap at 1.28-9.68 and 1.63-9.63, so one flush serves both and saves ~14g). REGISTRATION measured from original STL bbox centres: letter delta [-0.001, 0.000] — concentric — and base min-z -11.10 vs letter min-z -9.82 gives z_offset 1.276. Expect the two-colour band to start near layer 6 and run ~42 layers; a band starting at layer 0 means the offset was silently dropped. SPEEDS: stock 0.20mm Standard. FILAMENT: slot 1 black PLA MATTE, slot 2 white PLA BASIC, ams_mapping 2,0 — verify by eye, only the first filament is AMS-checked.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "5",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/date1.stl",
+      "position": [128, 128]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/date1-letter.stl",
+      "position": [127.999, 128.0],
+      "z_offset": 1.276,
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    }
+  ],
+  "filament_2": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_2_colour": "#FFFFFF",
+  "ams_tray_type_2": "PLA",
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

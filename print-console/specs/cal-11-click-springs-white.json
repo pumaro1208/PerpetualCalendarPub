@@ -1,0 +1,40 @@
+{
+  "name": "cal-11-click-springs-white",
+  "version_tag": "CALENDAR (shiura 7035937 Ver.2) — click springs in WHITE PLA BASIC, FOUR SEPARATE INSTANCES on the plate. TWO PROBLEMS BEING FIXED AT ONCE. (1) MATERIAL: cal-10 printed these in black PLA Matte and they SNAPPED APART while being peeled off the plate. That is a material property, not an accident — PLA Matte's matting additives reduce layer adhesion and toughness, so it is measurably more brittle than PLA Basic. A click spring is the one part in this build that must FLEX in service, so Basic is correct on mechanical grounds and the colour is incidental. cal-07's accidental white originals were the tougher part all along. Do not 'correct' this back to black Matte for cosmetic consistency without accepting the brittleness. (2) COUNT: despite being named click-spring-4copies.stl, cal-10 yielded ONE usable spring, not four. The mesh does not settle the question — 800 triangles, one connected body at the base, splitting into interleaved bodies each spanning the full 53mm width only above z0+2mm, which is consistent with nested crescents that touch. Rather than trust the filename or the mesh analysis, this spec places the file FOUR TIMES at four positions. If the file really does contain four springs this yields sixteen, which costs about 6g and a couple of minutes and is welcome anyway for a part that has already proved breakable. Under-delivering is the expensive failure here, not over-delivering. LAYOUT: 30mm Y spacing, not less — the 8mm brim extends each 9.03mm-wide part to a 25mm footprint, so anything tighter merges the brims into one raft. BRIM 8mm retained despite the breakage: contact-over-height is 20, the same band as main-axis and axis-L which both needed 8mm, and auto_brim gives it zero. The removal fix is technique, not less brim — let the plate cool completely (textured PEI grips warm, releases cold) and cut the brim away rather than levering the part off it. White resolves to TRAY 0; this is the only calendar plate whose filament is Basic rather than Matte, so a derived mapping of [0] is CORRECT here and is not the cal-07 default-to-tray-0 bug returning.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_colour": "#FFFFFF",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Basic",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "8",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/click-spring-4copies.stl",
+      "position": [128, 90]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/click-spring-4copies.stl",
+      "position": [128, 120]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/click-spring-4copies.stl",
+      "position": [128, 150]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/click-spring-4copies.stl",
+      "position": [128, 180]
+    }
+  ],
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

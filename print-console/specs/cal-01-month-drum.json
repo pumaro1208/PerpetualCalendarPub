@@ -1,0 +1,39 @@
+{
+  "name": "cal-01-month-drum",
+  "version_tag": "CALENDAR (shiura 7035937 Ver.2) — month drum + white letter inlay, FULL SIZE. REVIVED as the retry after cal-03 failed: this was originally a measurement-only plate, then superseded by the paired cal-03, which let go of the plate at layer 4 and was dragged into a spaghetti mess that popped the print cover off. Two changes from cal-03, and only two. (1) BRIM, SET EXPLICITLY. cal-03 ran brim_type auto_brim / brim_width 0 — the slicer's auto-brim reads footprint AREA and decided no brim was needed. That is a blind spot for a tall thin-walled ring: month.stl has 3147mm2 of bed contact standing 40mm tall, versus date10.stl which printed clean on cal-02 with effectively identical contact (3146mm2) standing only 11mm. Contact-per-height 79 vs 286, same config, one held and one did not. Do not put this back to auto. (2) UN-PAIRED from the day drum. Pairing shared one flush band and saved ~60g of purge, but it also put both 40mm drums in a single 7h46m run — which is exactly what was lost. Prove the brim on one drum first; cal-08 carries day. Bed temp deliberately NOT raised: 55 already trips a bed_temperature_too_high_than_filament warning, so raising it trades one problem for another. One variable at a time. REGISTRATION unchanged and still unproven on plastic: letter bbox-centre delta [0.000, +0.109], z_offset 2.672 (base min-z 17.00 vs letter 19.67). Expect the two-colour band near layer 13; a band starting at layer 0 means the offset was dropped. FILAMENT: slot 1 black PLA MATTE, slot 2 white PLA BASIC, ams_mapping 2,0 — only the FIRST filament is AMS-checked, read the mapping by eye.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "5",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/month.stl",
+      "position": [128, 128]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/month-letter.stl",
+      "position": [128.0, 128.109],
+      "z_offset": 2.672,
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    }
+  ],
+  "filament_2": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_2_colour": "#FFFFFF",
+  "ams_tray_type_2": "PLA",
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

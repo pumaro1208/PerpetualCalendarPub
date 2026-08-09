@@ -1,0 +1,48 @@
+{
+  "name": "cal-03-drums-month-day",
+  "version_tag": "DEAD — DO NOT RUN. This plate FAILED on 2026-08-03: both drums let go of the plate around layer 4 and the nozzle dragged them into a spaghetti mess that popped the print cover off. Cause was brim, not the two-colour work — it died six layers before the first toolchange. Replaced by cal-01 (month, solo, explicit brim) and cal-08 (day, solo, explicit brim); the pairing rationale below is preserved because the purge arithmetic is still correct and worth reviving IF the brim fix proves out on the solo plates first. Kept rather than deleted so the ~60g pairing saving is not rediscovered from scratch and re-run into the same failure. Original note follows. --- month drum + day drum, both with white inlays, FULL SIZE. SUPERSEDES cal-01-month-drum, which was a measurement plate only: pairing the two tall drums on one plate is worth ~60g. Purge is charged per toolchange, not per part, and these two text bands overlap in Z (month 2.67-36.81, day 1.81-37.81), so one flush per layer serves both drums. Sliced separately they cost ~124g of purge; together ~64g. REGISTRATION, measured from original STL bbox centres: month letter delta [0.000, +0.109] z_offset 2.672 (concentric); day letter delta [-1.161, +0.012] z_offset 1.809 — the day drum is the ONLY genuinely off-centre pair in the set, do not tidy that -1.161 to zero, it looks correct in preview either way. Drum centres 105mm apart (75 and 180) leaves 15mm between the 90mm bodies. SPEEDS: stock 0.20mm Standard, not the Oechslin quiet block. FILAMENT: slot 1 black PLA MATTE, slot 2 white PLA BASIC — AMS white is Basic; find_ams_slot checks only the FIRST filament, so verify ams_mapping 2,0 by eye before confirming.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/month.stl",
+      "position": [75, 128]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/month-letter.stl",
+      "position": [75.0, 128.109],
+      "z_offset": 2.672,
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/day.stl",
+      "position": [180, 128]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/day-letter.stl",
+      "position": [178.839, 128.012],
+      "z_offset": 1.809,
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    }
+  ],
+  "filament_2": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_2_colour": "#FFFFFF",
+  "ams_tray_type_2": "PLA",
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

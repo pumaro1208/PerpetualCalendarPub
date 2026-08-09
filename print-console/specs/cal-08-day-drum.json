@@ -1,0 +1,39 @@
+{
+  "name": "cal-08-day-drum",
+  "version_tag": "CALENDAR (shiura 7035937 Ver.2) — day drum + white letter inlay, FULL SIZE. Split out of the failed cal-03, which paired this with the month drum; see cal-01 for why the pairing was abandoned and why brim is now set explicitly instead of auto_brim. day.stl has 5691mm2 of contact standing 40mm tall (ratio 142) — better than month's 79 but still well under date10's 286, which is the only ratio in this build proven to hold without a brim. Treat as at risk, not safe. THIS PLATE CARRIES THE ONLY OFF-CENTRE PAIR IN THE SET: letter bbox-centre delta [-1.161, +0.012], z_offset 1.809. The -1.161 is real and verified, not a slip — day-letter spans 87.48mm in X against the drum's 90.00 because the day-name ring is asymmetric, which drags its bbox centre off axis. Checked radially: placed as specced the letters form a clean annulus r43.00-44.90 (spread 1.90, matching month-letter's 42.89-45.01 reference); with the sign flipped they smear to r40.91-47.22 (spread 6.32), sunk into the drum on one side and floating off it on the other. Do not tidy it to zero — it looks correct in preview either way. Expect the two-colour band near layer 9. A blank stretch in the lettering is by design, not a missing glyph. FILAMENT: slot 1 black PLA MATTE, slot 2 white PLA BASIC, ams_mapping 2,0.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "5",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/day.stl",
+      "position": [128, 128]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/day-letter.stl",
+      "position": [126.839, 128.012],
+      "z_offset": 1.809,
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    }
+  ],
+  "filament_2": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_2_colour": "#FFFFFF",
+  "ams_tray_type_2": "PLA",
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

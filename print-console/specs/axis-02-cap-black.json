@@ -1,0 +1,26 @@
+{
+  "name": "axis-02-cap-black",
+  "version_tag": "MECHANICAL CALENDAR AXIS — cap_modified.stl in BLACK PLA MATTE (tray 3). Separate plate from the white parts by design: combining them would force a filament swap on every shared layer and purge more material than the parts weigh. SUPPORTS OFF and BRIM OFF, both measured rather than assumed: the cap is 80.4 x 80.4 x 5.0mm with ZERO downward-facing overhang above the bed, and 4814mm2 of bed contact for 5mm of height — adhesion ratio 963, against the 286 of the date10 drum that held with no brim and the 79 of the month drum that did not. Nothing here needs either, and brimming an 80mm disc is a lot of scraping for no gain. Note the source STL sits at z0=27.00; compose drops every object to the bed, so that offset is handled and must not be corrected by hand. 4 walls and 35% infill per the brief. Layer 0.20mm, stock 0.20mm Standard speeds — no quiet/fast preset. CAUTION ON MATERIAL: black here is PLA MATTE, which is measurably more brittle than Basic (matting additives cut layer adhesion) — fine for a static cap, but do not reuse this filament choice for anything that must flex, as the click springs proved on cal-10.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "4",
+    "sparse_infill_density": "35%",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../cap_modified.stl",
+      "position": [128, 128]
+    }
+  ],
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

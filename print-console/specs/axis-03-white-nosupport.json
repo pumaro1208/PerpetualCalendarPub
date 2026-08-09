@@ -1,0 +1,35 @@
+{
+  "name": "axis-03-white-nosupport",
+  "version_tag": "MECHANICAL CALENDAR AXIS \u2014 white plate RESLICED WITH SUPPORTS OFF. axis-01 ran with enable_support 1 and support_on_build_plate_only 0, which let the slicer climb the model and pack EVERY THREAD VALLEY: 2484 support moves inside the two nut bores and 9974 within 6mm of the bolt axis spanning z44.4-96.6, exactly the upper thread. That is both the support Ron should not have had to remove AND the reason the threads appeared absent \u2014 they were buried, not missing. THE THREADS ARE FINE AND THEY MATE: bolt upper thread minor dia 8.6 / major 11.0, nut bore minor 9.6 / major 12.0, i.e. 0.5mm radial clearance, a workable printed fit. Separating real overhang from thread flank on the bolt: only TWO near-horizontal ledges exist, 156.7mm2 at z23.00 and 170.4mm2 at z28.30 (the flange), totalling 327mm2. The other ~1596mm2 the slicer saw is thread flank, 1-9mm2 per layer, which must never be supported. No threshold-angle tweak separates those cleanly because thread flanks here really are near-horizontal, and build-plate-only support would still tower up alongside the shaft. So supports come off entirely and the two flange ledges print as unsupported 3mm annular overhangs \u2014 expect slight droop on their undersides, which are seating faces, not cosmetic. BRIM 8mm STAYS: bolt is 97mm tall on 380mm2 (ratio 4) and the washer is chamfered both faces, resting on 0.6mm2 with its real 171.8mm2 face floating at z=0.59.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_colour": "#FFFFFF",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Basic",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "4",
+    "sparse_infill_density": "35%",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "8",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../PRINT_PLATE_white.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}

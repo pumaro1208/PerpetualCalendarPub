@@ -1,0 +1,36 @@
+{
+  "name": "cal-02-date10",
+  "version_tag": "CALENDAR (shiura thing:7035937 Ver.2) — tens-of-date drum + white numeral inlay, Month-Date-Day English variant, FULL SIZE. PROOF PLATE: chosen as the first physical print deliberately — it exercises the identical two-colour mechanics as the month drum (z_offset registration, purge tower, black/white AMS mapping) on the shortest base in the set, so a registration or bleed failure costs ~2h and ~45g instead of 6h10m and 128g. What is being proven is the z_offset: it is nonzero on every drum, it is the value that ruins the part if wrong, and the slice preview cannot show whether the inlay actually seats flush in its recess — only that the arithmetic is consistent. REGISTRATION: compose centres each object on its own bbox and drops each to the bed, so both pairings are restored by hand. Measured from original STL coords: bbox-centre delta letter-minus-base [+0.001, 0.000] (i.e. concentric, unlike the day drum's -1.161), base min-z -11.10 vs letter min-z -9.47 gives z_offset 1.630. Expect the two-colour band to start near layer 8 (1.63/0.2) and run ~40 layers; if it starts at layer 0 the offset was silently dropped. SPEEDS: stock 0.20mm Standard, NOT the quiet override block from the Oechslin gear plates. FILAMENT: slot 1 black PLA MATTE, slot 2 white PLA BASIC — the AMS white is Basic, not Matte, and find_ams_slot only checks the FIRST filament, so read the ams_mapping in the start payload by eye before confirming.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/date10.stl",
+      "position": [128, 128]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/date10-letter.stl",
+      "position": [128.001, 128.0],
+      "z_offset": 1.630,
+      "extruder": 2,
+      "allow_midair": true,
+      "allow_overlap": true
+    }
+  ],
+  "filament_2": "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+  "filament_2_colour": "#FFFFFF",
+  "ams_tray_type_2": "PLA",
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

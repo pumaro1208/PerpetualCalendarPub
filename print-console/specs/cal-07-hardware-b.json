@@ -1,0 +1,40 @@
+{
+  "name": "cal-07-hardware-b",
+  "version_tag": "CALENDAR (shiura 7035937 Ver.2) — tall/small hardware: main-axis, axis-L, bearing-L, click-spring-4copies. FULL SIZE, single colour black, no purge. main-axis is the tallest part in the whole build at 74mm. THIS PLATE IS THE HIGHEST DETACHMENT RISK IN THE BUILD AND WAS QUEUED TO RUN WITHOUT A BRIM — brim_width is 8 here rather than the 5 used elsewhere, and that is deliberate. After cal-03's tall drums let go of the plate and were dragged into a spaghetti mess, every part was ranked by bed-contact-area over height: main-axis scores 5 (380mm2 of contact holding up 74mm) and axis-L also 5 (139mm2 / 25.8mm), against 79 for the month drum that actually failed and 286 for the date10 drum that held. click-spring 20 and nut 23 are also below the failure line. So these are 16x worse than the part that already came off. auto_brim had computed brim_width 0 for this plate because it reads footprint AREA and cannot see slenderness, and the pre-flight audit could never have caught it — brim is not a spec mismatch, it is a spec omission. Do not return this plate to auto_brim. VARIANT CHOICE: plain 'main-axis' and 'axis-L', NOT the -tight versions. The tight pair is the well-tuned-printer option, and this plate already runs xy_contour_compensation -0.06 carried over from the Oechslin work, which tightens fits on its own — stacking both risks a press fit that will not turn. If the assembled axis is sloppy, reprint with -tight and drop the xy-comp to 0 rather than changing both at once. SUPPORTS: enable_support 0, so compose's grounded-check refuses rather than silently printing mid-air; main-axis is the most likely candidate in the set. If it fires, re-spec only that part. Layout: main-axis [90,90], axis-L [170,90], bearing-L [90,170], click-spring [170,170] — smallest bodies here, all >=35mm apart. click-spring-4copies already contains all four springs, do not duplicate it. SPEEDS: stock 0.20mm Standard.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "xy_contour_compensation": "-0.06",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "8",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/main-axis.stl",
+      "position": [90, 90]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/axis-L.stl",
+      "position": [170, 90]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/bearing-L.stl",
+      "position": [90, 170]
+    },
+    {
+      "stl": "../../../Perpetual calendar with mechanically automatic day of the week _ Ver.2 - 7035937 - part 1 of 2/files/click-spring-4copies.stl",
+      "position": [170, 170]
+    }
+  ],
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}
