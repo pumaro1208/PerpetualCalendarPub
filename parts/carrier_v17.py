@@ -89,8 +89,11 @@ def part_02j_board():
     # will not go over the hub at all.
     gear=Polygon(np.stack([prof*np.cos(th),prof*np.sin(th)],1)).difference(Point(0,0).buffer(BOARD_BORE,64))
     cx,cy=stn_xy(STN_M)
+    from detent_v17 import board_sockets               # #156
+    sock = board_sockets()
     write_stl("144_board_02j_v17.stl", stack([
-        (0.0,  t,        gear),
+        (0.0,  1.0,      gear.difference(sock)),       # star peg sockets, underside
+        (1.0,  t,        gear),
         (t,    t+PAD_H,  Point(cx,cy).buffer(SEAT_R,32)),   # month pivot pad (assy 9.0-9.5)
         (t+PAD_H, POST_STEP, Point(cx,cy).buffer(POST_R,48)),  # full 5.40 through the satellite
         (POST_STEP, POST_TOP, Point(cx,cy).buffer(SPIG_R,48)), # #152 spigot, arm bottoms here

@@ -44,6 +44,7 @@ from generator_v13 import SUNORB, STN_M, write_stl
 from weld import stack
 from carrier_v17 import (stn_xy, SEAT_R, POST_R, PAD_H, BOARD_BORE, POST_TOP,
                          SPIG_R, POST_STEP)
+from detent_v17 import board_sockets   # #156: star peg sockets, shared source
 
 PITCH   = 360/31
 R_NUM   = 33.5          # digit-centre ring: clear of the root circle 37.05 and of
@@ -120,9 +121,11 @@ def build():
     # at the top. Mirroring in Y instead would put the index at the bottom.
     bot = affinity.scale(top, -1, 1, origin=(0, 0))
     cx, cy = stn_xy(STN_M)
+    sock = board_sockets()                             # #156: depth 1.0 from underside
     write_stl("149_board_02k_numbered_v17.stl", stack([
-        (0.0,     REC,     gear.difference(bot)),      # underside recesses
-        (REC,     T-REC,   gear),                      # 2.4mm solid core
+        (0.0,     REC,     gear.difference(bot).difference(sock)),
+        (REC,     1.0,     gear.difference(sock)),     # socket floor at 1.0
+        (1.0,     T-REC,   gear),                      # solid core above
         (T-REC,   T,       gear.difference(top)),      # top-face recesses
         (T,       T+PAD_H,   Point(cx, cy).buffer(SEAT_R, 32)),
         (T+PAD_H, POST_STEP, Point(cx, cy).buffer(POST_R, 48)),  # full 5.40 under the satellite
