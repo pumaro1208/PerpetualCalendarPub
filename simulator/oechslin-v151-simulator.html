@@ -40,7 +40,7 @@
 <body>
 <header>
   <h1>Oechslin program wheel — <em>v1.5.1 engine · v1.6 skip train (arch A’) LIVE IN SIM</em>, live</h1>
-  <div class="sub">EP1351104 Fig.2/3 architecture: board 204 + fixed sun 203 (7t) + satellites 210/211/212 on the stud chain; strike teeth 241–243 ride the 24h wheel 13 ahead of the daily long tooth 208. Skip train v1.6 (arch A’) NOW LIVE IN THE SIMULATOR: the 21/22/23h strikers are cam-gated sliders — extended only on their own strike evening (cam law: lobe D∈[−0.60,+0.80]h, 0.10h ramps, 1.6mm stroke), retracted through the S7 adjacency pass (1.0mm drawn / 1.23mm harness clearance). Physical v1.6 part set GENERATED and gated (six watertight parts; see README-v16); all three trains harness-proven bidirectional. <b>sim build b50</b> · changelog = audit report addenda.</div>
+  <div class="sub">EP1351104 Fig.2/3 architecture: board 204 + fixed sun 203 (7t) + satellites 210/211/212 on the stud chain; strike teeth 241–243 ride the 24h wheel 13 ahead of the daily long tooth 208. Drive v1.7 (#149–#152, PRINTED): the 21/22/23h strikers are RIGID ARMS on four stacked wheel pieces — no sliders anywhere. Discrimination is by ALTITUDE (band pitch 6.5: arms at 5.0–9.0 board / 11.70–12.50 month / 18.20–19.00 feb / 24.70–25.50 leap, each 0.70 clear of the mesh lamina below) and by PRESENCE (a satellite carries strike teeth only where it fires — month 5, feb 1, leap 1 — so a non-strike evening sweeps an empty station). The v1.6 cam-gated sliders are retired: the S7 adjacency pass clears by tooth absence, not retraction. <b>sim build b51</b> · changelog = audit report addenda.</div>
 </header>
 <div class="hud">
   <div class="card"><div class="k">Date</div><div class="v" id="hud-date">Feb 26</div></div>
@@ -206,11 +206,11 @@ function phiDeg(){
  // the lash take-up), then ride the calibrated correct-flank curve.
  const _CR=[[-0.76,0],[-0.58,-0.9],[-0.43,-1.74],[-0.26,-2.05],[-0.08,-2.36],
             [0.10,-2.67],[0.27,-2.93],[0.42,-2.80],[0.52,-2.40],[0.60,-2.15],
-            // b43: the pickup CROSSING is scheduled inside the striker's
-            // A' EXTENSION RAMP (d 0.705-0.755, ext 0.45-0.95, >=1.0 mm
-            // radial clearance) -- the tooth passes a SHORTENED slider, not
-            // through an extended one; the ride then carries contact from
-            // d=0.705 all the way down. No pass-through, no routine grinds.
+            // b43 (historical): this crossing was scheduled inside the v1.6
+            // striker's extension ramp. v1.7/b51: STROKE=0, arms rigid — the
+            // ramp terms are inert and the ride curve stands on its own
+            // calibration. The crossing clears by tooth ABSENCE (presence
+            // gating), so there is still no pass-through and no routine grind.
             [0.705,-1.95],[0.755,0]];
  function _cint(T,d){
   if(d<=T[0][0]||d>=T[T.length-1][0])return 0;
@@ -302,27 +302,22 @@ function _overlap(phi,stn,OFF,ks,offDeg){
   const T=_toothPoly(phi,stn,OFF,k),Td=_dense(T,0.25);
   if(_deepIn(Td,F,TOL)||_deepIn(Fd,T,TOL))return true;}
  return false;}
-const SIM_BUILD='b50';   // increments with EVERY simulator change;
+const SIM_BUILD='b51';   // increments with EVERY simulator change;
                          // design version (v1.5.1) tracks geometry only
 let jamInfo=null, grindInfo=null, _prevBase=null, _gapMem={f:null,b:null}, _tgtMem=null, _tgtPend=null;
-// ---- v1.6 ARCH A' CAM LAW ----
-// Each skip striker (21/22/23h) is a radial SLIDER on the 24h wheel, extended
-// by a board-riding cam lobe ONLY on its own strike evening; retracted 1.6 mm
-// otherwise (A' spec: 1.23 mm clearance through the S7 adjacency pass).
-// The lobe dwell spans the mesh transit [D -0.60 .. +0.80] with 0.10 h ramps.
-const STRIKER_STROKE=1.6;
-function strikerExt(hh){                 // 0 = retracted, 1 = extended
- if(hh===24||hh===0)return 1;            // the daily tooth 208 is rigid
- const D=st.h-hh;
- if(D<-0.60||D>0.80)return 0;
- // does THIS evening's boundary fire? (the cam lobe is placed by the board
- // lattice exactly where the engine's evening key says the strike lands)
- let pp=st.pos,pm=st.mon,py=st.yr;
- if(D>0){pp=st.pos===1?31:st.pos-1;if(st.pos===1){pm=st.mon-1;if(pm<0){pm=11;py--}}}
- const e=evalHour(hh,pp,pm,py,st.armed);
- if(!e||e.miss)return 0;
- const rampIn=Math.min(1,(D+0.60)/0.10), rampOut=Math.min(1,(0.80-D)/0.10);
- return Math.max(0,Math.min(rampIn,rampOut));}
+// ---- v1.7 RIGID STACKED ARMS (#149, b51) — the v1.6 cam-slider law is RETIRED ----
+// Ron's constraint: no sliders. The printed drive wheel is four stacked pieces, each
+// carrying one RIGID arm pre-rotated 15deg from the last, all clocked by one square
+// key. A striker never retracts; what changed is why it may safely never retract:
+//   ALTITUDE — each arm lives at its own band (5.0-9.0 / 11.70-12.50 / 18.20-19.00 /
+//   24.70-25.50, pitch 6.5) and can only ever touch its own satellite's strike bars.
+//   PRESENCE — a satellite carries bars only where it fires (month 5, feb 1, leap 1),
+//   so on a non-strike evening the arm sweeps an EMPTY station. The S7 adjacency
+//   pass clears because there is no tooth there, not because a cam pulled one away.
+// STRIKER_STROKE is kept (=0) so every (1-ext)*STROKE retraction term collapses to a
+// no-op without touching the calibrated contact choreography that references ext.
+const STRIKER_STROKE=0;
+function strikerExt(hh){return 1}        // rigid: always extended, all four arms
 const _seenErr={};
 // sandbox-safe console: partial console objects (about:srcdoc previews)
 // must never be able to kill a frame — the b29-b34 freeze root cause (#33)
@@ -650,7 +645,7 @@ const anyHot=()=>strike&&(performance.now()-strike.w)<700;
 const seg=tag=>!anyHot()?1:(hot(tag)?1:0.25);
 function traceP(pts,cx,cy){ctx.beginPath();
  pts.forEach((p,i)=>{const x=cx+p[0]*S,y=cy-p[1]*S;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath()}
-const YW=7.0,X3=190,Y3=1500,S3=9.2,ZS3=22;
+const YW=7.0,X3=190,Y3=1532,S3=9.2,ZS3=12;
 const sx=x=>X3+(x+6)*S3, sz=z=>Y3-z*ZS3;
 function sliceExt(pts,cx,cy){let lo=1e9,hi=-1e9,f=false;
  for(const p of pts){const xw=cx+p[0],yw=cy+p[1];
@@ -737,7 +732,9 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
  // S7 ADJACENCY ANNOTATION: on the eve-of-strike pass the satellite tooth
  // sweeps the WRONG side of its striker (presentation crawls 6.8 deg/evening)
  // -- the v1.3-v1.5 skip-train disease, measured physically (sequence sweep,
- // finding S7) and retired by arch A' (v1.6: striker retracted, 1.23 mm clear).
+ // finding S7). v1.6 cured it by retracting the striker; v1.7 (b51, no sliders)
+ // cures it by ABSENCE: the tooth presented on the eve is a station the satellite
+ // does not populate, so the rigid arm sweeps empty air. Same annotation, new cure.
  {const d2=Math.PI/180;
   for(const[hh2,stn2,OFF2,od2]of[[21,STN_L,OFF_L,45],[22,STN_F,OFF_F,30],[23,STN_M,OFF_M,15]]){
    const dd=st.h-hh2;
@@ -758,7 +755,7 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
     ctx.beginPath();ctx.arc(mx2,my2,26,0,Math.PI*2);ctx.stroke();
     ctx.setLineDash([]);ctx.globalAlpha=1;
     ctx.fillStyle='#3aa06a';ctx.font='600 12px system-ui';ctx.textAlign='left';
-    ctx.fillText('arch A\u2019 (v1.6): striker retracted through the S7 pass \u00B7 '+gp.toFixed(1)+' mm clear',mx2+34,my2+4);
+    ctx.fillText('v1.7: S7 pass clears by ABSENCE \u2014 rigid arm, empty station \u00B7 '+gp.toFixed(1)+' mm',mx2+34,my2+4);
     break;}
    if(false){
     const mx=CX+((tp2[0]+ft2[0])/2)*S, my=CY-((tp2[1]+ft2[1])/2)*S;
@@ -767,7 +764,7 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
     ctx.setLineDash([]);ctx.globalAlpha=1;
     ctx.fillStyle='#e0a030';ctx.font='600 12px system-ui';ctx.textAlign='left';
     ctx.fillText('S7 adjacency pass \u2014 wrong-side graze ('+gp.toFixed(1)+' mm):',mx+34,my-4);
-    ctx.fillText('v1.3 skip-train flaw; v1.6 (arch A\u2019) retracts this striker \u00B7 1.23 mm clear',mx+34,my+12);
+    ctx.fillText('v1.3 skip-train flaw; v1.7 clears it by tooth absence (no sliders)',mx+34,my+12);
     break;}}}
  if(grindInfo&&!jamInfo){
   ctx.fillStyle='rgba(200,140,30,0.88)';ctx.fillRect(0,0,cv.width,30);
@@ -969,7 +966,7 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
   ctx.globalAlpha=seg(tag);
   if(hot(tag)){ctx.shadowColor=col;ctx.shadowBlur=12}
   ctx.beginPath();
-  const _B=DBODY-_ret,_T=DTIP-_ret;   // the slider carries the whole wedge
+  const _B=DBODY-_ret,_T=DTIP-_ret;   // _ret==0 since b51: rigid arms, full wedge
   ctx.moveTo(dcx+_B*S*Math.cos(a-hw),dcy-_B*S*Math.sin(a-hw));
   ctx.lineTo(dcx+_T*S*Math.cos(a-hw*0.4),dcy-_T*S*Math.sin(a-hw*0.4));
   ctx.lineTo(dcx+_T*S*Math.cos(a+hw*0.4),dcy-_T*S*Math.sin(a+hw*0.4));
@@ -1011,7 +1008,7 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
   ax(dcx,dcy,C.mid,'drive axis — 24h wheel 13',true);
   ax(CX+mx*S,CY-my*S,C.mon,'210 M');
   ax(CX+fx*S,CY-fy*S,C.feb,'211 F');
-  ax(CX+lx*S,CY-ly*S,C.leap,'212 L (slider)');
+  ax(CX+lx*S,CY-ly*S,C.leap,'212 L');
   ctx.setLineDash([4,4]);ctx.strokeStyle=C.brass;ctx.lineWidth=1.4;
   ctx.beginPath();ctx.moveTo(CX+mx*S,CY-my*S);ctx.lineTo(CX+fx*S,CY-fy*S);
   ctx.lineTo(CX+lx*S,CY-ly*S);ctx.stroke();ctx.setLineDash([]);
@@ -1178,47 +1175,47 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
  // ---- SECTION ---- (second canvas, below the controls bar)
  const ctxMain=ctx; try{ ctx=c2; ctx.setTransform(1,0,0,1,0,-1120);
  ctx.font='400 14px system-ui';ctx.textAlign='left';
- const lv=[['board',5,9,C.mid],['A month',9.5,12.5,C.mon],['B feb + leap',13,16,C.feb],['C',16.5,19.5,C.leap]];
+ const lv=[['board',5,9,C.mid],['A month',9.5,12.5,C.mon],['B feb',16,19,C.feb],['C leap',22.5,25.5,C.leap]];
  for(const[lab,z0,z1,col]of lv){
   ctx.setLineDash([3,6]);ctx.strokeStyle=col;ctx.globalAlpha=0.35;
   ctx.beginPath();ctx.moveTo(sx(-6),sz((z0+z1)/2));ctx.lineTo(sx(118),sz((z0+z1)/2));ctx.stroke();
   ctx.globalAlpha=1;ctx.setLineDash([]);ctx.fillStyle=col;
   ctx.fillText(lab,sx(-6)-104,sz((z0+z1)/2)+5)}
  ctx.setLineDash([5,5]);ctx.strokeStyle=C.muted;ctx.globalAlpha=0.7;
- ctx.beginPath();ctx.moveTo(sx(41.3),sz(20.5));ctx.lineTo(sx(41.3),sz(3.5));ctx.stroke();
+ ctx.beginPath();ctx.moveTo(sx(41.3),sz(30.0));ctx.lineTo(sx(41.3),sz(3.5));ctx.stroke();
  ctx.setLineDash([]);ctx.globalAlpha=1;
  ctx.fillStyle=C.muted;ctx.font='400 13px system-ui';ctx.textAlign='center';
- ctx.fillText('mesh line',sx(41.3),sz(20.5)-8);
+ ctx.fillText('mesh line',sx(41.3),sz(30.0)-8);
  bar(sliceExt(progP,0,0),5,9,'rgba(90,98,92,0.3)',hot('prog')&&strike?strike.c:C.line,'prog',-4);
- for(const[z0,z1]of[[9.5,11],[13,14.5],[16.5,18]])
+ for(const[z0,z1]of[[9.5,11],[16,17.5],[22.5,24]])
    bar(sliceExt(sunP,0,0),z0,z1,'rgba(125,140,154,0.35)',hot('sun')?C.ink:C.muted,'sun');
- for(const[z0,z1]of[[11,13],[14.5,16.5],[18,19.5]])
+ for(const[z0,z1]of[[11,16],[17.5,22.5],[24,29]])
    bar([-5,5],z0,z1,'rgba(125,140,154,0.5)',hot('sun')?C.ink:C.muted,'sun');
  bar(sliceExt(satM,mx,my),9.5,12.5,C.mon+'44',C.mon,'mon');
- bar(sliceExt(satF,fx,fy),13,16,C.feb+'44',C.feb,'feb');
- bar(sliceExt(satL,lx,ly),16.5,19.5,C.leap+'33',C.leap,'leap');
+ bar(sliceExt(satF,fx,fy),16,19,C.feb+'44',C.feb,'feb');
+ bar(sliceExt(satL,lx,ly),22.5,25.5,C.leap+'33',C.leap,'leap');
  {const a=(spin+OFF_L)*Math.PI/180,r1=(st.armed?LTIP:STIP-1.2);
   const xw=lx+r1*Math.cos(a),yw=ly+r1*Math.sin(a);
-  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(18),5,0,7);
+  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(24.75),5,0,7);
    if(st.armed){ctx.fillStyle=C.leap;ctx.fill()}
    ctx.strokeStyle=C.leap;ctx.stroke()}}
  for(const k of[0,1,2,3,4]){const ta=((spin+OFF_M)+k*30)*Math.PI/180;
   const xw=mx+LTIP*Math.cos(ta),yw=my+LTIP*Math.sin(ta);
-  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(11),4.5,0,7);ctx.fillStyle=C.mon;ctx.fill()}}
+  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(11.75),4.5,0,7);ctx.fillStyle=C.mon;ctx.fill()}}
  {const ta=(spin+OFF_F)*Math.PI/180,xw=fx+LTIP*Math.cos(ta),yw=fy+LTIP*Math.sin(ta);
-  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(14.5),4.5,0,7);ctx.fillStyle=C.feb;ctx.fill()}}
+  if(Math.abs(yw)<=YW){ctx.beginPath();ctx.arc(sx(xw),sz(18.6),4.5,0,7);ctx.fillStyle=C.feb;ctx.fill()}}
  bar([DDR-DBODY,DDR+2],5,9,C.mid+'22',C.mid,'drv',28);
  for(let i=0;i<arms.length;i++){const[off,col,tag,lab]=arms[i];
   const a=(180-off+driveRot)*Math.PI/180;
   const tp2=[[DBODY,a-0.075],[DTIP,a-0.03],[DTIP,a+0.03],[DBODY,a+0.075]]
    .map(p=>[DDR+p[0]*Math.cos(p[1]),p[0]*Math.sin(p[1])]);
   const e=sliceExt(tp2,0,0);
-  if(e){const zl=[[5,9],[9.5,12.5],[13,16],[16.5,19.5]][i];
+  if(e){const zl=[[5,9],[11.7,12.5],[18.2,19],[24.7,25.5]][i];
    bar(e,zl[0],zl[1],col,col,tag);
    ctx.fillStyle=col;ctx.font='500 12px system-ui';ctx.textAlign='center';
    ctx.fillText(lab,sx((e[0]+e[1])/2),sz(zl[1])-5)}}
  if(anyHot()&&!strike.miss){const age=(performance.now()-strike.w)/700;
-  const lvz=[7,11,14.5,18][strike.lv];
+  const lvz=[7,12.1,18.6,25.1][strike.lv];
   ctx.strokeStyle=strike.c;ctx.lineWidth=4;ctx.globalAlpha=1-age;
   ctx.beginPath();ctx.arc(sx(41.3),sz(lvz),12+age*30,0,7);ctx.stroke();
   ctx.fillStyle=strike.c;ctx.beginPath();ctx.arc(sx(41.3),sz(lvz),7,0,7);ctx.fill();
@@ -1239,7 +1236,7 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
   axline(mx,my,9.5,14,C.mon,'M');
   axline(fx,fy,14,20,C.feb,'F');
   axline(lx,ly,20,26,C.leap,'L');}
- ctx.fillText('section (\u00B17 mm) — dash-dot lines are rotation axes; satellite axes ride the board (faded = out of slice)',680,Y3+42)
+ ctx.fillText('section (\u00B17 mm) — dash-dot lines are rotation axes; satellite axes ride the board (faded = out of slice)',680,1554)
  }finally{ctx=ctxMain}}
 (function selfTest(){
  const key=()=>[st.h.toFixed(6),st.day,st.pos,st.mon,st.yr,st.steps,st.armed,st.face].join('|');
