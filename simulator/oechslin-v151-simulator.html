@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Oechslin program wheel — v1.5.1 · sim b50</title>
+<title>Oechslin program wheel — v1.5.1 · sim b53</title>
 <style>
   :root{
     --bg:#101312; --panel:#1A1F1D; --ink:#E8E6DC; --muted:#8E948E;
@@ -40,7 +40,7 @@
 <body>
 <header>
   <h1>Oechslin program wheel — <em>v1.5.1 engine · v1.6 skip train (arch A’) LIVE IN SIM</em>, live</h1>
-  <div class="sub">EP1351104 Fig.2/3 architecture: board 204 + fixed sun 203 (7t) + satellites 210/211/212 on the stud chain; strike teeth 241–243 ride the 24h wheel 13 ahead of the daily long tooth 208. Drive v1.7 (#149–#152, PRINTED): the 21/22/23h strikers are RIGID ARMS on four stacked wheel pieces — no sliders anywhere. Discrimination is by ALTITUDE (band pitch 6.5: arms at 5.0–9.0 board / 11.70–12.50 month / 18.20–19.00 feb / 24.70–25.50 leap, each 0.70 clear of the mesh lamina below) and by PRESENCE (a satellite carries strike teeth only where it fires — month 5, feb 1, leap 1 — so a non-strike evening sweeps an empty station). The v1.6 cam-gated sliders are retired: the S7 adjacency pass clears by tooth absence, not retraction. <b>sim build b52</b> · changelog = audit report addenda.</div>
+  <div class="sub">EP1351104 Fig.2/3 architecture: board 204 + fixed sun 203 (7t) + satellites 210/211/212 on the stud chain; strike teeth 241–243 ride the 24h wheel 13 ahead of the daily long tooth 208. Drive v1.7 (#149–#152, PRINTED): the 21/22/23h strikers are RIGID ARMS on four stacked wheel pieces — no sliders anywhere. Discrimination is by ALTITUDE (band pitch 6.5: arms at 5.0–9.0 board / 11.70–12.50 month / 18.20–19.00 feb / 24.70–25.50 leap, each 0.70 clear of the mesh lamina below) and by PRESENCE (a satellite carries strike teeth only where it fires — month 5, feb 1, leap 1 — so a non-strike evening sweeps an empty station). The v1.6 cam-gated sliders are retired: the S7 adjacency pass clears by tooth absence, not retraction. <b>sim build b53</b> · changelog = audit report addenda.</div>
 </header>
 <div class="hud">
   <div class="card"><div class="k">Date</div><div class="v" id="hud-date">Feb 26</div></div>
@@ -326,7 +326,7 @@ function _overlap(phi,stn,OFF,ks,offDeg){
   const T=_toothPoly(phi,stn,OFF,k,lf),Td=_dense(T,0.25);
   if(_deepIn(Td,F,TOL)||_deepIn(Fd,T,TOL))return true;}
  return false;}
-const SIM_BUILD='b52';   // increments with EVERY simulator change;
+const SIM_BUILD='b53';   // increments with EVERY simulator change;
                          // design version (v1.5.1) tracks geometry only
 let jamInfo=null, grindInfo=null, _prevBase=null, _gapMem={f:null,b:null}, _tgtMem=null, _tgtPend=null;
 // ---- v1.7 RIGID STACKED ARMS (#149, b51) — the v1.6 cam-slider law is RETIRED ----
@@ -348,7 +348,7 @@ const _seenErr={};
 function _con(kind){try{
  const c=typeof console!=='undefined'?console:null;
  const f=c&&(c[kind]||c.log);
- if(typeof f==='function')f.apply(c,Array.prototype.slice.call(arguments,1));
+ if(typeof f==='function')f.apply(c,Array.prototype.slice.call(arguments,1).map(_describe));
 }catch(_){}}
 function _describe(x){
  if(x==null)return String(x);
@@ -960,7 +960,7 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
   ctx.fillStyle=C.muted;ctx.font='400 11px system-ui';
   ctx.fillText('annual drive \u2014 month star \u2192 idlers \u2192 shaft \u2192 Geneva (1 rev/yr) \u00B7 v1.5.1 slots to r11.4',
    shx-2*S,shy+3.0*S+18);
-  ctx.fillText('century ring \u2014 MANUAL SET (v1.5.1 · sim b50) \u00B7 lobes mask 2100 \u00B7 2200 \u00B7 2300',
+  ctx.fillText('century ring \u2014 MANUAL SET (v1.5.1 · sim b53) \u00B7 lobes mask 2100 \u00B7 2200 \u00B7 2300',
    CX,CY-cr*S-10)}
  ctx.globalAlpha=seg('mon');
  if(hot('mon')){ctx.shadowColor=C.mon;ctx.shadowBlur=12}
@@ -969,14 +969,18 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
  // FLANK-CONTACT offset: the tooth axis rides beside the finger axis by
  // the sum of their half-widths (5.06 deg of spin), on the driven-flank
  // side (direction-aware). Head-on tip-to-tip formation was a drawing lie.
+ // b53: drawn lean == contact lean, per satellite. The whole wheel swings through
+ // its lash as one body, so every tooth on a satellite shares its relax.
  const SOFF=3.817*dirSmooth;
- for(const k of[0,8,9,10,11])strikeTooth(CX+mx*S,CY-my*S,spin+OFF_M+SOFF+k*30,C.mon,false);
+ const SOFF_M=SOFF*_leanRelax(st.h-23),SOFF_F=SOFF*_leanRelax(st.h-22),
+       SOFF_L=SOFF*_leanRelax(st.h-21);
+ for(const k of[0,8,9,10,11])strikeTooth(CX+mx*S,CY-my*S,spin+OFF_M+SOFF_M+k*30,C.mon,false);
  ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.lineWidth=1.5;
  ctx.globalAlpha=seg('feb');
  if(hot('feb')){ctx.shadowColor=C.feb;ctx.shadowBlur=12}
  traceP(satF,CX+fx*S,CY-fy*S);ctx.fillStyle=C.feb+'22';ctx.fill();
  ctx.strokeStyle=C.feb;ctx.lineWidth=hot('feb')?3:1.2;ctx.stroke();
- strikeTooth(CX+fx*S,CY-fy*S,spin+OFF_F+SOFF,C.feb,false);
+ strikeTooth(CX+fx*S,CY-fy*S,spin+OFF_F+SOFF_F,C.feb,false);
  ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.lineWidth=1.5;
  // leap satellite (level C) with its retractable tooth
  ctx.globalAlpha=seg('leap');
@@ -984,7 +988,7 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
  traceP(satL,CX+lx*S,CY-ly*S);ctx.fillStyle=C.leap+'22';ctx.fill();
  ctx.strokeStyle=C.leap;ctx.lineWidth=hot('leap')?3:1.5;ctx.stroke();
  ctx.shadowBlur=0;
- strikeTooth(CX+lx*S,CY-ly*S,spin+OFF_L+SOFF,C.leap,!st.armed);
+ strikeTooth(CX+lx*S,CY-ly*S,spin+OFF_L+SOFF_L,C.leap,!st.armed);
  ctx.globalAlpha=1;ctx.lineWidth=1.5;
   ctx.globalAlpha=seg('drv');ctx.strokeStyle=C.mid;ctx.fillStyle=C.mid+'1a';
  ctx.beginPath();ctx.arc(dcx,dcy,DBODY*S,0,7);ctx.fill();
