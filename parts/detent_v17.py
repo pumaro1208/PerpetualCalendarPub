@@ -155,10 +155,18 @@ def holder(name="163_detent_holder_v17.stl"):
                       (POCKET_X+TAB[0]/2, WIRE_Y-4.0),
                       (POCKET_X+TAB[0]/2, WIRE_Y+4.0),
                       (POCKET_X-TAB[0]/2, WIRE_Y+4.0)])
+    # the LEAF GATEWAY: without this slot the pocket's 2mm west wall blocks the
+    # leaf and the spring cannot seat (found while filleting the elbow - the
+    # gate had measured spring and holder separately, never one into the other)
+    # full-width gateway: the anchor fillets (the REAL stress hotspot - max moment
+    # lives at the pocket mouth, ~12 MPa nominal x notch factor) sweep through any
+    # partial west wall. Tab keeps its press fit + three walls; loads are ~0.3N.
+    gateway = Polygon([(POCKET_X-7.2, WIRE_Y-4.05),(POCKET_X-4.9, WIRE_Y-4.05),
+                       (POCKET_X-4.9, WIRE_Y+4.05),(POCKET_X-7.2, WIRE_Y+4.05)])
     write_stl(name, stack([
         (0.0, BASE_T, unary_union([base, blk])),
         (BASE_T, POCKET_FLOOR, blk),
-        (POCKET_FLOOR, POCKET_TOP, blk.difference(pocket)),
+        (POCKET_FLOOR, POCKET_TOP, blk.difference(pocket).difference(gateway)),
     ]))
 
 def spring(width, tag):
@@ -178,10 +186,17 @@ def spring(width, tag):
                      (POCKET_X-TAB[0]/2, WIRE_Y+TAB[1]/2)])
     leaf  = Polygon([(0.0, WIRE_Y-width/2),(POCKET_X-TAB[0]/2+1, WIRE_Y-width/2),
                      (POCKET_X-TAB[0]/2+1, WIRE_Y+width/2),(0.0, WIRE_Y+width/2)])
-    fing  = Polygon([(xn-FINGER_W/2, WIRE_Y),(xn+FINGER_W/2, WIRE_Y),
-                     (xn+FINGER_W/2, tipy-NOSE_R+0.6),(xn-FINGER_W/2, tipy-NOSE_R+0.6)])
+    # Ron, on the render: "that detent arm looks like it will snap at the elbow."
+    # Operational stress there is ~1 MPa — but ASSEMBLY loads lever the elbow
+    # directly, and a sharp interior corner in brittle PLA is a pre-written crack.
+    # So: the finger TAPERS (root 5.5 wide -> 3.6 at the nose, +53% root section),
+    # and every interior corner gets an r2.5 fillet via a closing buffer (convex
+    # corners and the press-fit tab dims survive the round trip exactly).
+    fing  = Polygon([(xn-2.75, WIRE_Y),(xn+2.75, WIRE_Y),
+                     (xn+1.8, tipy-NOSE_R+0.6),(xn-1.8, tipy-NOSE_R+0.6)])
     nose  = Point(xn, tipy).buffer(NOSE_R, 64)
     body  = unary_union([tab, leaf, fing, nose])
+    body  = body.buffer(2.5, join_style=1).buffer(-2.5, join_style=1)   # fillet interior corners
     write_stl(f"165_detent_spring_{tag}_v17.stl", stack([(0.0, SPRING_Z, body)]))
     E=2400.0; I=width**3*SPRING_Z/12.0; k=3*E*I/LEAF_L**3
     return k
@@ -197,10 +212,12 @@ def holder_north(name="166_detent_holder_north_v17.stl"):
                       (POCKET_X+TAB[0]/2, -WIRE_Y-4.0),
                       (POCKET_X+TAB[0]/2, -WIRE_Y+4.0),
                       (POCKET_X-TAB[0]/2, -WIRE_Y+4.0)])
+    gateway = Polygon([(POCKET_X-7.2, -WIRE_Y-4.05),(POCKET_X-4.9, -WIRE_Y-4.05),
+                       (POCKET_X-4.9, -WIRE_Y+4.05),(POCKET_X-7.2, -WIRE_Y+4.05)])
     write_stl(name, stack([
         (0.0, BASE_T, unary_union([base, blk])),
         (BASE_T, POCKET_FLOOR, blk),
-        (POCKET_FLOOR, POCKET_TOP, blk.difference(pocket)),
+        (POCKET_FLOOR, POCKET_TOP, blk.difference(pocket).difference(gateway)),
     ]))
 
 if __name__ == "__main__":

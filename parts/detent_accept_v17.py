@@ -133,11 +133,35 @@ for hf,tag,sgn in (("163_detent_holder_v17","south",-1),("166_detent_holder_nort
     gate(abs(lipx-PLATE_W_EDGE)<0.05,
          f"{tag} lip inner face x{lipx:+.2f} AT the plate west edge ({PLATE_W_EDGE}) — locates x; "
          f"residual comp slop 0.12mm = 0.22 deg station error = 6% of the strike window")
+# ---- installability: one part INTO the other, not each alone (the elbow review
+# found the pocket's west wall blocking the leaf — this gate exists so that class
+# of fault cannot ship again) ----
+from shapely.ops import unary_union as _uu
+from detent_v17 import POCKET_X as _PX, WIRE_Y as _WYY
+_tabzone=Polygon([(_PX-5.3,_WYY-4.4),(_PX+5.3,_WYY-4.4),(_PX+5.3,_WYY+4.4),(_PX-5.3,_WYY+4.4)])
+for sp in ("soft","med","firm"):
+    Sp=_uu([Polygon(L) for L in loops(f"stl_v13/165_detent_spring_{sp}_v17.stl",1.0)])
+    Ho=_uu([Polygon(L) for L in loops("stl_v13/163_detent_holder_v17.stl",3.5)])
+    inter=Sp.intersection(Ho)
+    press=inter.intersection(_tabzone).area
+    foul=inter.difference(_tabzone).area
+    gate(foul<0.01 and 2.0<press<4.0,
+         f"{sp} spring seats: press overlap {press:.2f}mm2 confined to the tab "
+         f"(designed 3.0 = 0.15/side, comp -> 0.06 fit); fouling outside the tab {foul:.3f}mm2")
 mSp=trimesh.load("stl_v13/165_detent_spring_med_v17.stl")
 sb=mSp.bounds
 gate(abs(sb[1][2]-sb[0][2]-2.0)<0.02, f"spring is one flat 2.0mm piece (h {sb[1][2]-sb[0][2]:.2f}) — prints in minutes, consumable")
 gate(2.7+2.0<=5.0-0.3+0.01, "spring plane 2.7..4.7: 0.3 under the board, 0.2 over the fixture plate")
 gate(3.4<4.7 and 2.7<5.0, "nose band overlaps the star teeth 3.4..5.0 by 1.3mm")
+# elbow: tapered root + fillets (Ron: "looks like it will snap at the elbow")
+Lm=loops("stl_v13/165_detent_spring_med_v17.stl",1.0)
+Sm=_uu([Polygon(L) for L in Lm])
+from detent_v17 import WIRE_Y as _WY
+from shapely.geometry import LineString as _LS
+cut=_LS([(-20,_WY+2.6),(20,_WY+2.6)]).intersection(Sm)
+rw=cut.length if not cut.is_empty else 0
+gate(rw>4.8, f"finger root {rw:.1f}mm wide just above the leaf (was 3.6 sharp-cornered; "
+             f"tapered + r2.5 fillets — the elbow is now the strongest part of the arm)")
 # resting strain: preload 0.35 on a 40 leaf — creep-safe
 for w,tag in ((2.6,"soft"),(3.0,"med"),(3.4,"firm")):
     eps=3*w*0.35/(2*40.0**2)
