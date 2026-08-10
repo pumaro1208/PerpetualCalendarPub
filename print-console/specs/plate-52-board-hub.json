@@ -1,0 +1,49 @@
+{
+  "name": "plate-52-board-hub",
+  "version_tag": "#164 BOARD HUB, SOLO — Ron, bench: 'the new board's detent ring does not snap into the center of the board, leaving a big hole that doesn't anchor itself to the sun post.' Design hole confirmed: the board has never ridden the post directly — it presses onto the old 50e star hub's r5.53 tube, but 50e also carries the OLD scallop detent disc (r26.0-28.5, assembly 3.3-5.0), which lands with ~131mm2 of hard interference exactly where the new #156 detent ring 164 lives (ID 26.5, same z band). So the old hub cannot be transferred and v17 never emitted a disc-free replacement. Part 167 is that replacement: same proven tube (ID r4.17 rides the post, OD r5.53 presses the board's 5.45 bore, #136/#137 numbers verbatim) + a plain r12 thrust flange that rides the fixture pad (r6.5-13) and seats the board at exactly z5.0, clearing the ring ID by 14.5mm. Prints flange-down, flat, no supports. Assembly: hub over the post first (flange down on the pad), snap ring 164 into the board's underside sockets (small peg to small socket), then press the board down onto the tube until it seats on the flange. The old 50e stays married to the old board. 10 gates PASS incl. measured old-disc-vs-new-ring interference and zero-overlap for the new part. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/167_board_hub_v17.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}
