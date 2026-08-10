@@ -165,17 +165,28 @@ def spring(width, tag):
     E=2400.0; I=width**3*SPRING_Z/12.0
     return 192*E*I/SPAN**3
 
-def _bridge_holder(name, m):
-    """Base + TWO pocket blocks at nose ± SPAN/2. Inner walls open full width
+def holder_slabs(m, lip=True, overlap=0.0):
+    """The holder GEOMETRY, exposed for reuse (#165: Ron — 'this bridge holder
+    must be integrated into the fixture'). One source; the standalone part and
+    the integrated fixture r64 both build from these slabs, so they can never
+    disagree — the board_sockets() lesson applied to the holder.
+
+    Base + TWO pocket blocks at nose ± SPAN/2. Inner walls open full width
     (the #161 gateway lesson); OUTER walls stand — the spring is captured both
-    ways. m=+1 south, -1 mirrors for north. Corner-wrap lip registers on the
-    fixture (#157b)."""
+    ways. m=+1 south, -1 mirrors for north.
+    lip:      corner-wrap registration (#157b) — the standalone part only; the
+              integrated fixture IS the registration and drops it.
+    overlap:  extends the base's inboard edge past the plate edge line (HY_N) so
+              the integrated wing interpenetrates the plate slab and slices as
+              one solid instead of two kissing shells."""
     seat_r = -_seat_y(); a=np.deg2rad(V_BOT)
     xn = seat_r*np.cos(a)
     base = Polygon([(xn-SPAN/2-8, m*HY_S),(xn+SPAN/2+8, m*HY_S),
-                    (xn+SPAN/2+8, m*HY_N),(xn-SPAN/2-8, m*HY_N)])
-    lip  = Polygon([(LIP_X0, m*HY_N),(PLATE_W_EDGE, m*HY_N),
-                    (PLATE_W_EDGE, m*-34.0),(LIP_X0, m*-34.0)])
+                    (xn+SPAN/2+8, m*HY_N + m*overlap),(xn-SPAN/2-8, m*HY_N + m*overlap)])
+    parts=[base]
+    if lip:
+        parts.append(Polygon([(LIP_X0, m*HY_N),(PLATE_W_EDGE, m*HY_N),
+                              (PLATE_W_EDGE, m*-34.0),(LIP_X0, m*-34.0)]))
     blocks=[]; cuts=[]
     for sgn in (-1,+1):
         cx = xn + sgn*SPAN/2
@@ -186,11 +197,16 @@ def _bridge_holder(name, m):
         cuts.append(Polygon([(gx0, m*WIRE_Y-4.05),(gx1, m*WIRE_Y-4.05),
                              (gx1, m*WIRE_Y+4.05),(gx0, m*WIRE_Y+4.05)]))
     blk=unary_union(blocks); cut=unary_union(cuts)
-    write_stl(name, stack([
-        (0.0, BASE_T, unary_union([base, lip, blk])),
+    return [
+        (0.0, BASE_T, unary_union(parts+[blk])),
         (BASE_T, POCKET_FLOOR, blk),
         (POCKET_FLOOR, POCKET_TOP, blk.difference(cut)),
-    ]))
+    ]
+
+def _bridge_holder(name, m):
+    """Standalone bench part (#157b corner-wrap). DEPRECATED by #165 — the same
+    slabs now print integrated in fixture r64; these remain as spares only."""
+    write_stl(name, stack(holder_slabs(m, lip=True)))
 
 def holder(name="163_detent_holder_v17.stl"): _bridge_holder(name, +1)
 def holder_north(name="166_detent_holder_north_v17.stl"): _bridge_holder(name, -1)
