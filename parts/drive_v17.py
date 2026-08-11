@@ -84,28 +84,32 @@ def piece(nm, off, z0, z1, top, no):
     ]))
     return h
 
-def sleeve(no="162_drive_sleeve_v17.stl", z0=2.5, z1=30.0):
-    """Rev B — Ron, bench: "the 23h goes slightly beneath the satellite."
-    Root cause: the stack had NO AXIAL SEAT. Nothing held it at z5.0 — the sleeve
-    slid down the post until it sat on the fixture base at 2.5, dropping every
-    arm 2.5mm: the 23h ran at ~9.2-10.0, under the month strike tips (11.7-12.5)
-    and into the mesh lamina zone. The 24h arm's tall 4mm band kept the daily
-    train working, which is why the fault hid behind a healthy-looking crank.
+def sleeve(no="169_drive_sleeve_revC_v17.stl", length=25.0):
+    """Rev C (#167) — a RETRACTION of rev B, which is scrap.
 
-    The sleeve now carries a FLANGE FOOT: r13 disc from 2.5 to 5.0 that stands on
-    the fixture base and seats the bottom piece at exactly z5.0. The square key
-    starts at 5.0 as before; round r4.17 bore throughout (this wheel is the
-    crank). The flange bottom is the thrust face - a dab of grease if it sings.
-    Flange r13 clears the board teeth (they reach within 31.6 of the drive axis)
-    and sits entirely under the 24h arm band."""
+    Rev B added a flange foot "standing on the fixture base at 2.5". The fixture
+    has no bare base there: since r58 the drive post carries a COLLAR, r6.5 from
+    the platform (4.0) up to exactly 5.0 — and the collar top IS the axial seat
+    the #149 stack was designed around. The bottom piece's square bore (11.50
+    across flats) cannot pass the collar's 13.0 diameter, so the stack seats at
+    5.0 with no extra part at all. Rev B's r4.17 flange bore could not swallow
+    the collar either, so the flange LANDED ON IT: stack at 7.5, every arm
+    +2.5mm — 24h half-engaged on the board, 23h striking the empty gap between
+    month tips and feb mesh, 22h/21h missing outright (Ron: "things are not
+    lining up"). #159's premise — "the stack had no z-datum" — was wrong; the
+    fixture always had one. Finding #159 is retracted to that extent and the
+    June low-stack observation is REOPENED (whatever caused it, it was not a
+    missing datum).
+
+    Rev C is the honest sleeve: a straight keyed tube, bottom face seating on
+    the collar top at 5.0 alongside the bottom piece, top flush with the 21h
+    piece at 30.0. Round r4.17 bore (this wheel is the crank); square 11.50
+    outside; length 25.0."""
     sq = Polygon([(SQ_HW,SQ_HW),(-SQ_HW,SQ_HW),(-SQ_HW,-SQ_HW),(SQ_HW,-SQ_HW)])
     bore = Point(0,0).buffer(POST_R, 64)
     wall = SQ_HW - POST_R
     assert wall > 1.0, f"sleeve wall only {wall:.2f}mm"
-    write_stl(no, stack([
-        (0.0, 2.5,   Point(0,0).buffer(13.0, 96).difference(bore)),  # flange foot
-        (2.5, z1-z0, sq.difference(bore)),                           # keyed shaft
-    ]))
+    write_stl(no, stack([(0.0, length, sq.difference(bore))]))
     return wall
 
 if __name__ == "__main__":
@@ -115,5 +119,62 @@ if __name__ == "__main__":
         print(f"  {nm}: arm {180-off:5.1f}deg, z {z0:5.2f}-{z1:5.2f} -> {tgt:17s} "
               f"piece {h:5.2f} tall, prints arm-down")
     w = sleeve()
-    print(f"  + sleeve rev B: flange foot 2.5-5.0 SEATS the stack at z5.0 (the missing "
-          f"axial datum); square {2*SQ_HW:.2f} across, wall {w:.2f}mm")
+    print(f"  + sleeve rev C: straight tube, seats on the COLLAR at z5.0 (the datum the "
+          f"fixture always had); square {2*SQ_HW:.2f} across, wall {w:.2f}mm")
+
+    # ---- #167 SEATED-STACK ACCEPTANCE — the gate #159 never had ---------------
+    # Measured off the fixture and part STLs: where does the stack actually come
+    # to rest, and where does each arm band land? Asserted against the strike
+    # targets, not printed as numbers.
+    import trimesh
+    FAILS = 0
+    def gate(ok, msg):
+        global FAILS
+        print(f"  [{'PASS' if ok else 'FAIL'}] {msg}")
+        if not ok: FAILS += 1
+    fx = trimesh.load("stl_v13/168_fixture_r64_v17.stl")
+    # collar top: highest z where material exists in the annulus r(4.5..6.4) about the drive axis
+    seat = 0.0
+    for z in np.arange(3.0, 8.0, 0.05):
+        s = fx.section(plane_origin=[0,0,z], plane_normal=[0,0,1])
+        if s is None: continue
+        hit = False
+        for L in s.discrete:
+            L = np.array(L)[:,:2]
+            d = np.hypot(L[:,0]-36.75, L[:,1])
+            if 4.4 < d.max() < 6.7: hit = True   # a boundary between post r4.17 and collar r6.5
+        if hit: seat = z
+    gate(abs(seat-5.0) < 0.1, f"fixture collar top measured at z{seat:.2f} — THE axial seat (was always there)")
+    gate(2*SQ_HW < 13.0, f"bottom piece square bore {2*SQ_HW:.2f} < collar dia 13.0 — stack CANNOT pass, seats at 5.0")
+    gate(2*POST_R < 13.0, "sleeve bore r4.17 also seats on the collar — sleeve and stack share the 5.0 datum")
+    # cumulative arm bands from the emitted pieces, seated at 5.0:
+    zb = 5.0
+    for i, (nm, off, z0, z1, tgt) in enumerate(ARMS):
+        m = trimesh.load(f"stl_v13/{158+i}_drive_{nm}_v17.stl")
+        ph = m.bounds[1][2] - m.bounds[0][2]
+        # arm band = the z where the section reaches DTIP
+        lo = hi = None
+        for z in np.arange(0.05, ph, 0.1):
+            s = m.section(plane_origin=[0,0,z], plane_normal=[0,0,1])
+            if s is None: continue
+            rmax = max(np.hypot(np.array(L)[:,0], np.array(L)[:,1]).max() for L in s.discrete)
+            if rmax > DTIP - 0.1:
+                if lo is None: lo = z
+                hi = z
+        gate(abs((zb+lo)-z0) < 0.15 and abs((zb+hi)-z1) < 0.15,
+             f"{nm} arm band seated {zb+lo:.2f}..{zb+hi:.2f} (target {z0:.2f}..{z1:.2f}, {tgt})")
+        zb += ph
+    # rev B condemnation, measured: its flange bore cannot swallow the collar
+    try:
+        mb = trimesh.load("stl_v13/162_drive_sleeve_v17.stl")
+        s = mb.section(plane_origin=[0,0,0.5], plane_normal=[0,0,1])
+        rmin = min(np.hypot(np.array(L)[:,0], np.array(L)[:,1]).min() for L in s.discrete)
+        gate(rmin < 6.5, f"rev B flange bore r{rmin:.2f} < collar r6.5 -> lands ON the collar, "
+             f"stack at 7.5 (+2.5) — WHY rev B is scrap (#167)")
+    except Exception:
+        print("  [    ] rev B STL absent — condemnation gate skipped")
+    sy = trimesh.load("stl_v13/169_drive_sleeve_revC_v17.stl")
+    gate(abs((sy.bounds[1][2]-sy.bounds[0][2]) - 25.0) < 0.02,
+         "rev C length 25.0: seats 5.0, top flush with the 21h piece at 30.0")
+    print(f"\n  {'DRIVE STACK SEATED' if not FAILS else f'*** SEAT GATE FAILED: {FAILS} ***'}")
+    sys.exit(1 if FAILS else 0)

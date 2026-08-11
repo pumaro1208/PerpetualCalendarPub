@@ -1,0 +1,49 @@
+{
+  "name": "plate-54-sleeve-revC",
+  "version_tag": "#167 SLEEVE REV C, SOLO \u2014 RETRACTION of rev B (plate-51), which is scrap. Ron, bench, with the drive drum against the new fixture: 'Things are not lining up.' Measured: rev B's flange (bore r4.17) cannot swallow the drive post's COLLAR (r6.5, platform 4.0 up to exactly 5.0, present since fixture r58) \u2014 the flange lands ON the collar, seating the stack at 7.5 instead of 5.0. Every arm +2.5mm: 24h half-engaged on the board, 23h striking the empty gap between month tips (11.7-12.5) and feb mesh (16.0+), 22h/21h missing outright, and the 24h band grazing the month satellite's mesh lamina by ~0.2mm. The collar top IS the axial seat the #149 stack was designed around: the bottom piece's 11.50 square bore cannot pass the 13.0 collar. #159's 'no z-datum' premise is retracted; the June low-stack observation is reopened. Rev C = straight keyed tube, 25.0 long, bottom face on the collar at 5.0, top flush with the 21h piece at 30.0. NEW GATE (the one #159 lacked): seated-stack acceptance measures the collar off the fixture STL and every arm band cumulatively off the piece STLs \u2014 all four land on their strike targets within 0.05. 10 gates PASS incl. rev B's measured condemnation. Assembly: pull rev B sleeve, drop rev C over the post, restack the four pieces; bottom piece and sleeve both seat on the collar. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/169_drive_sleeve_revC_v17.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}
