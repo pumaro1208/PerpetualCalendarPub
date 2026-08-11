@@ -39,13 +39,25 @@ from detent_v17 import holder_slabs
 
 BOARD_DX = -36.75           # board axis in fixture frame
 
-def fixture_r64(name="168_fixture_r64_v17.stl"):
+def fixture_r64(name="168_fixture_r64_v17.stl", key_root=False):
+    """key_root (#168, r65): Ron's bench — the naked K4 key cracked at its base
+    (z8.5, where the square leaves the round post) and the sun heeled over ~25deg,
+    taking the whole calendar's ground link with it. Mesh forces load the root at
+    a ~2mm lever (harmless); a HAND on the 13mm of exposed key above the tower is
+    a 21mm lever straight onto the layer lines — a handling failure waiting for a
+    hand. r65 adds a 5.40-square ROOT COLLAR from 8.5 to 9.4 (2.2x the section
+    modulus, stress riser moved up under the clamped zone); the sun spacer rev B
+    gets a stepped bore to sit over it. Everything else identical to r64."""
     tris=[]; pr=4.17
     # ---- r63 core, verbatim (minus the dead #99 pins) ----
     tris += box(0,0,132,76,0.0,2.5)                      # plate
     tris += box(36.65,0,58.7,76,2.5,4.0)                 # raised drive platform
     tris += cylinder(BOARD_DX,0,pr,2.5,8.5,seg=64)       # board program post
-    tris += box(BOARD_DX,0,4.42,4.42,8.5,29.5)           # K4 key, full tower height
+    if key_root:
+        tris += box(BOARD_DX,0,5.40,5.40,8.5,9.4)        # #168 root collar
+        tris += box(BOARD_DX,0,4.42,4.42,9.4,29.5)       # K4 key above it
+    else:
+        tris += box(BOARD_DX,0,4.42,4.42,8.5,29.5)       # K4 key, full tower height
     tris += polar_solid(13.0,2.5,3.3,r_inner=6.5,cx=BOARD_DX,cy=0,seg=64)  # thrust pad
     tris += cylinder(+36.75,0,pr,4.0,26.0,seg=48)        # drive post
     tris += cylinder(+36.75,0,6.5,4.0,5.0,seg=48)        # drive collar
