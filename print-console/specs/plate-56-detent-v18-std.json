@@ -1,0 +1,80 @@
+{
+  "name": "plate-56-detent-v18-std",
+  "version_tag": "SPEED/ACCEL STRIPPED per the plate-53 policy (outer_wall_speed, small_perimeter_speed, inner_wall_speed, sparse_infill_speed, internal_solid_infill_speed, top_surface_speed, travel_speed, default_acceleration, outer_wall_acceleration, initial_layer_acceleration, travel_acceleration). FIT-CRITICAL RETAINED: xy_contour_compensation -0.06, precise_outer_wall, detect_thin_wall, wall_loops. 0.4 NOZZLE \u2014 the disc press bore (r11.96 on the r12.00 flange, 0.04 radial squeeze), the roller bore (0.05 running fit over the stub) and the r65 pocket tabs are all 0.4-calibrated; this plate must not be run on the 0.2 or 0.6. | #170 DETENT v18, 8 OBJECTS \u2014 Ron's spec, verbatim: 'give me the tabs, press fit detent disc and a short nose that completely engages for no play in the day jump' + 'the roller that fits in between the teeth seems like a perfect detent.' Package: 175 deep-V disc (31 teeth, depth 2.6 vs ring's 1.4; press bore r11.96 FRICTION-FITS the #164 hub flange r12 \u2014 holds through every escape, a deliberate two-hand twist re-clocks it: adjustable clocking, Ron's requirement), 176 roller bridge springs soft/med/firm (v17 tabs and leaf unchanged -> drop into the r65 pockets; the flexy 13mm finger replaced by a rigid gusset + short stub carrying a FREE ROLLER dia 4.6 that seats two-flank in the V: zero tangential play, rolling escape, no stick-slip), 177 roller x3 (one + spares; the BOARD is the keeper: roller top 4.8 under board 5.0 \u2014 cannot climb out in service, lifts off for inspection). Ring 164 and v17 springs retire; board sockets go unused (harmless). 39 gates PASS incl. both-bridge fwd/rev lift-curve identity at the new depth, July 4.63 rejection, r65 pocket installability all six cases, stub free-end exception carried by numbers (0.83MPa, 1.2um), press-vs-escape torque. Assembly: press disc onto hub flange, springs into pockets (SOFT first), drop rollers onto stubs, board on. Set clocking: board to a date, twist disc so rollers seat, verify next-day click centres. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/175_detent_disc_v18.stl",
+      "position": [
+        128,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/176_detent_spring_roller_soft_v18.stl",
+      "position": [
+        128,
+        40
+      ]
+    },
+    {
+      "stl": "../../parts/stl/176_detent_spring_roller_med_v18.stl",
+      "position": [
+        128,
+        70
+      ]
+    },
+    {
+      "stl": "../../parts/stl/176_detent_spring_roller_firm_v18.stl",
+      "position": [
+        128,
+        196
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_v18.stl",
+      "position": [
+        60,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_v18.stl",
+      "position": [
+        75,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_v18.stl",
+      "position": [
+        90,
+        128
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}

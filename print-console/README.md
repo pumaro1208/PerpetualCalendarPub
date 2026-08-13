@@ -34,10 +34,21 @@ The venv is already built (`.venv/`, Python 3.12).
    printed a black-specced plate entirely in white: `--ams-slot` defaulted
    to `0`, tray 0 held white PLA Basic, and nothing surfaced the mismatch
    until the parts came off the bed.
-3. Every job is appended to `print-log.md` (timestamp · filename ·
+3. **Refuse to start when the installed nozzle does not match the plate's.**
+   Same class of check as rule 2, and enforced the same way — `cmd_start` calls
+   `check_nozzle()`, which compares the sliced 3MF's `nozzle_diameter` against
+   the printer's live `nozzle_diameter` and exits rather than starting. Ron now
+   runs 0.2, 0.4 and 0.6 nozzles, so a spec's nozzle declaration is load-bearing,
+   not documentation. **Every compensation constant in this repo is 0.4-only** —
+   `xy_contour_compensation -0.06`, the #136/#137 press arithmetic, the
+   0.4-calibrated pocket tabs and roller bores — and none of it may be inherited
+   by a plate for another nozzle. A 0.4 plate run on a 0.2 is not just finer;
+   its fits are wrong. Deriving the 0.2 and 0.6 constants needs its own
+   tolerance-coupon run per nozzle.
+4. Every job is appended to `print-log.md` (timestamp · filename ·
    part version · outcome). `watch` records finished/failed outcomes.
-4. The access code lives only in `.env` (git-ignored).
-5. If the printer is unreachable, commands fail plainly — no silent retries.
+5. The access code lives only in `.env` (git-ignored).
+6. If the printer is unreachable, commands fail plainly — no silent retries.
 
 ## Remote start: firmware unlock (do not re-debug this)
 

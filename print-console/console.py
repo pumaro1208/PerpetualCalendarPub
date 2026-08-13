@@ -265,6 +265,39 @@ def log_entry(line):
         f.write(f"- {stamp} · {line}\n")
 
 
+def check_nozzle(sliced: Path, print_data: dict):
+    """Does the nozzle physically installed match the one the plate was sliced
+    for? Returns (ok, explanation).
+
+    Same class of check as the AMS mapping: the spec is a claim, the printer is
+    the fact. Every compensation constant in this repo -- xy_contour_compensation
+    -0.06, the #136/#137 press arithmetic, the 0.4-calibrated pocket tabs -- was
+    derived on a 0.4 nozzle and is meaningless on another. A plate sliced for 0.4
+    run on a 0.2 or 0.6 is not merely slower or coarser; its fits are wrong.
+    """
+    try:
+        with zipfile.ZipFile(sliced) as z:
+            cfg = json.loads(z.read("Metadata/project_settings.config"))
+    except Exception as exc:
+        return None, f"could not read embedded config ({exc})"
+
+    want = cfg.get("nozzle_diameter")
+    if isinstance(want, list):
+        want = want[0] if want else None
+    if want is None:
+        return None, "sliced config declares no nozzle_diameter"
+
+    got = print_data.get("nozzle_diameter")
+    if got is None:
+        return None, "printer did not report nozzle_diameter"
+
+    try:
+        same = abs(float(want) - float(got)) < 1e-6
+    except (TypeError, ValueError):
+        same = str(want) == str(got)
+    return same, f"plate sliced for {want}mm, printer has {got}mm installed"
+
+
 def derive_ams_mapping(sliced: Path, print_data: dict):
     """Work out ams_mapping by asking the gcode what it needs and the AMS
     where it is. Returns (mapping | None, explanation, reqs).
@@ -346,6 +379,16 @@ def cmd_start(args):
         state = str(link.print_data().get("gcode_state", "UNKNOWN")).upper()
         if state in ACTIVE_STATES:
             sys.exit(f"Printer is busy (state {state}) — not starting.")
+
+        nz_ok, nz_why = check_nozzle(Path(args.file), link.print_data())
+        if nz_ok is False:
+            print(f"  REFUSING: nozzle mismatch — {nz_why}")
+            sys.exit("Swap the nozzle or re-slice for the installed one. Every "
+                     "compensation constant in this repo (xy_contour_compensation "
+                     "-0.06, the #136/#137 press arithmetic) is 0.4-only and must "
+                     "not be inherited by another nozzle.")
+        if nz_ok is None:
+            print(f"  note: nozzle unverified — {nz_why}")
 
         derived, why, reqs = derive_ams_mapping(Path(args.file),
                                                 link.print_data())
