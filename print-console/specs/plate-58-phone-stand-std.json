@@ -1,0 +1,38 @@
+{
+  "name": "plate-58-phone-stand-std",
+  "version_tag": "SPEED/ACCEL STRIPPED (11 keys) per the plate-53 policy. | BENCH TOOL, SOLO \u2014 Ron: 'Can you make me a cell phone holder that can hold my phone so it can video the perpetual calendar modules while I operate them?' 180_bench_phone_stand: two-slot camera stand, slot A 20deg recline (low oblique close-ups of the mesh, lens ~55-60mm up), slot B 50deg recline (looking down onto the board, ~45mm). Slot width 15.0 \u2014 sized for Ron's iPhone 15 Pro Max in an OtterBox Symmetry Clear (~12.5-13 cased, ~2mm insertion play; the 13.0 first cut would have been a press fit \u2014 Ron asked before it printed); middle third of each front lip cut away for thumb/cable; rear toe to -52 so a reclined phone cannot tip it while the bench shakes. Prints flat by construction (one extruded cross-section, every layer identical, zero overhang) \u2014 the #171 lesson applied at design time. Landscape phone, long edge in the slot. NOT a calendar part: no fit-critical dimensions, any infill >=12 percent, cosmetics irrelevant. 8 gates PASS. 0.4 nozzle as everything current (a fine first 0.6 candidate later, after that nozzle's coupon). | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "12%",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/180_bench_phone_stand.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}

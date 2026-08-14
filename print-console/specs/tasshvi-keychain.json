@@ -1,0 +1,16 @@
+{
+  "name": "tasshvi-keychain",
+  "version_tag": "Tasshvi name keychain built from Arial Rounded Bold text (Federico.3mf was baked geometry from Parametric Model Maker; text regenerated). Baseline bar ties letters into one sturdy piece, front keyring loop, i-dot bridged. Single-filament rainbow PLA Silk.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Silk @BBL X1C",
+  "filament_colour": "#EC984C",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Silk",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": { "enable_support": "0" },
+  "parts": [ { "stl": "../../../tasshvi_keychain.stl", "position": "center" } ],
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

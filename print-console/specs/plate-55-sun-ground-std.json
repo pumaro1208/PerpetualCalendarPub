@@ -1,0 +1,66 @@
+{
+  "name": "plate-55-sun-ground-std",
+  "version_tag": "SPEED/ACCEL STRIPPED per the plate-53 policy (outer_wall_speed, small_perimeter_speed, inner_wall_speed, sparse_infill_speed, internal_solid_infill_speed, top_surface_speed, travel_speed, default_acceleration, outer_wall_acceleration, initial_layer_acceleration, travel_acceleration). FIT-CRITICAL RETAINED: xy_contour_compensation -0.06, precise_outer_wall, detect_thin_wall, wall_loops \u2014 the sun-bore ladder (4.5 / 4.44 / 4.4) and the clamp cap's 0.02 press on the ~4.36 key are exactly what those settings hold. | #168 SUN GROUND, 5 OBJECTS \u2014 Ron, video, springs out: 'even without the bridge detents the jam still occurs.' Frame analysis: the K4 key column leaning ~25deg, sun tipped over on it \u2014 CRACKED AT THE ROOT. A tipped sun = broken ground link: the epicyclic loses its reaction member; one failure explains five ghosts (recurring 'sun play', 'hits the sun at intervals', the climbing satellite, heavy normal days, jams detent-in or detent-out). Mesh loads sit ~2mm above the root and are harmless; the 13mm of exposed key above the tower is a 21mm handling lever straight onto the layer lines. Package: 171 fixture r65 (r64 + 5.40-sq root collar z8.5-9.4 under the key, 1.8x section modulus; REPLACES the cracked r64 - Ron's call pending, it is the same print otherwise), 170 clamp cap (square-bore disc pressed onto the key top, bears on the tower core: the stacked sun cores become the structural column, the key carries torsion only), 172 spacer rev B (stepped bore 5.70/4.50 sits over the root collar; replaces 147), 173/174 sun tower bore ladder 4.44/4.40 design (140 is the 4.50 loose end) - Ron's 'tighter suns', assembled as the #114 ladder idiom: he keeps the snuggest that slides home. 15 gates PASS. Assembly: fixture r65, spacer rev B (wide bore DOWN over the collar), snuggest tower piece, cap pressed on top until the stack is clamped. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/171_fixture_r65_v17.stl",
+      "position": [
+        128,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/170_tower_clamp_cap_v17.stl",
+      "position": [
+        60,
+        35
+      ]
+    },
+    {
+      "stl": "../../parts/stl/172_sun_spacer_revB_v17.stl",
+      "position": [
+        90,
+        35
+      ]
+    },
+    {
+      "stl": "../../parts/stl/173_sun_tower_b444_v17.stl",
+      "position": [
+        130,
+        35
+      ]
+    },
+    {
+      "stl": "../../parts/stl/174_sun_tower_b440_v17.stl",
+      "position": [
+        168,
+        35
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}

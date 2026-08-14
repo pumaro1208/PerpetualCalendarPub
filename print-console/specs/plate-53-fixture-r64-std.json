@@ -1,0 +1,38 @@
+{
+  "name": "plate-53-fixture-r64-std",
+  "version_tag": "STANDARD-SPEED VARIANT \u2014 speed/acceleration overrides stripped on Ron's call (outer_wall_speed, small_perimeter_speed, inner_wall_speed, sparse_infill_speed, internal_solid_infill_speed, top_surface_speed, travel_speed, default_acceleration, outer_wall_acceleration, initial_layer_acceleration, travel_acceleration). FIT-CRITICAL SETTINGS DELIBERATELY RETAINED: xy_contour_compensation -0.06, precise_outer_wall, detect_thin_wall, wall_loops. The fixture is not a bare jig \u2014 it carries the integrated spring pockets whose 0.06 press fit was validated on the plate-50 holders under exactly that compensation. Noise settings are negotiable; the compensation is not. | #165 FIXTURE r64, SOLO \u2014 Ron, bench, holding holder 163: 'there does not seem to be a place to mount this' ... 'this bridge holder must be integrated into the fixture.' Done. r64 = r63 verbatim PLUS both bridge-holder slab sets built from the SAME geometry source (detent_v17.holder_slabs \u2014 fixture and standalone spares can never disagree), MINUS the #157b corner-wrap lip (the fixture IS the datum now) and MINUS the two r2.0 pins at (+/-20,-30.5) \u2014 the old #99 bridge mounts that copy-rode through five fixture revs. Wings overlap the plate slab 2mm so it slices as one solid. Every detent surface (pocket floor 2.7, spring plane 2.7-4.7, nose seat, ring band 3.4-5.0) is now referenced inside ONE printed part \u2014 no tape, no bench-flatness dependency, and it closes Ron's adjustability question: nothing is left to place by hand. Springs 165 unchanged, drop into the integrated pockets from above (soft pair first, #158). Standalone holders 163/166 from plate-50 -> spares/scrap. Part is 147x104mm. 20 gates PASS incl. base-plate-identical-to-r63 (XOR 0.00mm2 inside old footprint), pins-absent, all six spring installability cases both sides, pocket floor z2.7, board-sweep clearance at z5.5. REPLACES the r63 fixture just printed - that one is scrap; Ron accepts the cost. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/168_fixture_r64_v17.stl",
+      "position": [
+        128,
+        128
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}
