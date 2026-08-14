@@ -29,9 +29,9 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 print("DETENT v18 ACCEPTANCE — emitted STLs\n")
 
 # ---- 1. the disc -----------------------------------------------------------
-md = trimesh.load("stl_v13/175_detent_disc_v18.stl")
+md = trimesh.load("stl_v13/175_detent_disc_v18b.stl")
 gate(md.is_watertight, "disc watertight")
-Ls = loops("stl_v13/175_detent_disc_v18.stl", 1.0)
+Ls = loops("stl_v13/175_detent_disc_v18b.stl", 1.0)
 outer = max(Ls, key=lambda L: np.hypot(L[:,0],L[:,1]).max())
 r = np.hypot(outer[:,0],outer[:,1]); ang=np.degrees(np.arctan2(outer[:,1],outer[:,0]))%360
 o=np.argsort(ang); a,rr=ang[o],r[o]
@@ -46,9 +46,14 @@ inner = min(Ls, key=lambda L: np.hypot(L[:,0],L[:,1]).max())
 rb = np.hypot(inner[:,0],inner[:,1]).mean()
 gate(abs(rb-D_BORE)<0.05, f"press bore r{rb:.2f} on the #164 flange r12.00 — "
      f"0.04 radial squeeze after #136 shrink; friction coupling, twist-to-adjust")
-lo0 = loops("stl_v13/175_detent_disc_v18.stl", 0.15)
-gate(max(np.hypot(L[:,0],L[:,1]).max() for L in lo0) < HUB_R+0.1,
-     f"z0.15: hub collar only — web+teeth lifted {WEB_LIFT}: clears the fixture pad AND the eye pad")
+# rev B prints FLIPPED (#171): full face on the bed, pad-relief on top.
+lo0 = loops("stl_v13/175_detent_disc_v18b.stl", 0.15)
+gate(max(np.hypot(L[:,0],L[:,1]).max() for L in lo0) > D_OD-0.3,
+     "z0.15: FULL footprint on the bed — no floating first layer (the rev A sin)")
+hi0 = loops("stl_v13/175_detent_disc_v18b.stl", D_T-0.15)
+gate(max(np.hypot(L[:,0],L[:,1]).max() for L in hi0) < HUB_R+0.1,
+     f"top {WEB_LIFT} band: hub collar only — the pad relief, FACING UP in print, "
+     f"DOWN at assembly ('recess faces the fixture' = the orientation witness)")
 
 # ---- 2. roller lift curves — both bridges, both directions ------------------
 G0 = Polygon(outer).buffer(0)
@@ -104,13 +109,21 @@ gate(sig<5.0, f"stub bending {sig:.2f}MPa at firm full-escape ({F:.2f}N) — l/d
 gate(dfl<0.02, f"stub deflection {dfl*1000:.1f}um — tangential day-jump play at the stub is nil")
 # board-as-keeper stack
 gate(abs((2.7+STUB_H)-4.9)<0.01, "stub top at 4.9 — 0.1 under the board")
-mr=trimesh.load("stl_v13/177_detent_roller_v18.stl")
+mr=trimesh.load("stl_v13/177_detent_roller_b30_v18.stl")
 gate(abs((mr.bounds[1][2]-mr.bounds[0][2])-ROLL_H)<0.02 and 2.7+PAD_T+ROLL_H<=4.85,
      "roller top at 4.8 — the BOARD is the keeper: cannot climb out in service, lifts off for inspection")
-gate(ROLL_B-STUB_R>0.03, f"roller bore over stub: {(ROLL_B-STUB_R):.2f} design -> ~0.05 printed running fit")
-Lr=loops("stl_v13/177_detent_roller_v18.stl",0.7)
-rrx=max(np.hypot(L[:,0],L[:,1]).max() for L in Lr)
-gate(abs(rrx-ROLL_R)<0.04, f"roller r{rrx:.2f} — dia 4.6 in a 6.2 V-opening")
+# #171 roller bore LADDER — small-hole shrinkage (~0.15-0.2 extra under dia 3
+# at a 0.4 nozzle) seized the rev A dia-2.7 bores on the dia-2.6 stubs.
+for tag,want in (("b28",1.4),("b30",1.5),("b32",1.6)):
+    Lr=loops(f"stl_v13/177_detent_roller_{tag}_v18.stl",0.7)
+    rrx=max(np.hypot(L[:,0],L[:,1]).max() for L in Lr)
+    rbx=min(np.hypot(L[:,0],L[:,1]).min() for L in Lr)
+    mr2=trimesh.load(f"stl_v13/177_detent_roller_{tag}_v18.stl")
+    gate(abs(rrx-ROLL_R)<0.04 and abs(rbx-want)<0.04 and abs((mr2.bounds[1][2]-mr2.bounds[0][2])-ROLL_H)<0.02,
+         f"roller {tag}: OD r{rrx:.2f}, bore r{rbx:.2f} (ladder {2*want:.1f}), h ok — "
+         f"keep the freest-without-wobble (#114 idiom)")
+gate(1.4-STUB_R>0.05, "even the tightest ladder step clears the stub at DESIGN size — "
+     "only small-hole shrink decides the winner")
 
 # ---- 4. springs: install in the r65 FIXTURE pockets (not the old holders) ---
 BOARD_DX=-36.75

@@ -1,0 +1,112 @@
+{
+  "name": "plate-57-detent-v18b",
+  "version_tag": "#171 DETENT v18 REV B, 10 OBJECTS \u2014 plate-56's disc and rollers failed on the bench; both faults were design printability sins the gates never checked, both fixed and now gated. (1) DISC: rev A put the 0.3 pad-relief on the DOWN face \u2014 the whole 2400mm2 web annulus started 0.3 above the bed, bridging over air with supports off; the ragged top surface Ron photographed is that floating first layer propagating. Rev B (175_detent_disc_v18b) prints FLIPPED: full face on the bed, relief UP; the disc is functionally flippable, so at assembly the recessed face goes DOWN toward the fixture pad \u2014 'recess faces the fixture' is the orientation witness. New gate asserts full footprint at z0.15. (2) ROLLERS: rev A dia-2.7 bores seized on the dia-2.6 stubs \u2014 SMALL-HOLE SHRINKAGE, ~0.15-0.2 beyond the #136 constant below dia 3 at a 0.4 nozzle. Rev B is a bore LADDER: 177 b28/b30/b32 (dia 2.8/3.0/3.2), three of each; Ron keeps the ones that spin freely without wobble. Springs from plate-56 are KEEPERS (well-formed per photos) and are NOT on this plate. 41 gates PASS. Bench rescue meanwhile: hand-twist a 2.8mm bit in a rev A roller, or burnish one on a stub. | QUIET.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "25%",
+    "outer_wall_speed": "60",
+    "small_perimeter_speed": "30",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "xy_contour_compensation": "-0.06",
+    "z_hop": "0.4",
+    "retraction_length": "1.6",
+    "nozzle_temperature": "210",
+    "inner_wall_speed": "90",
+    "sparse_infill_speed": "120",
+    "internal_solid_infill_speed": "90",
+    "top_surface_speed": "50",
+    "travel_speed": "180",
+    "default_acceleration": "2500",
+    "outer_wall_acceleration": "2000",
+    "initial_layer_acceleration": "300",
+    "travel_acceleration": "3000",
+    "seam_position": "aligned",
+    "precise_outer_wall": "1"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/175_detent_disc_v18b.stl",
+      "position": [
+        128,
+        128
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b28_v18.stl",
+      "position": [
+        55,
+        40
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b28_v18.stl",
+      "position": [
+        55,
+        54
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b28_v18.stl",
+      "position": [
+        55,
+        68
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b30_v18.stl",
+      "position": [
+        77,
+        40
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b30_v18.stl",
+      "position": [
+        77,
+        54
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b30_v18.stl",
+      "position": [
+        77,
+        68
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b32_v18.stl",
+      "position": [
+        99,
+        40
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b32_v18.stl",
+      "position": [
+        99,
+        54
+      ]
+    },
+    {
+      "stl": "../../parts/stl/177_detent_roller_b32_v18.stl",
+      "position": [
+        99,
+        68
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}

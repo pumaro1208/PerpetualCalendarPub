@@ -73,12 +73,19 @@ def deep_v_disc_poly():
     r = D_ROOT + (D_OD - D_ROOT)*tri
     return Polygon(np.stack([r*np.cos(th), r*np.sin(th)], 1))
 
-def disc(name="175_detent_disc_v18.stl"):
+def disc(name="175_detent_disc_v18b.stl"):
+    """rev B (#171): PRINTS FLIPPED. Rev A put the 0.3 pad-relief on the DOWN
+    face — the whole web annulus started 0.3 above the bed, bridging over air
+    with supports off; Ron's print came out ragged wherever the first layer
+    floated. The disc is functionally flippable (symmetric V, round bore), so
+    rev B prints full-face-down with the relief UP; at assembly the recessed
+    face goes DOWN toward the fixture pad. The recess is its own witness:
+    'recess faces the fixture'."""
     hub   = Point(0,0).buffer(HUB_R, 96).difference(Point(0,0).buffer(D_BORE, 128))
     web   = deep_v_disc_poly().difference(Point(0,0).buffer(D_BORE, 128))
     write_stl(name, stack([
-        (0.0,      D_T, hub),          # press collar, full height (assy 3.3-5.0)
-        (WEB_LIFT, D_T, web),          # web + teeth, lifted 0.3 (overlaps collar: one solid)
+        (0.0, D_T,          hub),              # press collar, full height
+        (0.0, D_T-WEB_LIFT, web),              # web + teeth ON THE BED; relief on top
     ]))
 
 def _seat_center(rr=ROLL_R):
@@ -121,13 +128,20 @@ def spring(width, tag):
     E=2400.0; I=width**3*SPRING_Z/12.0
     return 192*E*I/SPAN**3, (xn, cy)
 
-def roller(name="177_detent_roller_v18.stl"):
+def roller(bore_r=ROLL_B, name="177_detent_roller_v18.stl"):
+    """#171: rev A bores (dia 2.7) seized on the stubs — SMALL-HOLE SHRINKAGE:
+    FDM holes under ~3mm shrink beyond the #136 constant (~0.15-0.2 extra at a
+    0.4 nozzle). Rev B is a bore LADDER (2.8/3.0/3.2 design): Ron keeps the
+    rollers that spin freely without wobble — the #114 idiom at escapement
+    scale."""
     write_stl(name, stack([(0.0, ROLL_H,
-        Point(0,0).buffer(ROLL_R,96).difference(Point(0,0).buffer(ROLL_B,48)))]))
+        Point(0,0).buffer(ROLL_R,96).difference(Point(0,0).buffer(bore_r,48)))]))
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    disc(); roller()
+    disc()
+    for b,tag in ((1.4,"b28"),(1.5,"b30"),(1.6,"b32")):
+        roller(b, f"177_detent_roller_{tag}_v18.stl")
     ks={}
     for w,tag in ((1.2,"soft"),(1.4,"med"),(1.6,"firm")):
         ks[tag], nose = spring(w, tag)
