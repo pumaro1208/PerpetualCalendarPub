@@ -1,0 +1,135 @@
+{
+  "name": "plate-59-roller-fine-ladder",
+  "version_tag": "ROLLER FINE LADDER + THE SPRINGS THEY MOUNT ON. Ron: 'print me a set of rollers and what they mount to'. WHY THESE BORES: rev A dia 2.70 SEIZED, #171's rev B ladder 2.80/3.00/3.20 was ALL TOO LOOSE at the bench, so the running fit is bracketed inside a 0.10mm band between 2.70 and 2.80 and the previous ladder stepped straight over it. This steps 0.02mm through that band: 2.70 / 2.72 / 2.74 / 2.76 / 2.78 / 2.80 = +0.10 to +0.20 diametral clearance on the 2.60 stub. NOTE THE HONEST CAVEAT: 0.02mm is below what a 0.4 nozzle reliably resolves, so adjacent rungs may print identically \u2014 that is itself the answer if it happens, and it would mean the fit cannot be dialled by bore alone on this nozzle. THE ROLLERS ARE VISUALLY IDENTICAL \u2014 dia 4.6 x 1.4, and the bores differ by 0.02mm. THEY CANNOT BE TOLD APART ONCE MIXED. They are laid out in TWO ROWS OF SIX, ordered LEFT TO RIGHT ASCENDING by bore, two of each: x68=2.70, x88=2.72, x108=2.74, x128=2.76, x148=2.78, x168=2.80. Lift them off in order and keep them in order. The three 176 spring bridges stacked at y146/178/210 are what they mount to \u2014 soft/med/firm, stub dia 2.60, committed geometry unchanged. Fit-critical: xy_contour_compensation -0.06, precise_outer_wall, detect_thin_wall, walls retained; speed/accel stripped per the plate-53 policy. 0.4 NOZZLE ONLY.",
+  "machine": "Bambu Lab P1S 0.4 nozzle",
+  "process": "0.20mm Standard @BBL X1C",
+  "filament": "Bambu PLA Matte @BBL P1S 0.4 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "35%",
+    "xy_contour_compensation": "-0.06",
+    "precise_outer_wall": "1",
+    "detect_thin_wall": "1",
+    "enable_support": "0",
+    "brim_type": "outer_only",
+    "brim_width": "5",
+    "brim_object_gap": "0"
+  },
+  "parts": [
+    {
+      "stl": "../../parts/stl/176_detent_spring_roller_soft_v18.stl",
+      "position": [
+        128,
+        210
+      ]
+    },
+    {
+      "stl": "../../parts/stl/176_detent_spring_roller_med_v18.stl",
+      "position": [
+        128,
+        178
+      ]
+    },
+    {
+      "stl": "../../parts/stl/176_detent_spring_roller_firm_v18.stl",
+      "position": [
+        128,
+        146
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b270_v18.stl",
+      "position": [
+        68,
+        95
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b272_v18.stl",
+      "position": [
+        88,
+        95
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b274_v18.stl",
+      "position": [
+        108,
+        95
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b276_v18.stl",
+      "position": [
+        128,
+        95
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b278_v18.stl",
+      "position": [
+        148,
+        95
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b280_v18.stl",
+      "position": [
+        168,
+        95
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b270_v18.stl",
+      "position": [
+        68,
+        70
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b272_v18.stl",
+      "position": [
+        88,
+        70
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b274_v18.stl",
+      "position": [
+        108,
+        70
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b276_v18.stl",
+      "position": [
+        128,
+        70
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b278_v18.stl",
+      "position": [
+        148,
+        70
+      ]
+    },
+    {
+      "stl": "../../parts/stl/178_roller_fine_b280_v18.stl",
+      "position": [
+        168,
+        70
+      ]
+    }
+  ],
+  "printable_area_mm": [
+    256,
+    256
+  ],
+  "printable_height_mm": 256
+}
