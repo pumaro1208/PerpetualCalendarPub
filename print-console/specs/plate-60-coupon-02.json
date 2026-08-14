@@ -1,0 +1,24 @@
+{
+  "name": "plate-60-coupon-02",
+  "version_tag": "FIRST 0.2 NOZZLE PLATE — tolerance coupon. 113_post_tolerance_coupon_v16 solo at [128,128]. PURPOSE: derive the 0.2's own dimensional constants. CRITICAL, AND THE EASIEST THING TO GET WRONG: xy_contour_compensation is DELIBERATELY ABSENT. The -0.06 value belongs to the 0.4 nozzle and inheriting it would corrupt the very measurement this plate exists to make. Nothing else 0.4-derived is carried either. CROSS-VINTAGE: per Ron's strategy (a), new 0.2 parts must fit EXISTING 0.4-printed hardware, so read this coupon as 'what does a 0.2 part need to be to mate with 0.4 parts', not as the 0.2 in isolation. Finding #113 ran the same coupon on the 0.4 (plate-22, 2026-07-29): post ladder r2.50/2.55/2.60/2.65 against a r2.70 bore. Compare like for like. PROFILE NOTE: Bambu ships NO PLA profile for the P1S at 0.2 — only PC. This uses the X1C 0.2 filament preset, matching the repo's long-standing pattern of X1C-named processes on a P1S machine.",
+  "machine": "Bambu Lab P1S 0.2 nozzle",
+  "process": "0.10mm Standard @BBL X1C 0.2 nozzle",
+  "filament": "Bambu PLA Matte @BBL X1C 0.2 nozzle",
+  "filament_colour": "#000000",
+  "ams_tray_type": "PLA",
+  "ams_sub_brand": "Matte",
+  "bed_type": "Textured PEI Plate",
+  "bed_temp": 55,
+  "overrides": {
+    "wall_loops": "3",
+    "sparse_infill_density": "35%",
+    "precise_outer_wall": "1",
+    "detect_thin_wall": "1",
+    "enable_support": "0"
+  },
+  "parts": [
+    { "stl": "../../parts/stl/113_post_tolerance_coupon_v16.stl", "position": [128, 128] }
+  ],
+  "printable_area_mm": [256, 256],
+  "printable_height_mm": 256
+}

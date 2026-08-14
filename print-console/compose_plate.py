@@ -151,6 +151,35 @@ def canonical_config(machine: str, process: str, filament: str,
     # bed temp); slot-1 identity/colour is set later by _add_second_filament.
     n = _overlay_flattened(cfg, "filament", filament)
     print(f"  (filament inheritance overlay corrected {n} keys)")
+
+    # The process chain needs the same treatment, but NARROWLY. Bambu's
+    # "0.10mm Standard @BBL X1C 0.2 nozzle" carries no values of its own —
+    # every one lives in its `inherits` parent (fdm_process_single_0.10_
+    # nozzle_0.2: layer_height 0.10, line_width 0.22) — and the CLI resolves
+    # the NAME without the chain. At 0.4 that was harmless by pure
+    # coincidence: the CLI's default layer_height is 0.2, which is exactly
+    # what fdm_process_single_0.20 specifies, so every 0.4 plate was right by
+    # accident rather than by construction. At 0.2 the coincidence breaks and
+    # the config comes out with layer_height 0.2 on a 0.2 nozzle (100% of
+    # nozzle diameter, unprintable) and line_width 0.4 (twice the nozzle).
+    # Only the nozzle-geometry family is overlaid; a blanket process overlay
+    # trips the CLI's compatibility check, which is why the filament call
+    # above is deliberately alone.
+    _NOZZLE_GEOM = ("layer_height", "initial_layer_print_height",
+                    "line_width", "initial_layer_line_width",
+                    "inner_wall_line_width", "outer_wall_line_width",
+                    "top_surface_line_width", "sparse_infill_line_width",
+                    "internal_solid_infill_line_width", "support_line_width")
+    chain = _flatten_chain("process", process)
+    fixed = []
+    for k in _NOZZLE_GEOM:
+        v = chain.get(k)
+        if v not in (None, "") and str(cfg.get(k)) != str(v):
+            fixed.append(f"{k} {cfg.get(k)}->{v}")
+            cfg[k] = v
+    if fixed:
+        print(f"  (process nozzle-geometry overlay corrected {len(fixed)}: "
+              + "; ".join(fixed[:4]) + ("; …" if len(fixed) > 4 else "") + ")")
     _merge_included_gcode(cfg, machine)
     if "M620" not in cfg.get("machine_start_gcode", ""):
         raise RuntimeError("machine_start_gcode still lacks the AMS load "
